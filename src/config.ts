@@ -43,6 +43,9 @@ export interface IConfig {
     host: string;
     port: number;
   };
+  data: {
+    type: string;
+  }
 }
 
 export const configuration: IConfig = {
@@ -79,5 +82,8 @@ export const configuration: IConfig = {
     db: parseInt(process.env.REDIS_DB!, 10) || 0,
     host: <string>process.env.REDIS_HOST,
     port: parseInt(process.env.REDIS_PORT!, 10),
+  },
+  data: {
+    type: <string>process.env.DATA_Type,
   },
 };
