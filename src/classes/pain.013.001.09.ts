@@ -20,8 +20,8 @@ export interface GrpHdr {
 
 export interface InitgPty {
   Nm: string;
-  Id: InitgPtyID;
-  CtctDtls: CtctDtls;
+  Id?: InitgPtyID;
+  CtctDtls?: CtctDtls;
 }
 
 export interface CtctDtls {
@@ -89,7 +89,7 @@ export interface EqvtAmt {
 }
 
 export interface EqvtAmtAmt {
-  Amt: string;
+  Amt: Number;
   Ccy: string;
 }
 
@@ -181,7 +181,7 @@ export interface DbtAdvc {
 }
 
 export interface Dt {
-  DtTm: Date;
+  DtTm: string;
 }
 
 export interface CdtrPmtActvtnReqSplmtryData {

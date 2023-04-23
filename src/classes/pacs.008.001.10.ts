@@ -1,3 +1,5 @@
+import { InitgPty, InitgPtyID } from "./pain.001.001.11";
+
 export interface Pacs008 {
   TxTp: string;
   EndToEndId: string;
@@ -18,8 +20,8 @@ export interface CdtTrfTxInf {
   InstdAmt: InstdAmtClass;
   ChrgBr: string;
   ChrgsInf: ChrgsInf;
-  InitgPty: Cdtr;
-  Dbtr: Cdtr;
+  InitgPty: InitgPty;
+  Dbtr: InitgPty;
   DbtrAcct: TrAcct;
   DbtrAgt: Agt;
   CdtrAgt: Agt;
@@ -30,8 +32,8 @@ export interface CdtTrfTxInf {
 
 export interface Cdtr {
   Nm: string;
-  Id: CdtrID;
-  CtctDtls: CtctDtls;
+  Id?: {} | CdtrID | InitgPtyID;
+  CtctDtls?: CtctDtls;
 }
 
 export interface CtctDtls {
@@ -89,7 +91,7 @@ export interface ChrgsInf {
 }
 
 export interface Amt {
-  Amt: string;
+  Amt: number;
   Ccy: string;
 }
 
@@ -139,5 +141,5 @@ export interface Envlp {
 }
 
 export interface Doc {
-  Xprtn: Date;
+  Xprtn: string;
 }

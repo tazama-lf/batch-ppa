@@ -1,3 +1,5 @@
+import { CdtrID } from "./pacs.008.001.10";
+
 export interface Pain001 {
   TxTp: string;
   EndToEndId: string;
@@ -19,8 +21,8 @@ export interface GrpHdr {
 
 export interface InitgPty {
   Nm: string;
-  Id: InitgPtyID;
-  CtctDtls: CtctDtls;
+  Id?: InitgPtyID | CdtrID | {};
+  CtctDtls?: CtctDtls;
 }
 
 export interface CtctDtls {
@@ -87,7 +89,7 @@ export interface EqvtAmt {
 }
 
 export interface DbtrFinSvcsPrvdrFeesClass {
-  Amt: string;
+  Amt: number;
   Ccy: string;
 }
 
@@ -153,7 +155,7 @@ export interface PurpleDoc {
   Dbtr: Cdtr;
   Cdtr: Cdtr;
   DbtrFinSvcsPrvdrFees: DbtrFinSvcsPrvdrFeesClass;
-  Xprtn: Date;
+  Xprtn: string;
 }
 
 export interface Cdtr {
@@ -173,8 +175,8 @@ export interface DbtAdvc {
 }
 
 export interface ReqdExctnDt {
-  Dt: Date;
-  DtTm: Date;
+  Dt: string;
+  DtTm: string;
 }
 
 export interface CstmrCdtTrfInitnSplmtryData {

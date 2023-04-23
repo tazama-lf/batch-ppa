@@ -32,7 +32,7 @@ export interface IConfig {
   };
   cacheTTL: number;
   cert: string;
-  crspEndpoint: string;
+  tmsEndpoint: string;
   logstash: {
     host: string;
     port: number;
@@ -54,7 +54,7 @@ export const configuration: IConfig = {
   },
   cacheTTL: parseInt(process.env.CACHE_TTL!, 10),
   cert: <string>process.env.CERT_PATH,
-  crspEndpoint: <string>process.env.CRSP_ENDPOINT,
+  tmsEndpoint: <string>process.env.CRSP_ENDPOINT,
   db: {
     pseudonymsdb: <string>process.env.PSEUDONYMS_DATABASE,
     pseudonymscollection: <string>process.env.PSEUDONYMS_COLLECTION,
