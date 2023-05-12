@@ -28,7 +28,7 @@ export const app = new App();
 
 export const cache = new NodeCache();
 export const databaseClient = new ArangoDBService();
-export const cacheClient = new RedisService();
+// export const cacheClient = new RedisService();
 
 /*
  * Centralized error handling
