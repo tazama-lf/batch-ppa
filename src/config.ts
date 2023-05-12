@@ -84,6 +84,6 @@ export const configuration: IConfig = {
     port: parseInt(process.env.REDIS_PORT!, 10),
   },
   data: {
-    type: <string>process.env.DATA_Type,
+    type: <string>process.env.DATA_TYPE,
   },
 };
