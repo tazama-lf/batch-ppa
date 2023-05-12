@@ -57,7 +57,7 @@ export const configuration: IConfig = {
   },
   cacheTTL: parseInt(process.env.CACHE_TTL!, 10),
   cert: <string>process.env.CERT_PATH,
-  tmsEndpoint: <string>process.env.CRSP_ENDPOINT,
+  tmsEndpoint: <string>process.env.TMS_ENDPOINT,
   db: {
     pseudonymsdb: <string>process.env.PSEUDONYMS_DATABASE,
     pseudonymscollection: <string>process.env.PSEUDONYMS_COLLECTION,
