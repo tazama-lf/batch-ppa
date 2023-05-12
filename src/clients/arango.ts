@@ -45,14 +45,14 @@ export class ArangoDBService {
     }
   }
 
-  async query(query: AqlQuery, client: Database): Promise<unknown> {
+  async query(query, client: Database): Promise<unknown> {
     const span = apm.startSpan(`Query in ${client.name}`);
     try {
       const cycles = await client.query(query);
       const results = await cycles.batches.all();
 
       span?.end();
-      LoggerService.log(`Query result: ${JSON.stringify(results)}`);
+      // LoggerService.log(`Query result: ${JSON.stringify(results)}`);
 
       return results;
     } catch (error) {
@@ -87,6 +87,16 @@ export class ArangoDBService {
     const db = this.transactionHistoryClient.collection(configuration.db.transactionhistory_pacs008_collection);
     const query = aql`FOR doc IN ${db} 
       FILTER doc.EndToEndId == ${EndToEndId} 
+      RETURN doc`;
+
+    return this.query(query, this.transactionHistoryClient);
+  }
+
+  async getTransactionReport(EndToEndId: string): Promise<any> {
+    // const db = this.transactionHistoryClient.collection(configuration.db.transactionhistory_pacs008_collection);
+    const db = this.transactionHistoryClient.collection("transactions");
+    const query = aql`FOR doc IN ${db} 
+      FILTER doc.transaction.EndToEndId == ${EndToEndId} 
       RETURN doc`;
 
     return this.query(query, this.transactionHistoryClient);

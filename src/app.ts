@@ -1,9 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
+import { Server } from 'http';
 import Koa from 'koa';
 import bodyParser from 'koa-bodyparser';
-import { Server } from 'http';
 // import router from './router';
 import helmet from 'koa-helmet';
+import router from './router';
 import { LoggerService } from './logger.service';
 
 class App extends Koa {
@@ -13,14 +14,16 @@ class App extends Koa {
 
     // bodyparser needs to be loaded first in order to work
     this.servers = [];
+    this.use(bodyParser({formLimit: "150mb"}));
     this._configureRoutes();
   }
 
   async _configureRoutes(): Promise<void> {
-    this.use(bodyParser());
-    // this.use(router.routes());
-    // this.use(router.allowedMethods());
+    this.use(router.routes());
+    this.use(router.allowedMethods());
+
     this.use(helmet());
+
   }
 
   // configureMiddlewares(): void {
@@ -31,6 +34,7 @@ class App extends Koa {
   //     if (ctx.path !== '/health') {
   //       LoggerService.log(`${ctx.method} ${ctx.url} - ${rt}`);
   //     }
+  //     ctx.disableBodyParser = true;
   //   });
 
   //   // x-response-time

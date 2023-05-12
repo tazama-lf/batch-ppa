@@ -20,11 +20,11 @@ export interface CdtTrfTxInf {
   InstdAmt: InstdAmtClass;
   ChrgBr: string;
   ChrgsInf: ChrgsInf;
-  InitgPty: InitgPty;
+  InitgPty?: InitgPty;
   Dbtr: InitgPty;
   DbtrAcct: TrAcct;
-  DbtrAgt: Agt;
-  CdtrAgt: Agt;
+  DbtrAgt?: Agt;
+  CdtrAgt?: Agt;
   Cdtr: Cdtr;
   CdtrAcct: TrAcct;
   Purp: Purp;
@@ -65,8 +65,9 @@ export interface SchmeNm {
 }
 
 export interface TrAcct {
+  IBAN?: string;
   Id: CdtrAcctID;
-  Nm: string;
+  Nm?: string;
 }
 
 export interface CdtrAcctID {

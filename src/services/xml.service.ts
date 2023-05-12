@@ -32,39 +32,34 @@ export const GetPacs008FromXML = () => {
             //       },
             //       CdtTrfTxInf: {
             //         PmtId: {
-            //           InstrId: pain01.CstmrCdtTrfInitn.PmtInf.PmtInfId,
+            //           InstrId: testID,
             //           EndToEndId: end2endID,
             //         },
             //         IntrBkSttlmAmt: {
             //           Amt: {
-            //             Amt: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt.Amt,
-            //             Ccy: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt.Ccy,
+            //             Amt: result.RequestPayload.Document[0].FIToFICstmrCdtTrf[0].CdtTrfTxInf[0].IntrBkSttlmAmt[0]._,
+            //             Ccy: result.RequestPayload.Document[0].FIToFICstmrCdtTrf[0].CdtTrfTxInf[0].IntrBkSttlmAmt[0].ATTR.Ccy,
             //           },
             //         },
             //         InstdAmt: {
             //           Amt: {
-            //             Amt: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt.Amt,
-            //             Ccy: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt.Ccy,
+            //             Amt: result.RequestPayload.Document[0].FIToFICstmrCdtTrf[0].CdtTrfTxInf[0].IntrBkSttlmAmt[0]._,
+            //             Ccy: result.RequestPayload.Document[0].FIToFICstmrCdtTrf[0].CdtTrfTxInf[0].IntrBkSttlmAmt[0].ATTR.Ccy,
             //           },
             //         },
-            //         ChrgBr: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.ChrgBr,
+            //         ChrgBr: result.RequestPayload.Document[0].FIToFICstmrCdtTrf[0].CdtTrfTxInf[0].ChrgBr,
             //         ChrgsInf: {
             //           Amt: {
             //             Amt: 0,
-            //             Ccy: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt.Ccy,
+            //             Ccy: result.RequestPayload.Document[0].FIToFICstmrCdtTrf[0].CdtTrfTxInf[0].IntrBkSttlmAmt[0].ATTR.Ccy,
             //           },
             //           Agt: {
             //             FinInstnId: {
             //               ClrSysMmbId: {
-            //                 MmbId: pain01.CstmrCdtTrfInitn.PmtInf.DbtrAgt.FinInstnId.ClrSysMmbId.MmbId,
+            //                 MmbId:"",
             //               },
             //             },
             //           },
-            //         },
-            //         InitgPty: {
-            //           Nm: pain01.CstmrCdtTrfInitn.GrpHdr.InitgPty.Nm,
-            //           Id: pain01.CstmrCdtTrfInitn.GrpHdr.InitgPty.Id,
-            //           CtctDtls: pain01.CstmrCdtTrfInitn.GrpHdr.InitgPty.CtctDtls,
             //         },
             //         Dbtr: {
             //           Nm: pain01.CstmrCdtTrfInitn.PmtInf.Dbtr.Nm,
@@ -72,39 +67,25 @@ export const GetPacs008FromXML = () => {
             //           CtctDtls: pain01.CstmrCdtTrfInitn.PmtInf.Dbtr.CtctDtls,
             //         },
             //         DbtrAcct: {
+            //           IBAN: "",
             //           Id: {
             //             Othr: {
-            //               Id: pain01.CstmrCdtTrfInitn.PmtInf.DbtrAcct.Id.Othr.Id,
+            //               Id: "",
             //               SchmeNm: {
-            //                 Prtry: pain01.CstmrCdtTrfInitn.PmtInf.DbtrAcct.Id.Othr.SchmeNm.Prtry,
+            //                 Prtry: "IBAN",
             //               },
-            //             },
-            //           },
-            //           Nm: pain01.CstmrCdtTrfInitn.PmtInf.DbtrAcct.Nm,
-            //         },
-            //         DbtrAgt: {
-            //           FinInstnId: {
-            //             ClrSysMmbId: {
-            //               MmbId: pain01.CstmrCdtTrfInitn.PmtInf.DbtrAgt.FinInstnId.ClrSysMmbId.MmbId,
-            //             },
-            //           },
-            //         },
-            //         CdtrAgt: {
-            //           FinInstnId: {
-            //             ClrSysMmbId: {
-            //               MmbId: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAgt.FinInstnId.ClrSysMmbId.MmbId,
             //             },
             //           },
             //         },
             //         Cdtr: {
-            //           Nm: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Cdtr.Nm,
+            //           Nm: result.RequestPayload.Document[0].FIToFICstmrCdtTrf[0].CdtTrfTxInf[0].Cdtr[0].Nm, 
             //           Id: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Cdtr.Id,
             //           CtctDtls: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Cdtr.CtctDtls,
             //         },
             //         CdtrAcct: {
             //           Id: {
             //             Othr: {
-            //               Id: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAcct.Id.Othr.Id,
+            //               Id: result.RequestPayload.Document[0].FIToFICstmrCdtTrf[0].CdtTrfTxInf[0].CdtrAcct[0].Id[0].Othr[0].Id,
             //               SchmeNm: {
             //                 Prtry: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAcct.Id.Othr.SchmeNm.Prtry,
             //               },

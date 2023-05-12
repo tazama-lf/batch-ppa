@@ -1,13 +1,13 @@
-// import Router from 'koa-router';
-// import { handleHealthCheck } from './health.controller';
+import Router from 'koa-router';
+import { handleHealthCheck } from './health.controller';
+import { handleExecute, handleFileUpload } from './app.controller';
 
-// const router = new Router();
+const router = new Router();
 
-// router.get('/', handleHealthCheck);
-// router.get('/health', handleHealthCheck);
-// router.post('/execute', handleExecute);
-// router.post('/quoteReply', handleQuoteReply);
-// router.post('/transfer', handleTransfer);
-// router.post('/transfer-response', handleTransferResponse);
+router.get('/', handleHealthCheck);
+router.get('/health', handleHealthCheck);
+router.post('/execute', handleExecute);
+router.post('/uploadFile', handleFileUpload);
 
-// export default router;
+
+export default router;

@@ -3,7 +3,9 @@ import { Pain001 } from '../classes/pain.001.001.11';
 import * as fs from 'fs';
 import * as readline from 'readline';
 import { v4 as uuidv4 } from 'uuid';
+import { dbService } from '..';
 import { configuration } from '../config';
+import { LoggerService } from '../logger.service';
 import { GetPacs002, GetPacs008, GetPain013 } from './message.generation.service';
 import { executePost } from './utilities.service';
 
@@ -240,28 +242,57 @@ export const SendLineMessages = async () => {
     const currentPacs008 = GetPacs008(currentPain001);
     const currentPacs002 = GetPacs002(currentPain001, currentPain013);
 
-    console.log('Sending Pain001 message...');
+    LoggerService.log('Sending Pain001 message...');
     const pain001Result = await executePost(
       `${configuration.tmsEndpoint}function/off-transaction-monitoring-service-rel-1-0-0/execute`,
       currentPain001,
     );
 
-    console.log('Sending Pain013 message...');
+    LoggerService.log('Sending Pain013 message...')
     const pain013Result = await executePost(
       `${configuration.tmsEndpoint}function/off-transaction-monitoring-service-rel-1-0-0/quoteReply`,
       currentPain013,
     );
 
-    console.log('Sending Pacs008 message...');
+    LoggerService.log('Sending Pacs008 message...');
     const pacs008Result = await executePost(
       `${configuration.tmsEndpoint}function/off-transaction-monitoring-service-rel-1-0-0/transfer`,
       currentPacs008,
     );
 
-    console.log('Sending Pacs002 message...');
+    LoggerService.log('Sending Pacs002 message...');
     const pacs002Result = await executePost(
       `${configuration.tmsEndpoint}function/off-transaction-monitoring-service-rel-1-0-0/transfer-response`,
       currentPacs002,
     );
+    
+    if (pacs002Result && pacs008Result && pain001Result && pain013Result) {
+      LoggerService.log(`${currentPain001.EndToEndId} - Submitted`);
+
+    //   await delay(5000);
+    //   let value;
+    //   try {
+    //     value = await dbService.getTransactionReport(currentPain001.EndToEndId);
+    //   } catch (ex){
+    //     LoggerService.error(`Failed to communicate with Arango to check report. ${JSON.stringify(ex)}`);
+    //   }
+      
+    //   if (value && value.length > 0) {
+    //     LoggerService.log(`Report generated for: ${currentPain001.EndToEndId}`);
+
+    //     if ((columns[24].toString().trim() === "N" && value[0][0].report.status === "NALT") || (columns[24].toString().trim() === "Y" && value[0][0].report.status == "ALT")){
+    //       LoggerService.log(`Report Matches Test Data`);
+    //     } else {
+    //       LoggerService.log(`Report does not match Test Data`);
+    //     }
+
+    //   } else {
+    //     LoggerService.log(`Failed to generate report for: ${currentPain001.EndToEndId}`);
+    //   }
+    }
   }
+
+  function delay(time) {
+    return new Promise(resolve => setTimeout(resolve, time));
+  } 
 };

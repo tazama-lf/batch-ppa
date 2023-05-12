@@ -1,19 +1,12 @@
 import axios from 'axios';
 import apm from 'elastic-apm-node';
-import * as fs from 'fs';
 import { Context } from 'koa';
 import NodeCache from 'node-cache';
-import * as readline from 'readline';
 import App from './app';
-import { Pacs002 } from './classes/pacs.002.001.12';
-import { Pacs008 } from './classes/pacs.008.001.10';
-import { Pain001 } from './classes/pain.001.001.11';
-import { Pain013 } from './classes/pain.013.001.09';
 import { ArangoDBService, RedisService } from './clients';
 import { configuration } from './config';
 import { LoggerService } from './logger.service';
 
-import { v4 as uuidv4 } from 'uuid';
 import { SendLineMessages } from './services/file.service';
 import { GetPacs008FromXML } from './services/xml.service';
 
@@ -79,7 +72,7 @@ if (Object.values(require.cache).filter(async (m) => m?.children.includes(module
 }
 
 // read batch file line-by-line
-async function processLineByLine() {
+export async function processLineByLine() {
   
   switch (configuration.data.type) {
     case "textfile":
@@ -113,6 +106,7 @@ const executePost = async (endpoint: string, request: any) => {
   }
 };
 
-processLineByLine();
+// processLineByLine();
 
+export const dbService = new ArangoDBService();
 export default app;
