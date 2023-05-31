@@ -269,7 +269,7 @@ export const SendLineMessages = async () => {
     if (pacs002Result && pacs008Result && pain001Result && pain013Result) {
       LoggerService.log(`${currentPacs002.FIToFIPmtSts.GrpHdr.MsgId} - Submitted`);
 
-      await delay(5000);
+      await delay(1000);
     //   let value;
     //   try {
     //     value = await dbService.getTransactionReport(currentPain001.EndToEndId);
