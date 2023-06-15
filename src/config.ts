@@ -12,6 +12,8 @@ export interface IConfig {
   env: string;
   functionName: string;
   port: number;
+  verifyReports: string;
+  delay: number,
   apm: {
     secretToken: string;
     serviceName: string;
@@ -58,6 +60,8 @@ export const configuration: IConfig = {
   cacheTTL: parseInt(process.env.CACHE_TTL!, 10),
   cert: <string>process.env.CERT_PATH,
   tmsEndpoint: <string>process.env.TMS_ENDPOINT,
+  verifyReports: <string>process.env.VERIFY_REPORTS,
+  delay: parseInt(process.env.DELAY!, 0),
   db: {
     pseudonymsdb: <string>process.env.PSEUDONYMS_DATABASE,
     pseudonymscollection: <string>process.env.PSEUDONYMS_COLLECTION,
