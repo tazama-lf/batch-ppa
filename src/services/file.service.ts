@@ -248,7 +248,7 @@ export const SendLineMessages = async () => {
       currentPain001,
     );
 
-    LoggerService.log('Sending Pain013 message...')
+    LoggerService.log('Sending Pain013 message...');
     const pain013Result = await executePost(
       `${configuration.tmsEndpoint}function/off-transaction-monitoring-service-rel-1-0-0/quoteReply`,
       currentPain013,
@@ -265,34 +265,38 @@ export const SendLineMessages = async () => {
       `${configuration.tmsEndpoint}function/off-transaction-monitoring-service-rel-1-0-0/transfer-response`,
       currentPacs002,
     );
-    
+
     if (pacs002Result && pacs008Result && pain001Result && pain013Result) {
       LoggerService.log(`${currentPacs002.FIToFIPmtSts.GrpHdr.MsgId} - Submitted`);
+      await delay(configuration.delay);
 
-      await delay(1000);
-    //   let value;
-    //   try {
-    //     value = await dbService.getTransactionReport(currentPain001.EndToEndId);
-    //   } catch (ex){
-    //     LoggerService.error(`Failed to communicate with Arango to check report. ${JSON.stringify(ex)}`);
-    //   }
-      
-    //   if (value && value.length > 0) {
-    //     LoggerService.log(`Report generated for: ${currentPain001.EndToEndId}`);
+      if (configuration.verifyReports) {
+        let value;
+        try {
+          value = await dbService.getTransactionReport(currentPain001.EndToEndId);
+        } catch (ex) {
+          LoggerService.error(`Failed to communicate with Arango to check report. ${JSON.stringify(ex)}`);
+        }
 
-    //     if ((columns[24].toString().trim() === "N" && value[0][0].report.status === "NALT") || (columns[24].toString().trim() === "Y" && value[0][0].report.status == "ALT")){
-    //       LoggerService.log(`Report Matches Test Data`);
-    //     } else {
-    //       LoggerService.log(`Report does not match Test Data`);
-    //     }
+        if (value && value.length > 0) {
+          LoggerService.log(`Report generated for: ${currentPain001.EndToEndId}`);
 
-    //   } else {
-    //     LoggerService.log(`Failed to generate report for: ${currentPain001.EndToEndId}`);
-    //   }
+          if (
+            (columns[24].toString().trim() === 'N' && value[0][0].report.status === 'NALT') ||
+            (columns[24].toString().trim() === 'Y' && value[0][0].report.status == 'ALT')
+          ) {
+            LoggerService.log(`Report Matches Test Data`);
+          } else {
+            LoggerService.log(`Report does not match Test Data`);
+          }
+        } else {
+          LoggerService.log(`Failed to generate report for: ${currentPain001.EndToEndId}`);
+        }
+      }
     }
   }
 
   function delay(time) {
-    return new Promise(resolve => setTimeout(resolve, time));
-  } 
+    return new Promise((resolve) => setTimeout(resolve, time));
+  }
 };

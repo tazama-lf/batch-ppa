@@ -3,10 +3,9 @@ import apm from 'elastic-apm-node';
 import { Context } from 'koa';
 import NodeCache from 'node-cache';
 import App from './app';
-import { ArangoDBService, RedisService } from './clients';
+import { ArangoDBService } from './clients';
 import { configuration } from './config';
 import { LoggerService } from './logger.service';
-
 import { SendLineMessages } from './services/file.service';
 import { GetPacs008FromXML } from './services/xml.service';
 
@@ -73,21 +72,19 @@ if (Object.values(require.cache).filter(async (m) => m?.children.includes(module
 
 // read batch file line-by-line
 export async function processLineByLine() {
-  
   switch (configuration.data.type) {
-    case "textfile":
+    case 'textfile':
       await SendLineMessages();
       break;
 
-    case "xml":
+    case 'xml':
       GetPacs008FromXML();
       break;
-  
+
     default:
-      console.log("No Data Method Set.")
-      break;
+      console.log('No Data Method Set.');
+      throw new Error('No Data Method Set in environment.');
   }
-  
 }
 
 const executePost = async (endpoint: string, request: any) => {
@@ -106,6 +103,7 @@ const executePost = async (endpoint: string, request: any) => {
   }
 };
 
+// Enable for testing without using Rest API
 // processLineByLine();
 
 export const dbService = new ArangoDBService();
