@@ -35,7 +35,7 @@ COPY deployment.yaml ./
 COPY service.yaml ./
 
 USER root
-RUN mkdir -p /home/app/uploads
+RUN mkdir uploads
 RUN chmod 777 uploads
 USER nonroot
 
