@@ -27,7 +27,7 @@ export const handleFileUpload = async (ctx: Context, next: Next): Promise<Contex
     ctx.status = 200;
 
     var form = new IncomingForm({
-      uploadDir: './',
+      uploadDir: './uploads/',
       keepExtensions: true,
       filename: () => {
         return 'input.txt';
