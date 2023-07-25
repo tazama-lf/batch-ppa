@@ -244,25 +244,25 @@ export const SendLineMessages = async () => {
 
     LoggerService.log('Sending Pain001 message...');
     const pain001Result = await executePost(
-      `${configuration.tmsEndpoint}function/off-transaction-monitoring-service-rel-1-0-0/execute`,
+      `${configuration.tmsEndpoint}execute`,
       currentPain001,
     );
 
     LoggerService.log('Sending Pain013 message...');
     const pain013Result = await executePost(
-      `${configuration.tmsEndpoint}function/off-transaction-monitoring-service-rel-1-0-0/quoteReply`,
+      `${configuration.tmsEndpoint}quoteReply`,
       currentPain013,
     );
 
     LoggerService.log('Sending Pacs008 message...');
     const pacs008Result = await executePost(
-      `${configuration.tmsEndpoint}function/off-transaction-monitoring-service-rel-1-0-0/transfer`,
+      `${configuration.tmsEndpoint}transfer`,
       currentPacs008,
     );
 
     LoggerService.log('Sending Pacs002 message...');
     const pacs002Result = await executePost(
-      `${configuration.tmsEndpoint}function/off-transaction-monitoring-service-rel-1-0-0/transfer-response`,
+      `${configuration.tmsEndpoint}transfer-response`,
       currentPacs002,
     );
 
