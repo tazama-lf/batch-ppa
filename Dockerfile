@@ -34,7 +34,7 @@ COPY --from=builder /home/app/build ./build
 COPY package.json ./
 COPY deployment.yaml ./
 COPY service.yaml ./
-COPY /uploads ./uploads
+COPY --from=dep-resolver /uploads ./uploads
 
 #USER root
 #RUN chmod 777 uploads
