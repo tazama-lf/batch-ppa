@@ -34,7 +34,7 @@ COPY package.json ./
 COPY deployment.yaml ./
 COPY service.yaml ./
 RUN mkdir -p /home/app/uploads
-RUN chmod 700 uploads
+RUN chmod 777 uploads
 
 # Turn down the verbosity to default level.
 ENV NPM_CONFIG_LOGLEVEL warn
