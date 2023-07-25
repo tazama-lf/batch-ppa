@@ -217,7 +217,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
 };
 
 export const SendLineMessages = async () => {
-  const fileStream = fs.createReadStream('input.txt');
+  const fileStream = fs.createReadStream('./uploads/input.txt');
 
   const rl = readline.createInterface({
     input: fileStream,
