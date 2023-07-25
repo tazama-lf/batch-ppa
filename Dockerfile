@@ -33,6 +33,7 @@ COPY --from=builder /home/app/build ./build
 COPY package.json ./
 COPY deployment.yaml ./
 COPY service.yaml ./
+RUN mkdir uploads
 
 # Turn down the verbosity to default level.
 ENV NPM_CONFIG_LOGLEVEL warn
