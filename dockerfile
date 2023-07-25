@@ -1,5 +1,5 @@
 FROM --platform=${TARGETPLATFORM:-linux/amd64} ghcr.io/openfaas/of-watchdog:0.9.11 as watchdog
-FROM --platform=${TARGETPLATFORM:-linux/amd64} node:16.19-alpine as ship 
+FROM --platform=${TARGETPLATFORM:-linux/amd64} node:16.19-alpine as ship
 
 ARG TARGETPLATFORM
 ARG BUILDPLATFORM
@@ -32,8 +32,6 @@ COPY ./src ./src
 RUN npm run build
 
 # Environment variables for openfaas
-ENV cgi_headers="true"
-ENV fprocess="node ./build/index.js"
 ENV mode="http"
 ENV upstream_url="http://127.0.0.1:3000"
 
@@ -82,4 +80,4 @@ ENV LOGSTASH_PORT=8080
 HEALTHCHECK --interval=60s CMD [ -e /tmp/.lock ] || exit 1
 
 # Execute watchdog command
-CMD ["fwatchdog"]
+CMD ["build/index.js"]
