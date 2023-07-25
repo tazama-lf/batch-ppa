@@ -6,7 +6,7 @@ const router = new Router();
 
 router.get('/', handleHealthCheck);
 router.get('/health', handleHealthCheck);
-router.post('/execute', handleExecute);
+router.post('/executeBatch', handleExecute);
 router.post('/uploadFile', handleFileUpload);
 
 
