@@ -23,6 +23,7 @@ COPY package*.json ./
 COPY .npmrc ./
 ARG GH_TOKEN
 RUN npm ci --omit=dev --ignore-scripts
+RUN mkdir uploads
 
 FROM ${RUN_IMAGE} AS run-env
 USER nonroot
@@ -33,11 +34,11 @@ COPY --from=builder /home/app/build ./build
 COPY package.json ./
 COPY deployment.yaml ./
 COPY service.yaml ./
+COPY /uploads ./uploads
 
-USER root
-RUN mkdir uploads
-RUN chmod 777 uploads
-USER nonroot
+#USER root
+#RUN chmod 777 uploads
+#USER nonroot
 
 
 # Turn down the verbosity to default level.
