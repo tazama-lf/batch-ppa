@@ -36,9 +36,9 @@ COPY deployment.yaml ./
 COPY service.yaml ./
 COPY --from=dep-resolver /uploads ./uploads
 
-#USER root
-#RUN chmod 777 uploads
-#USER nonroot
+USER root
+RUN chmod 777 uploads
+USER nonroot
 
 
 # Turn down the verbosity to default level.
