@@ -6,8 +6,9 @@ import { LoggerService } from './logger.service';
 export const handleExecute = async (ctx: Context, next: Next): Promise<Context> => {
   LoggerService.log('Start - Handle execute request');
   try {
-    await processLineByLine();
+    let counter : number = await processLineByLine() || 0;
     await next();
+    ctx.body = `${counter - 1} Transactions were submitted in executed batch`;
     return ctx;
   } catch (err) {
     const failMessage = 'Failed to process execution request.';
