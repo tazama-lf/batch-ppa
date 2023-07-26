@@ -74,8 +74,7 @@ if (Object.values(require.cache).filter(async (m) => m?.children.includes(module
 export async function processLineByLine() {
   switch (configuration.data.type) {
     case 'textfile':
-      await SendLineMessages();
-      break;
+      return await SendLineMessages();
 
     case 'xml':
       GetPacs008FromXML();

@@ -216,7 +216,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
   return pain001;
 };
 
-export const SendLineMessages = async () => {
+export const SendLineMessages = async () : Promise<number> => {
   const fileStream = fs.createReadStream('./uploads/input.txt');
 
   const rl = readline.createInterface({
@@ -294,7 +294,9 @@ export const SendLineMessages = async () => {
         }
       }
     }
+    counter++;
   }
+  return counter;
 
   function delay(time) {
     return new Promise((resolve) => setTimeout(resolve, time));
