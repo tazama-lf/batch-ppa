@@ -7,8 +7,8 @@ import { TransactionRelationship } from '../interfaces/iTransactionRelationship'
 import { LoggerService } from '../logger.service';
 
 export class ArangoDBService {
-  private transactionHistoryClient: Database;
-  private pseudonymsClient: Database;
+  transactionHistoryClient: Database;
+  pseudonymsClient: Database;
 
   constructor() {
     const caOption = fs.existsSync(configuration.cert) ? [fs.readFileSync(configuration.cert)] : [];
@@ -85,8 +85,8 @@ export class ArangoDBService {
 
   async getTransactionHistoryPacs008(EndToEndId: string): Promise<any> {
     const db = this.transactionHistoryClient.collection(configuration.db.transactionhistory_pacs008_collection);
-    const query = aql`FOR doc IN ${db} 
-      FILTER doc.EndToEndId == ${EndToEndId} 
+    const query = aql`FOR doc IN ${db}
+      FILTER doc.EndToEndId == ${EndToEndId}
       RETURN doc`;
 
     return this.query(query, this.transactionHistoryClient);
@@ -95,8 +95,8 @@ export class ArangoDBService {
   async getTransactionReport(EndToEndId: string): Promise<any> {
     // const db = this.transactionHistoryClient.collection(configuration.db.transactionhistory_pacs008_collection);
     const db = this.transactionHistoryClient.collection("transactions");
-    const query = aql`FOR doc IN ${db} 
-      FILTER doc.transaction.EndToEndId == ${EndToEndId} 
+    const query = aql`FOR doc IN ${db}
+      FILTER doc.transaction.EndToEndId == ${EndToEndId}
       RETURN doc`;
 
     return this.query(query, this.transactionHistoryClient);

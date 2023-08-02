@@ -6,7 +6,7 @@ import { Pain013 } from '../classes/pain.013.001.09';
 import { type DataCache } from '../classes/data-cache';
 import { configuration } from '../config';
 import { type TransactionRelationship } from '../interfaces/iTransactionRelationship';
-import { cacheDatabaseClient } from './services-container'; // GOOD
+import { cacheDatabaseClient } from './services-container';
 
 const calculateDuration = (startTime: bigint): number => {
   const endTime = process.hrtime.bigint();

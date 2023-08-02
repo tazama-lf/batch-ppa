@@ -211,9 +211,9 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
     },
     EndToEndId: end2endID,
     TxTp: 'pain.001.001.11',
-    DebtorAcctId: '',
-    CreditorAcctId: '',
-    CreDtTm: ''
+    DebtorAcctId: columns[14] == 'Y' ? `${columns[17]}${columns[13]}` : `${columns[17]}`,
+    CreditorAcctId: columns[14] == 'Y' ? `${columns[18]}${columns[14]}` : `${columns[18]}`,
+    CreDtTm: new Date(columns[0]).toISOString()
   };
 
   return pain001;
