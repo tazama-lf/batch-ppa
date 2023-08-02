@@ -13,7 +13,7 @@ export const GetPain013 = (pain01: Pain001) : Pain013 => {
         CdtrPmtActvtnReq: {
           GrpHdr: {
             MsgId: uuidv4().replace('-',''),
-            CreDtTm: new Date(new Date(pain01.CstmrCdtTrfInitn.GrpHdr.CreDtTm).getTime() + 10).toISOString(), //CstmrCdtTrfInitn.GrpHdr.CreDtTm + 10 ms
+            CreDtTm: new Date(new Date(pain01.CstmrCdtTrfInitn.GrpHdr.CreDtTm).getTime() + 10).toISOString(),
             NbOfTxs: 1,
             InitgPty: {
               Nm: pain01.CstmrCdtTrfInitn.GrpHdr.InitgPty.Nm,
@@ -161,121 +161,124 @@ export const GetPain013 = (pain01: Pain001) : Pain013 => {
 
 export const GetPacs008 = (pain01: Pain001) : Pacs008 => {
     let pacs008: Pacs008 = {
-        TxTp: 'pacs.008.001.10',
-        EndToEndId: pain01.EndToEndId,
-        FIToFICstmrCdt: {
-          GrpHdr: {
-            MsgId: uuidv4().replace('-',''),
-            CreDtTm: new Date(new Date(pain01.CstmrCdtTrfInitn.GrpHdr.CreDtTm).getTime() + 20).toISOString(),
-            NbOfTxs: pain01.CstmrCdtTrfInitn.GrpHdr.NbOfTxs,
-            SttlmInf: {
-              SttlmMtd: 'CLRG',
+      TxTp: 'pacs.008.001.10',
+      EndToEndId: pain01.EndToEndId,
+      FIToFICstmrCdt: {
+        GrpHdr: {
+          MsgId: uuidv4().replace('-', ''),
+          CreDtTm: new Date(new Date(pain01.CstmrCdtTrfInitn.GrpHdr.CreDtTm).getTime() + 20).toISOString(),
+          NbOfTxs: pain01.CstmrCdtTrfInitn.GrpHdr.NbOfTxs,
+          SttlmInf: {
+            SttlmMtd: 'CLRG',
+          },
+        },
+        CdtTrfTxInf: {
+          PmtId: {
+            InstrId: pain01.CstmrCdtTrfInitn.PmtInf.PmtInfId,
+            EndToEndId: pain01.EndToEndId,
+          },
+          IntrBkSttlmAmt: {
+            Amt: {
+              Amt: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt.Amt,
+              Ccy: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt.Ccy,
             },
           },
-          CdtTrfTxInf: {
-            PmtId: {
-              InstrId: pain01.CstmrCdtTrfInitn.PmtInf.PmtInfId,
-              EndToEndId: pain01.EndToEndId,
+          InstdAmt: {
+            Amt: {
+              Amt: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt.Amt,
+              Ccy: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt.Ccy,
             },
-            IntrBkSttlmAmt: {
-              Amt: {
-                Amt: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt.Amt,
-                Ccy: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt.Ccy,
-              },
+          },
+          ChrgBr: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.ChrgBr,
+          ChrgsInf: {
+            Amt: {
+              Amt: 0,
+              Ccy: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt.Ccy,
             },
-            InstdAmt: {
-              Amt: {
-                Amt: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt.Amt,
-                Ccy: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt.Ccy,
-              },
-            },
-            ChrgBr: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.ChrgBr,
-            ChrgsInf: {
-              Amt: {
-                Amt: 0,
-                Ccy: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt.Ccy,
-              },
-              Agt: {
-                FinInstnId: {
-                  ClrSysMmbId: {
-                    MmbId: pain01.CstmrCdtTrfInitn.PmtInf.DbtrAgt.FinInstnId.ClrSysMmbId.MmbId,
-                  },
-                },
-              },
-            },
-            InitgPty: {
-              Nm: pain01.CstmrCdtTrfInitn.GrpHdr.InitgPty.Nm,
-              Id: pain01.CstmrCdtTrfInitn.GrpHdr.InitgPty.Id,
-              CtctDtls: pain01.CstmrCdtTrfInitn.GrpHdr.InitgPty.CtctDtls,
-            },
-            Dbtr: {
-              Nm: pain01.CstmrCdtTrfInitn.PmtInf.Dbtr.Nm,
-              Id: pain01.CstmrCdtTrfInitn.PmtInf.Dbtr.Id,
-              CtctDtls: pain01.CstmrCdtTrfInitn.PmtInf.Dbtr.CtctDtls,
-            },
-            DbtrAcct: {
-              Id: {
-                Othr: {
-                  Id: pain01.CstmrCdtTrfInitn.PmtInf.DbtrAcct.Id.Othr.Id,
-                  SchmeNm: {
-                    Prtry: pain01.CstmrCdtTrfInitn.PmtInf.DbtrAcct.Id.Othr.SchmeNm.Prtry,
-                  },
-                },
-              },
-              Nm: pain01.CstmrCdtTrfInitn.PmtInf.DbtrAcct.Nm,
-            },
-            DbtrAgt: {
+            Agt: {
               FinInstnId: {
                 ClrSysMmbId: {
                   MmbId: pain01.CstmrCdtTrfInitn.PmtInf.DbtrAgt.FinInstnId.ClrSysMmbId.MmbId,
                 },
               },
             },
-            CdtrAgt: {
-              FinInstnId: {
-                ClrSysMmbId: {
-                  MmbId: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAgt.FinInstnId.ClrSysMmbId.MmbId,
+          },
+          InitgPty: {
+            Nm: pain01.CstmrCdtTrfInitn.GrpHdr.InitgPty.Nm,
+            Id: pain01.CstmrCdtTrfInitn.GrpHdr.InitgPty.Id,
+            CtctDtls: pain01.CstmrCdtTrfInitn.GrpHdr.InitgPty.CtctDtls,
+          },
+          Dbtr: {
+            Nm: pain01.CstmrCdtTrfInitn.PmtInf.Dbtr.Nm,
+            Id: pain01.CstmrCdtTrfInitn.PmtInf.Dbtr.Id,
+            CtctDtls: pain01.CstmrCdtTrfInitn.PmtInf.Dbtr.CtctDtls,
+          },
+          DbtrAcct: {
+            Id: {
+              Othr: {
+                Id: pain01.CstmrCdtTrfInitn.PmtInf.DbtrAcct.Id.Othr.Id,
+                SchmeNm: {
+                  Prtry: pain01.CstmrCdtTrfInitn.PmtInf.DbtrAcct.Id.Othr.SchmeNm.Prtry,
                 },
               },
             },
-            Cdtr: {
-              Nm: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Cdtr.Nm,
-              Id: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Cdtr.Id,
-              CtctDtls: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Cdtr.CtctDtls,
+            Nm: pain01.CstmrCdtTrfInitn.PmtInf.DbtrAcct.Nm,
+          },
+          DbtrAgt: {
+            FinInstnId: {
+              ClrSysMmbId: {
+                MmbId: pain01.CstmrCdtTrfInitn.PmtInf.DbtrAgt.FinInstnId.ClrSysMmbId.MmbId,
+              },
             },
-            CdtrAcct: {
-              Id: {
-                Othr: {
-                  Id: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAcct.Id.Othr.Id,
-                  SchmeNm: {
-                    Prtry: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAcct.Id.Othr.SchmeNm.Prtry,
-                  },
+          },
+          CdtrAgt: {
+            FinInstnId: {
+              ClrSysMmbId: {
+                MmbId: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAgt.FinInstnId.ClrSysMmbId.MmbId,
+              },
+            },
+          },
+          Cdtr: {
+            Nm: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Cdtr.Nm,
+            Id: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Cdtr.Id,
+            CtctDtls: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Cdtr.CtctDtls,
+          },
+          CdtrAcct: {
+            Id: {
+              Othr: {
+                Id: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAcct.Id.Othr.Id,
+                SchmeNm: {
+                  Prtry: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAcct.Id.Othr.SchmeNm.Prtry,
                 },
               },
-              Nm: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAcct.Nm,
             },
-            Purp: {
-              Cd: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Purp.Cd,
-            },
+            Nm: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAcct.Nm,
           },
-          RgltryRptg: {
-            Dtls: {
-              Tp: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.RgltryRptg.Dtls.Tp,
-              Cd: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.RgltryRptg.Dtls.Cd,
-            },
+          Purp: {
+            Cd: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Purp.Cd,
           },
-          RmtInf: {
-            Ustrd: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.RmtInf.Ustrd,
+        },
+        RgltryRptg: {
+          Dtls: {
+            Tp: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.RgltryRptg.Dtls.Tp,
+            Cd: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.RgltryRptg.Dtls.Cd,
           },
-          SplmtryData: {
-            Envlp: {
-              Doc: {
-                Xprtn: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.SplmtryData.Envlp.Doc.Xprtn,
-              },
+        },
+        RmtInf: {
+          Ustrd: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.RmtInf.Ustrd,
+        },
+        SplmtryData: {
+          Envlp: {
+            Doc: {
+              Xprtn: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.SplmtryData.Envlp.Doc.Xprtn,
             },
           },
         },
-      };
+      },
+      DebtorAcctId: pain01.DebtorAcctId,
+      CreditorAcctId: pain01.CreditorAcctId,
+      CreDtTm: pain01.CreDtTm
+    };
 
     return pacs008;
 }
@@ -354,5 +357,5 @@ export const GetPacs002 = (pain01: Pain001, pain013: Pain013) : Pacs002 => {
       };
 
     return pacs002;
-  
+
 }

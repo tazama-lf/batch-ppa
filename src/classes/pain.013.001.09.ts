@@ -89,7 +89,7 @@ export interface EqvtAmt {
 }
 
 export interface EqvtAmtAmt {
-  Amt: Number;
+  Amt: number;
   Ccy: string;
 }
 

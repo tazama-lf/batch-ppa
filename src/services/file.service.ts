@@ -23,7 +23,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
           Id: {
             PrvtId: {
               DtAndPlcOfBirth: {
-                BirthDt: '1968-02-01',
+                BirthDt: new Date('1968-02-01'),
                 CityOfBirth: 'Unknown',
                 CtryOfBirth: 'ZZ',
               },
@@ -62,7 +62,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
           Id: {
             PrvtId: {
               DtAndPlcOfBirth: {
-                BirthDt: '1968-02-01',
+                BirthDt: new Date('1968-02-01'),
                 CityOfBirth: 'Unknown',
                 CtryOfBirth: 'ZZ',
               },
@@ -131,7 +131,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
             Id: {
               PrvtId: {
                 DtAndPlcOfBirth: {
-                  BirthDt: '1968-02-01',
+                  BirthDt: new Date('1968-02-01'),
                   CityOfBirth: 'Unknown',
                   CtryOfBirth: 'ZZ',
                 },
@@ -211,6 +211,9 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
     },
     EndToEndId: end2endID,
     TxTp: 'pain.001.001.11',
+    DebtorAcctId: '',
+    CreditorAcctId: '',
+    CreDtTm: ''
   };
 
   return pain001;
