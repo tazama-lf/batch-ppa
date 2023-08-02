@@ -27,13 +27,13 @@ export class RedisService {
         if (err) {
           LoggerService.error('Error while getting key from redis with message:', err, 'RedisService');
 
-          resolve([]);
+          resolve(['']);
         }
         resolve(res ?? ['']);
       });
     });
 
-  setJson = (key: string, value: string): Promise<number> =>
+  setJson = (key: string, value: string,expire : number): Promise<number> =>
     new Promise((resolve) => {
       this.client.sadd(key, value, (err, res) => {
         if (err) {
@@ -56,8 +56,8 @@ export class RedisService {
         resolve(res as number);
       });
     });
-  
-  addOneGetAll = (key: string, value: string): Promise<string[] | null> => 
+
+  addOneGetAll = (key: string, value: string): Promise<string[] | null> =>
     new Promise((resolve) => {
       this.client.multi()
       .sadd(key, value)
@@ -66,7 +66,7 @@ export class RedisService {
         // smembers result
         if (res && res[1] && res[1][1]) {
           resolve(res[1][1] as string[])
-        } 
+        }
 
         if (err) {
           LoggerService.error('Error while executing transaction on redis with message:', err, 'RedisService');
@@ -75,4 +75,8 @@ export class RedisService {
         resolve(null);
       });
     });
+
+    quit() {
+      this.client.quit();
+  }
 }

@@ -4,7 +4,7 @@ import { type Pain001 } from '../classes/pain.001.001.11';
 import { type Pain013 } from '../classes/pain.013.001.09';
 import { type TransactionRelationship } from '../interfaces/iTransactionRelationship';
 import { type ArangoDBService } from './arango';
-import { type RedisService } from '@frmscoe/frms-coe-lib';
+import { RedisService } from './redis';
 
 export class CacheDatabaseService {
   private readonly dbClient: ArangoDBService;

@@ -8,6 +8,8 @@ import { configuration } from './config';
 import { LoggerService } from './logger.service';
 import { SendLineMessages } from './services/file.service';
 import { GetPacs008FromXML } from './services/xml.service';
+import { ServicesContainer, initCacheDatabase } from './services/services-container';
+import { RedisService } from './clients';
 
 /*
  * Initialize the APM Logging
@@ -25,9 +27,9 @@ if (configuration.apm.active === 'true') {
 
 export const app = new App();
 
-export const cache = new NodeCache();
+export const cache = ServicesContainer.getCacheInstance();
 export const databaseClient = new ArangoDBService();
-// export const cacheClient = new RedisService();
+export const cacheClient = new RedisService();
 
 /*
  * Centralized error handling
@@ -53,8 +55,9 @@ function terminate(signal: NodeJS.Signals): void {
  * Start server
  **/
 if (Object.values(require.cache).filter(async (m) => m?.children.includes(module))) {
-  const server = app.listen(configuration.port, () => {
+  const server = app.listen(configuration.port, async () => {
     LoggerService.log(`API server listening on PORT ${configuration.port}`, 'execute');
+    await initCacheDatabase(configuration.cacheTTL, cacheClient);
   });
   server.on('error', handleError);
 

@@ -159,6 +159,14 @@ export class ArangoDBService {
     });
   }
 
+  async getTransactionPain001(endToEnd: string): Promise<any> {
+    const db = this.transactionHistoryClient.collection(configuration.db.transactionhistory_pain001_collection);
+    const query = aql`FOR doc IN ${db}
+      FILTER doc.EndToEndId == ${endToEnd}
+      RETURN doc`;
+    return this.query(query, this.transactionHistoryClient);
+  }
+
   async savePseudonym(pseudonym: any): Promise<any> {
     return this.save(this.pseudonymsClient, configuration.db.pseudonymscollection, pseudonym, {
       overwriteMode: 'ignore',
