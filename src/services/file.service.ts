@@ -1,17 +1,21 @@
-import { Pain001 } from '../classes/pain.001.001.11';
-
+import { type Pain001 } from '../classes/pain.001.001.11';
 import * as fs from 'fs';
 import * as readline from 'readline';
 import { v4 as uuidv4 } from 'uuid';
 import { dbService } from '..';
 import { configuration } from '../config';
 import { LoggerService } from '../logger.service';
-import { GetPacs002, GetPacs008, GetPain013 } from './message.generation.service';
+import {
+  GetPacs002,
+  GetPacs008,
+  GetPain013,
+} from './message.generation.service';
 import { executePost } from './utilities.service';
+import { handleTransaction } from './save.transactions.service';
 
 export const GetPain001FromLine = (columns: string[]): Pain001 => {
-  let end2endID = uuidv4().replace('-', '');
-  let testID = uuidv4().replace('-', '');
+  const end2endID = uuidv4().replace('-', '');
+  const testID = uuidv4().replace('-', '');
 
   const pain001: Pain001 = {
     CstmrCdtTrfInitn: {
@@ -23,7 +27,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
           Id: {
             PrvtId: {
               DtAndPlcOfBirth: {
-                BirthDt: '1968-02-01',
+                BirthDt: new Date('1968-02-01'),
                 CityOfBirth: 'Unknown',
                 CtryOfBirth: 'ZZ',
               },
@@ -62,7 +66,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
           Id: {
             PrvtId: {
               DtAndPlcOfBirth: {
-                BirthDt: '1968-02-01',
+                BirthDt: new Date('1968-02-01'),
                 CityOfBirth: 'Unknown',
                 CtryOfBirth: 'ZZ',
               },
@@ -79,9 +83,13 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
         DbtrAcct: {
           Id: {
             Othr: {
-              Id: columns[14] == 'Y' ? `${columns[17]}${columns[13]}` : `${columns[17]}`,
+              Id:
+                columns[14] === 'Y'
+                  ? `${columns[17]}${columns[13]}`
+                  : `${columns[17]}`,
               SchmeNm: {
-                Prtry: columns[14] == 'Y' ? 'SUSPENSE_ACCOUNT' : 'USER_ACCOUNT',
+                Prtry:
+                  columns[14] === 'Y' ? 'SUSPENSE_ACCOUNT' : 'USER_ACCOUNT',
               },
             },
           },
@@ -131,7 +139,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
             Id: {
               PrvtId: {
                 DtAndPlcOfBirth: {
-                  BirthDt: '1968-02-01',
+                  BirthDt: new Date('1968-02-01'),
                   CityOfBirth: 'Unknown',
                   CtryOfBirth: 'ZZ',
                 },
@@ -150,9 +158,13 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
           CdtrAcct: {
             Id: {
               Othr: {
-                Id: columns[14] == 'Y' ? `${columns[18]}${columns[14]}` : `${columns[18]}`,
+                Id:
+                  columns[14] === 'Y'
+                    ? `${columns[18]}${columns[14]}`
+                    : `${columns[18]}`,
                 SchmeNm: {
-                  Prtry: columns[14] == 'Y' ? 'SUSPENSE_ACCOUNT' : 'USER_ACCOUNT',
+                  Prtry:
+                    columns[14] === 'Y' ? 'SUSPENSE_ACCOUNT' : 'USER_ACCOUNT',
                 },
               },
             },
@@ -189,7 +201,9 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
                   Amt: 0,
                   Ccy: columns[11],
                 },
-                Xprtn: new Date(new Date(columns[0]).getTime() + 5 * 60000).toISOString(),
+                Xprtn: new Date(
+                  new Date(columns[0]).getTime() + 5 * 60000,
+                ).toISOString(),
               },
             },
           },
@@ -211,12 +225,17 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
     },
     EndToEndId: end2endID,
     TxTp: 'pain.001.001.11',
+    DebtorAcctId:
+      columns[14] === 'Y' ? `${columns[17]}${columns[13]}` : `${columns[17]}`,
+    CreditorAcctId:
+      columns[14] === 'Y' ? `${columns[18]}${columns[14]}` : `${columns[18]}`,
+    CreDtTm: new Date(columns[0]).toISOString(),
   };
 
   return pain001;
 };
 
-export const SendLineMessages = async () : Promise<number> => {
+export const SendLineMessages = async (): Promise<number> => {
   const fileStream = fs.createReadStream('./uploads/input.txt');
 
   const rl = readline.createInterface({
@@ -243,22 +262,13 @@ export const SendLineMessages = async () : Promise<number> => {
     const currentPacs002 = GetPacs002(currentPain001, currentPain013);
 
     LoggerService.log('Sending Pain001 message...');
-    const pain001Result = await executePost(
-      `${configuration.tmsEndpoint}execute`,
-      currentPain001,
-    );
+    const pain001Result = await handleTransaction(currentPain001);
 
     LoggerService.log('Sending Pain013 message...');
-    const pain013Result = await executePost(
-      `${configuration.tmsEndpoint}quoteReply`,
-      currentPain013,
-    );
+    const pain013Result = await handleTransaction(currentPain013);
 
     LoggerService.log('Sending Pacs008 message...');
-    const pacs008Result = await executePost(
-      `${configuration.tmsEndpoint}transfer`,
-      currentPacs008,
-    );
+    const pacs008Result = await handleTransaction(currentPacs008);
 
     LoggerService.log('Sending Pacs002 message...');
     const pacs002Result = await executePost(
@@ -267,30 +277,44 @@ export const SendLineMessages = async () : Promise<number> => {
     );
 
     if (pacs002Result && pacs008Result && pain001Result && pain013Result) {
-      LoggerService.log(`${currentPacs002.FIToFIPmtSts.GrpHdr.MsgId} - Submitted`);
+      LoggerService.log(
+        `${currentPacs002.FIToFIPmtSts.GrpHdr.MsgId} - Submitted`,
+      );
       await delay(configuration.delay);
 
       if (configuration.verifyReports) {
         let value;
         try {
-          value = await dbService.getTransactionReport(currentPain001.EndToEndId);
+          value = await dbService.getTransactionReport(
+            currentPain001.EndToEndId,
+          );
         } catch (ex) {
-          LoggerService.error(`Failed to communicate with Arango to check report. ${JSON.stringify(ex)}`);
+          LoggerService.error(
+            `Failed to communicate with Arango to check report. ${JSON.stringify(
+              ex,
+            )}`,
+          );
         }
 
         if (value && value.length > 0) {
-          LoggerService.log(`Report generated for: ${currentPain001.EndToEndId}`);
+          LoggerService.log(
+            `Report generated for: ${currentPain001.EndToEndId}`,
+          );
 
           if (
-            (columns[24].toString().trim() === 'N' && value[0][0].report.status === 'NALT') ||
-            (columns[24].toString().trim() === 'Y' && value[0][0].report.status == 'ALT')
+            (columns[24].toString().trim() === 'N' &&
+              value[0][0].report.status === 'NALT') ||
+            (columns[24].toString().trim() === 'Y' &&
+              value[0][0].report.status === 'ALT')
           ) {
             LoggerService.log(`Report Matches Test Data`);
           } else {
             LoggerService.log(`Report does not match Test Data`);
           }
         } else {
-          LoggerService.log(`Failed to generate report for: ${currentPain001.EndToEndId}`);
+          LoggerService.log(
+            `Failed to generate report for: ${currentPain001.EndToEndId}`,
+          );
         }
       }
     }
@@ -298,7 +322,7 @@ export const SendLineMessages = async () : Promise<number> => {
   }
   return counter;
 
-  function delay(time) {
-    return new Promise((resolve) => setTimeout(resolve, time));
+  async function delay(time: number | undefined): Promise<unknown> {
+    return await new Promise((resolve) => setTimeout(resolve, time));
   }
 };

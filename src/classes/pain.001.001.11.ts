@@ -1,9 +1,12 @@
-import { CdtrID } from "./pacs.008.001.10";
+import { type CdtrID } from './pacs.008.001.10';
 
 export interface Pain001 {
   TxTp: string;
-  EndToEndId: string;
   CstmrCdtTrfInitn: CstmrCdtTrfInitn;
+  EndToEndId: string;
+  DebtorAcctId: string;
+  CreditorAcctId: string;
+  CreDtTm: string;
 }
 
 export interface CstmrCdtTrfInitn {
@@ -21,7 +24,7 @@ export interface GrpHdr {
 
 export interface InitgPty {
   Nm: string;
-  Id?: InitgPtyID | CdtrID | {};
+  Id?: InitgPtyID | CdtrID;
   CtctDtls?: CtctDtls;
 }
 

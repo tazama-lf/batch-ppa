@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-extraneous-class */
 import log4js from 'log4js';
 import { configuration } from './config';
 
@@ -18,7 +19,10 @@ if (!configuration.env.startsWith('dev') && configuration.env !== 'test') {
   });
 }
 
-const logger = configuration.env.startsWith('dev') || configuration.env === 'test' ? console : log4js.getLogger();
+const logger =
+  configuration.env.startsWith('dev') || configuration.env === 'test'
+    ? console
+    : log4js.getLogger();
 
 export abstract class LoggerService {
   static timeStamp(): string {
@@ -33,28 +37,47 @@ export abstract class LoggerService {
   }
 
   static messageStamp(serviceOperation?: string): string {
-    return `[${LoggerService.timeStamp()}][${configuration.functionName}${serviceOperation ? ' - ' + serviceOperation : ''}]`;
+    return `[${LoggerService.timeStamp()}][${configuration.functionName}${
+      serviceOperation ? ' - ' + serviceOperation : ''
+    }]`;
   }
 
   static trace(message: string, serviceOperation?: string): void {
-    logger.trace(`${LoggerService.messageStamp(serviceOperation)}[TRACE] - ${message}`);
+    logger.trace(
+      `${LoggerService.messageStamp(serviceOperation)}[TRACE] - ${message}`,
+    );
   }
 
   static log(message: string, serviceOperation?: string): void {
-    logger.info(`${LoggerService.messageStamp(serviceOperation)}[INFO] - ${message}`);
+    logger.info(
+      `${LoggerService.messageStamp(serviceOperation)}[INFO] - ${message}`,
+    );
   }
 
   static warn(message: string, serviceOperation?: string): void {
-    logger.warn(`${LoggerService.messageStamp(serviceOperation)}[WARN] - ${message}`);
+    logger.warn(
+      `${LoggerService.messageStamp(serviceOperation)}[WARN] - ${message}`,
+    );
   }
 
-  static error(message: string | Error, innerError?: unknown, serviceOperation?: string): void {
-    let errMessage = typeof message === 'string' ? message : message.stack;
+  static error(
+    message: string | Error,
+    innerError?: unknown,
+    serviceOperation?: string,
+  ): void {
+    let errMessage: string =
+      typeof message === 'string' ? message : JSON.stringify(message.stack);
 
     if (innerError && innerError instanceof Error) {
-      errMessage += `\r\n${innerError.message}${innerError.stack ? '\r\n' + innerError.stack : ''}`;
+      errMessage += `\r\n${innerError.message}${
+        innerError.stack ? '\r\n' + innerError.stack : ''
+      }`;
     }
 
-    logger.error(`${LoggerService.messageStamp(serviceOperation)}[ERROR] - ${errMessage}`);
+    logger.error(
+      `${LoggerService.messageStamp(
+        serviceOperation,
+      )}[ERROR] - ${JSON.stringify(errMessage)}`,
+    );
   }
 }

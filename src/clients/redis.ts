@@ -10,7 +10,7 @@ export class RedisService {
       db: configuration.redis?.db,
       host: configuration.redis?.host,
       port: configuration.redis?.port,
-      password: configuration.redis?.auth
+      password: configuration.redis?.auth,
     });
 
     this.client.on('connect', () => {
@@ -21,23 +21,35 @@ export class RedisService {
     });
   }
 
-  getJson = (key: string): Promise<string[]> =>
-    new Promise((resolve) => {
+  getJson = async (key: string): Promise<string[]> =>
+    await new Promise((resolve) => {
       this.client.smembers(key, (err, res) => {
         if (err) {
-          LoggerService.error('Error while getting key from redis with message:', err, 'RedisService');
+          LoggerService.error(
+            'Error while getting key from redis with message:',
+            err,
+            'RedisService',
+          );
 
-          resolve([]);
+          resolve(['']);
         }
         resolve(res ?? ['']);
       });
     });
 
-  setJson = (key: string, value: string): Promise<number> =>
-    new Promise((resolve) => {
+  setJson = async (
+    key: string,
+    value: string,
+    expire: number,
+  ): Promise<number> =>
+    await new Promise((resolve) => {
       this.client.sadd(key, value, (err, res) => {
         if (err) {
-          LoggerService.error('Error while adding key to redis with message:', err, 'RedisService');
+          LoggerService.error(
+            'Error while adding key to redis with message:',
+            err,
+            'RedisService',
+          );
 
           resolve(-1);
         }
@@ -45,34 +57,47 @@ export class RedisService {
       });
     });
 
-  deleteKey = (key: string): Promise<number> =>
-    new Promise((resolve) => {
+  deleteKey = async (key: string): Promise<number> =>
+    await new Promise((resolve) => {
       this.client.del(key, (err, res) => {
         if (err) {
-          LoggerService.error('Error while deleting key from redis with message:', err, 'RedisService');
+          LoggerService.error(
+            'Error while deleting key from redis with message:',
+            err,
+            'RedisService',
+          );
 
           resolve(0);
         }
         resolve(res as number);
       });
     });
-  
-  addOneGetAll = (key: string, value: string): Promise<string[] | null> => 
-    new Promise((resolve) => {
-      this.client.multi()
-      .sadd(key, value)
-      .smembers(key)
-      .exec((err, res) => {
-        // smembers result
-        if (res && res[1] && res[1][1]) {
-          resolve(res[1][1] as string[])
-        } 
 
-        if (err) {
-          LoggerService.error('Error while executing transaction on redis with message:', err, 'RedisService');
-        }
+  addOneGetAll = async (key: string, value: string): Promise<string[] | null> =>
+    await new Promise((resolve) => {
+      this.client
+        .multi()
+        .sadd(key, value)
+        .smembers(key)
+        .exec((err, res) => {
+          // smembers result
+          if (res && res[1] && res[1][1]) {
+            resolve(res[1][1] as string[]);
+          }
 
-        resolve(null);
-      });
+          if (err) {
+            LoggerService.error(
+              'Error while executing transaction on redis with message:',
+              err,
+              'RedisService',
+            );
+          }
+
+          resolve(null);
+        });
     });
+
+  quit(): void {
+    this.client.quit();
+  }
 }

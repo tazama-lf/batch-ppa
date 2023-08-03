@@ -1,9 +1,12 @@
-import { InitgPty, InitgPtyID } from "./pain.001.001.11";
+import { type InitgPty, type InitgPtyID } from './pain.001.001.11';
 
 export interface Pacs008 {
   TxTp: string;
-  EndToEndId: string;
   FIToFICstmrCdt: FIToFICstmrCdt;
+  EndToEndId: string;
+  DebtorAcctId: string;
+  CreditorAcctId: string;
+  CreDtTm: string;
 }
 
 export interface FIToFICstmrCdt {
@@ -32,6 +35,7 @@ export interface CdtTrfTxInf {
 
 export interface Cdtr {
   Nm: string;
+  // eslint-disable-next-line @typescript-eslint/ban-types
   Id?: {} | CdtrID | InitgPtyID;
   CtctDtls?: CtctDtls;
 }

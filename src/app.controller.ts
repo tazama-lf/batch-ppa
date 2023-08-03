@@ -1,14 +1,17 @@
 import { IncomingForm } from 'formidable';
-import { Context, Next } from 'koa';
+import { type Context, type Next } from 'koa';
 import { processLineByLine } from '.';
 import { LoggerService } from './logger.service';
 
-export const handleExecute = async (ctx: Context, next: Next): Promise<Context> => {
+export const handleExecute = async (
+  ctx: Context,
+  next: Next,
+): Promise<Context> => {
   LoggerService.log('Start - Handle execute request');
   try {
-    let counter : number = await processLineByLine() || 0;
+    await processLineByLine();
     await next();
-    ctx.body = `${counter - 1} Transactions were submitted in executed batch`;
+    ctx.body = `Transactions were submitted`;
     return ctx;
   } catch (err) {
     const failMessage = 'Failed to process execution request.';
@@ -22,12 +25,15 @@ export const handleExecute = async (ctx: Context, next: Next): Promise<Context> 
   }
 };
 
-export const handleFileUpload = async (ctx: Context, next: Next): Promise<Context> => {
+export const handleFileUpload = async (
+  ctx: Context,
+  next: Next,
+): Promise<Context> => {
   LoggerService.log('Start - Handle quote reply request');
   try {
     ctx.status = 200;
 
-    var form = new IncomingForm({
+    const form = new IncomingForm({
       uploadDir: './uploads/',
       keepExtensions: true,
       filename: () => {
@@ -44,7 +50,6 @@ export const handleFileUpload = async (ctx: Context, next: Next): Promise<Contex
           // Handle any errors that occurred during parsing
           console.error(err);
           reject(err);
-          return;
         } else {
           ctx.body = 'File was uploaded successfully!';
           resolve();

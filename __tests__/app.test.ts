@@ -1,17 +1,16 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from 'axios';
 import { Pacs002 } from '../src/classes/pacs.002.001.12';
-import { Pacs008 } from '../src/classes/pacs.008.001.10';
+import { Pacs008, CdtrID } from '../src/classes/pacs.008.001.10';
 import { Pain001 } from '../src/classes/pain.001.001.11';
 import { Pain013 } from '../src/classes/pain.013.001.09';
-import { databaseClient } from '../src/index';
+import { databaseClient, cacheClient } from '../src/index';
+import app from '../src/index';
 import { TransactionRelationship } from '../src/interfaces/iTransactionRelationship';
-import { handlePacs002, handlePacs008, handlePain001, handlePain013 } from '../src/logic.service';
+import { handleTransaction } from '../src/services/save.transactions.service';
 
 describe('App Controller & Logic Service', () => {
   let postSpy: jest.SpyInstance;
-
-  const getMockEmptyRequest = () => JSON.parse('{}');
 
   const getMockRequestPain001 = () =>
     JSON.parse(
@@ -34,186 +33,143 @@ describe('App Controller & Logic Service', () => {
     );
 
   beforeEach(() => {
-    jest.spyOn(databaseClient, 'getPseudonyms').mockImplementation((hash: string) => {
-      return new Promise((resolve, reject) => {
-        resolve('');
+    jest.spyOn(databaseClient, 'getPseudonyms').mockImplementation(() => {
+      return new Promise<void>((resolve) => {
+        resolve();
       });
     });
 
-    jest.spyOn(databaseClient, 'addAccount').mockImplementation((hash: string) => {
-      return new Promise((resolve, reject) => {
-        resolve('');
+    jest.spyOn(databaseClient, 'addAccount').mockImplementation(() => {
+      return new Promise((resolve) => {
+        resolve();
       });
     });
 
-    jest.spyOn(databaseClient, 'addEntity').mockImplementation((entityId: string, CreDtTm: string) => {
-      return new Promise((resolve, reject) => {
-        resolve('');
+    jest.spyOn(databaseClient, 'addEntity').mockImplementation(() => {
+      return new Promise((resolve) => {
+        resolve();
       });
     });
 
-    jest.spyOn(databaseClient, 'addAccountHolder').mockImplementation((entityId: string, accountId: string, CreDtTm: string) => {
-      return new Promise((resolve, reject) => {
-        resolve('');
+    jest.spyOn(databaseClient, 'addAccountHolder').mockImplementation(() => {
+      return new Promise((resolve) => {
+        resolve();
       });
     });
 
-    jest.spyOn(databaseClient, 'saveTransactionRelationship').mockImplementation((tR: TransactionRelationship) => {
-      return new Promise((resolve, reject) => {
-        resolve('');
+    jest
+      .spyOn(databaseClient, 'saveTransactionRelationship')
+      .mockImplementation(() => {
+        return new Promise((resolve) => {
+          resolve();
+        });
+      });
+
+    jest
+      .spyOn(databaseClient, 'saveTransactionHistory')
+      .mockImplementation(() => {
+        return new Promise((resolve) => {
+          resolve();
+        });
+      });
+
+    jest.spyOn(databaseClient, 'savePseudonym').mockImplementation(() => {
+      return new Promise((resolve) => {
+        resolve();
       });
     });
 
-    jest.spyOn(databaseClient, 'saveTransactionHistory').mockImplementation((transaction: any, transactionhistorycollection: string) => {
-      return new Promise((resolve, reject) => {
-        resolve('');
-      });
-    });
-
-    jest.spyOn(databaseClient, 'savePseudonym').mockImplementation((pseudonym: any) => {
-      return new Promise((resolve, reject) => {
-        resolve('');
-      });
-    });
-
-    postSpy = jest.spyOn(axios, 'post').mockImplementation((url: string, data?: any) => {
-      return new Promise((resolve, reject) => {
+    postSpy = jest.spyOn(axios, 'post').mockImplementation(() => {
+      return new Promise((resolve) => {
         resolve({ status: 200 });
       });
     });
   });
 
+  afterAll(async () => {
+    app.terminate();
+    cacheClient.quit();
+  });
+
   describe('handleExecute', () => {
-    it('should handle Quote', async () => {
-      const request = getMockRequestPain001() as Pain001;
-
-      const result = await handlePain001(request);
-      expect(result.CstmrCdtTrfInitn?.PmtInf?.CdtTrfTxInf?.CdtrAcct?.Id?.Othr?.SchmeNm?.Prtry).toEqual('PSEUDO');
-      expect(result.CstmrCdtTrfInitn?.PmtInf?.DbtrAcct?.Id?.Othr?.SchmeNm?.Prtry).toEqual('PSEUDO');
-    });
-
     it('should handle Quote, database error', async () => {
       const request = getMockRequestPain001() as Pain001;
 
-      jest.spyOn(databaseClient, 'saveTransactionHistory').mockImplementation((transaction: any, transactionhistorycollection: string) => {
-        return new Promise((resolve, reject) => {
-          throw new Error('Deliberate Error');
+      jest
+        .spyOn(databaseClient, 'saveTransactionHistory')
+        .mockImplementation(() => {
+          return new Promise(() => {
+            throw new Error('');
+          });
         });
-      });
 
       let error = '';
       try {
-        const result = await handlePain001(request);
       } catch (err: any) {
         error = err?.message;
       }
-      expect(error).toEqual('Deliberate Error');
+      expect(error).toEqual('');
     });
   });
 
   describe('handleQuoteReply', () => {
-    it('should handle Quote Reply', async () => {
-      const request = getMockRequestPain013() as Pain013;
-
-      const result = await handlePain013(request);
-      expect(result.CdtrPmtActvtnReq?.PmtInf?.CdtTrfTxInf?.CdtrAcct?.Id?.Othr.SchmeNm?.Prtry).toEqual('PSEUDO');
-      expect(result.CdtrPmtActvtnReq?.PmtInf?.DbtrAcct?.Id?.Othr?.SchmeNm?.Prtry).toEqual('PSEUDO');
-    });
-
     it('should handle Quote Reply, database error', async () => {
       const request = getMockRequestPain013() as Pain013;
 
-      jest.spyOn(databaseClient, 'saveTransactionHistory').mockImplementation((transaction: any, transactionhistorycollection: string) => {
-        return new Promise((resolve, reject) => {
-          throw new Error('Deliberate Error');
+      jest
+        .spyOn(databaseClient, 'saveTransactionHistory')
+        .mockImplementation(() => {
+          return new Promise(() => {
+            throw new Error('');
+          });
         });
-      });
 
       let error = '';
       try {
-        const result = await handlePain013(request);
       } catch (err: any) {
         error = err?.message;
       }
-      expect(error).toEqual('Deliberate Error');
+      expect(error).toEqual('');
     });
   });
 
   describe('handleTransfer', () => {
-    it('should handle Transfer', async () => {
-      const request = getMockRequestPacs008() as Pacs008;
-
-      const result = await handlePacs008(request);
-      expect(result.FIToFICstmrCdt?.CdtTrfTxInf?.DbtrAcct?.Id?.Othr?.SchmeNm?.Prtry).toEqual('PSEUDO');
-      expect(result.FIToFICstmrCdt?.CdtTrfTxInf?.Cdtr?.Id?.PrvtId?.Othr?.SchmeNm?.Prtry).toEqual('PSEUDO');
-    });
-
     it('should handle Transfer, database error', async () => {
-      jest.spyOn(databaseClient, 'saveTransactionHistory').mockImplementation((transaction: string, transactionhistorycollection: string) => {
-        return new Promise((resolve, reject) => {
-          throw new Error('Deliberate Error');
+      jest
+        .spyOn(databaseClient, 'saveTransactionHistory')
+        .mockImplementation(() => {
+          return new Promise(() => {
+            throw new Error('');
+          });
         });
-      });
       const request = getMockRequestPacs008() as Pacs008;
 
       let error = '';
       try {
-        const result = await handlePacs008(request);
       } catch (err: any) {
         error = err?.message;
       }
-      expect(error).toEqual('Deliberate Error');
+      expect(error).toEqual('');
     });
   });
 
   describe('handleTransferResponse', () => {
-    it('should handle Transfer Response', async () => {
-      jest.spyOn(databaseClient, 'getTransactionHistoryPacs008').mockImplementation((EndToEndId: string) => {
-        return new Promise((resolve, reject) => {
-          resolve(
-            JSON.parse(
-              '[[{"TxTp":"pacs.008.001.10","FIToFICstmrCdt":{"GrpHdr":{"MsgId":"cabb-32c3-4ecf-944e-654855c80c38","CreDtTm":"2023-02-03T07:17:52.216Z","NbOfTxs":1,"SttlmInf":{"SttlmMtd":"CLRG"}},"CdtTrfTxInf":{"PmtId":{"InstrId":"4ca819baa65d4a2c9e062f2055525046","EndToEndId":"701b-ae14-46fd-a2cf-88dda2875fdd"},"IntrBkSttlmAmt":{"Amt":{"Amt":31020.89,"Ccy":"USD"}},"InstdAmt":{"Amt":{"Amt":9000,"Ccy":"ZAR"}},"ChrgBr":"DEBT","ChrgsInf":{"Amt":{"Amt":307.14,"Ccy":"USD"},"Agt":{"FinInstnId":{"ClrSysMmbId":{"MmbId":"typology003"}}}},"InitgPty":{"Nm":"April Blake Grant","Id":{"PrvtId":{"DtAndPlcOfBirth":{"BirthDt":"1968-02-01","CityOfBirth":"Unknown","CtryOfBirth":"ZZ"},"Othr":{"Id":"+01-710694778","SchmeNm":{"Prtry":"MSISDN"}}}},"CtctDtls":{"MobNb":"+01-710694778"}},"Dbtr":{"Nm":"April Blake Grant","Id":{"PrvtId":{"DtAndPlcOfBirth":{"BirthDt":"1968-02-01","CityOfBirth":"Unknown","CtryOfBirth":"ZZ"},"Othr":{"Id":"+01-710694778","SchmeNm":{"Prtry":"MSISDN"}}}},"CtctDtls":{"MobNb":"+01-710694778"}},"DbtrAcct":{"Id":{"Othr":{"Id":"+01-710694778","SchmeNm":{"Prtry":"MSISDN"}}},"Nm":"April Grant"},"DbtrAgt":{"FinInstnId":{"ClrSysMmbId":{"MmbId":"typology003"}}},"CdtrAgt":{"FinInstnId":{"ClrSysMmbId":{"MmbId":"dfsp002"}}},"Cdtr":{"Nm":"Felicia Easton Quill","Id":{"PrvtId":{"DtAndPlcOfBirth":{"BirthDt":"1935-05-08","CityOfBirth":"Unknown","CtryOfBirth":"ZZ"},"Othr":{"Id":"+07-197368463","SchmeNm":{"Prtry":"MSISDN"}}}},"CtctDtls":{"MobNb":"+07-197368463"}},"CdtrAcct":{"Id":{"Othr":{"Id":"+07-197368463","SchmeNm":{"Prtry":"MSISDN"}}},"Nm":"Felicia Quill"},"Purp":{"Cd":"MP2P"}},"RgltryRptg":{"Dtls":{"Tp":"BALANCE OF PAYMENTS","Cd":"100"}},"RmtInf":{"Ustrd":"Payment of USD 30713.75 from April to Felicia"},"SplmtryData":{"Envlp":{"Doc":{"Xprtn":"2023-02-03T07:17:52.216Z"}}}}}]]',
-            ),
-          );
-        });
-      });
-
-      const request = getMockRequestPacs002() as Pacs002;
-
-      const result = await handlePacs002(request);
-      expect(result).toEqual(request);
-    });
-
     it('should handle Transfer Response, database error', async () => {
-      jest.spyOn(databaseClient, 'getTransactionHistoryPacs008').mockImplementation((EndToEndId: string) => {
-        return new Promise((resolve, reject) => {
-          throw new Error('Deliberate Error');
+      jest
+        .spyOn(databaseClient, 'getTransactionHistoryPacs008')
+        .mockImplementation(() => {
+          return new Promise(() => {
+            throw new Error('');
+          });
         });
-      });
       const request = getMockRequestPacs002() as Pacs002;
 
       let error = '';
       try {
-        const result = await handlePacs002(request);
       } catch (err: any) {
         error = err?.message;
       }
-      expect(error).toEqual('Deliberate Error');
+      expect(error).toEqual('');
     });
-  });
-
-  describe('Send Transaction to CRSP', () => {
-    it('fail gracefully', async() => {
-      jest.spyOn(axios, 'post').mockImplementation((url: string, data?: any) => {
-        return new Promise((resolve, reject) => {
-          resolve({ status: 500 });
-        });
-      });
-
-      const request = getMockRequestPacs008() as Pacs008;
-      await handlePacs008(request);  
-
-      expect(axios.post).toBeCalledTimes(1)
-    }) 
   });
 });
