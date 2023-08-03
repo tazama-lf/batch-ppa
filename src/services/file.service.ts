@@ -1,7 +1,4 @@
 import { Pain001 } from '../classes/pain.001.001.11';
-import { Pacs002 } from '../classes/pacs.002.001.12';
-import { Pacs008 } from '../classes/pacs.008.001.10';
-import { Pain013 } from '../classes/pain.013.001.09';
 import * as fs from 'fs';
 import * as readline from 'readline';
 import { v4 as uuidv4 } from 'uuid';
