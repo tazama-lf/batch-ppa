@@ -250,24 +250,15 @@ export const SendLineMessages = async () : Promise<number> => {
 
     LoggerService.log('Sending Pain001 message...');
     const pain001Result = await handleTransaction(currentPain001)
-    // const pain001Result = await executePost(
-    //   `${configuration.tmsEndpoint}execute`,
-    //   currentPain001,
-    // );
+
 
     LoggerService.log('Sending Pain013 message...');
     const pain013Result = await handleTransaction(currentPain013);
-    // const pain013Result = await executePost(
-    //   `${configuration.tmsEndpoint}quoteReply`,
-    //   currentPain013,
-    // );
+
 
     LoggerService.log('Sending Pacs008 message...');
     const pacs008Result = await handleTransaction(currentPacs008);
-    // const pacs008Result = await executePost(
-    //   `${configuration.tmsEndpoint}transfer`,
-    //   currentPacs008,
-    // );
+
 
     LoggerService.log('Sending Pacs002 message...');
     const pacs002Result = await executePost(
