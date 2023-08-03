@@ -21,8 +21,8 @@ export class RedisService {
     });
   }
 
-  getJson = (key: string): Promise<string[]> =>
-    new Promise((resolve) => {
+  getJson = async (key: string): Promise<string[]> =>
+    await new Promise((resolve) => {
       this.client.smembers(key, (err, res) => {
         if (err) {
           LoggerService.error(
@@ -37,8 +37,12 @@ export class RedisService {
       });
     });
 
-  setJson = (key: string, value: string, expire: number): Promise<number> =>
-    new Promise((resolve) => {
+  setJson = async (
+    key: string,
+    value: string,
+    expire: number,
+  ): Promise<number> =>
+    await new Promise((resolve) => {
       this.client.sadd(key, value, (err, res) => {
         if (err) {
           LoggerService.error(
@@ -53,8 +57,8 @@ export class RedisService {
       });
     });
 
-  deleteKey = (key: string): Promise<number> =>
-    new Promise((resolve) => {
+  deleteKey = async (key: string): Promise<number> =>
+    await new Promise((resolve) => {
       this.client.del(key, (err, res) => {
         if (err) {
           LoggerService.error(
@@ -69,8 +73,8 @@ export class RedisService {
       });
     });
 
-  addOneGetAll = (key: string, value: string): Promise<string[] | null> =>
-    new Promise((resolve) => {
+  addOneGetAll = async (key: string, value: string): Promise<string[] | null> =>
+    await new Promise((resolve) => {
       this.client
         .multi()
         .sadd(key, value)
@@ -93,7 +97,7 @@ export class RedisService {
         });
     });
 
-  quit() {
+  quit(): void {
     this.client.quit();
   }
 }

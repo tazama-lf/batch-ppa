@@ -1,4 +1,4 @@
-import { InitgPty, InitgPtyID } from './pain.001.001.11';
+import { type InitgPty, type InitgPtyID } from './pain.001.001.11';
 
 export interface Pacs008 {
   TxTp: string;
@@ -35,6 +35,7 @@ export interface CdtTrfTxInf {
 
 export interface Cdtr {
   Nm: string;
+  // eslint-disable-next-line @typescript-eslint/ban-types
   Id?: {} | CdtrID | InitgPtyID;
   CtctDtls?: CtctDtls;
 }

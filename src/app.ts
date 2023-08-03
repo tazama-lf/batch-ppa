@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Server } from 'http';
+import { type Server } from 'http';
 import Koa from 'koa';
 import bodyParser from 'koa-bodyparser';
 // import router from './router';
 import helmet from 'koa-helmet';
 import router from './router';
-import { LoggerService } from './logger.service';
 
 class App extends Koa {
   public servers: Server[];

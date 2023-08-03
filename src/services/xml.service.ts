@@ -1,17 +1,18 @@
+/* eslint-disable*/
 import * as fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 import { Pacs008 } from '../classes/pacs.008.001.10';
 
 const xml2js = require('xml2js');
-//const fs = require('fs');
+// const fs = require('fs');
 const parser = new xml2js.Parser({ attrkey: 'ATTR' });
 
 export const GetPacs008FromXML = () => {
-  let xml_string = fs.readFileSync('input.xml', 'utf8');
+  const xml_string = fs.readFileSync('input.xml', 'utf8');
   console.log('Testing');
 
-  let end2endID = uuidv4().replace('-', '');
-  let testID = uuidv4().replace('-', '');
+  const end2endID = uuidv4().replace('-', '');
+  const testID = uuidv4().replace('-', '');
 
   parser.parseString(xml_string, function (error, result) {
     if (error === null) {

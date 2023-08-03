@@ -1,6 +1,5 @@
-import { RedisService } from '../clients';
+import { type RedisService, ArangoDBService } from '../clients';
 import NodeCache from 'node-cache';
-import { ArangoDBService } from '../clients';
 import { CacheDatabaseService } from '../clients/cache-database';
 
 /* eslint-disable @typescript-eslint/no-extraneous-class */

@@ -1,12 +1,12 @@
-import { Pacs002 } from '../classes/pacs.002.001.12';
-import { Pacs008 } from '../classes/pacs.008.001.10';
-import { Pain001 } from '../classes/pain.001.001.11';
-import { Pain013 } from '../classes/pain.013.001.09';
+import { type Pacs002 } from '../classes/pacs.002.001.12';
+import { type Pacs008 } from '../classes/pacs.008.001.10';
+import { type Pain001 } from '../classes/pain.001.001.11';
+import { type Pain013 } from '../classes/pain.013.001.09';
 
 import { v4 as uuidv4 } from 'uuid';
 
 export const GetPain013 = (pain01: Pain001): Pain013 => {
-  let pain013: Pain013 = {
+  const pain013: Pain013 = {
     TxTp: 'pain.013.001.09',
     EndToEndId: pain01.EndToEndId,
     CdtrPmtActvtnReq: {
@@ -178,7 +178,7 @@ export const GetPain013 = (pain01: Pain001): Pain013 => {
 };
 
 export const GetPacs008 = (pain01: Pain001): Pacs008 => {
-  let pacs008: Pacs008 = {
+  const pacs008: Pacs008 = {
     TxTp: 'pacs.008.001.10',
     EndToEndId: pain01.EndToEndId,
     FIToFICstmrCdt: {
@@ -321,7 +321,7 @@ export const GetPacs008 = (pain01: Pain001): Pacs008 => {
 };
 
 export const GetPacs002 = (pain01: Pain001, pain013: Pain013): Pacs002 => {
-  let pacs002: Pacs002 = {
+  const pacs002: Pacs002 = {
     TxTp: 'pacs.002.001.12',
     EndToEndId: pain01.EndToEndId,
     FIToFIPmtSts: {

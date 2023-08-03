@@ -1,4 +1,4 @@
-import { Context } from 'koa';
+import { type Context } from 'koa';
 
 const handleMonitorTransaction = (ctx: Context): Context => {
   ctx.body = { result: 'Transaction is valid' };

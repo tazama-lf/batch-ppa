@@ -1,8 +1,8 @@
 import apm from 'elastic-apm-node';
 import { cacheClient, databaseClient } from '..';
-import { Pain001 } from '../classes/pain.001.001.11';
-import { Pacs008 } from '../classes/pacs.008.001.10';
-import { Pain013 } from '../classes/pain.013.001.09';
+import { type Pain001 } from '../classes/pain.001.001.11';
+import { type Pacs008 } from '../classes/pacs.008.001.10';
+import { type Pain013 } from '../classes/pain.013.001.09';
 import { configuration } from '../config';
 import { type DataCache } from '../classes/data-cache';
 import { type TransactionRelationship } from '../interfaces/iTransactionRelationship';
@@ -46,12 +46,12 @@ const handlePain001 = async (transaction: Pain001): Promise<Pain001> => {
   const creditorAcctId =
     transaction.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAcct.Id.Othr.Id || '';
   const creditorId =
-    transaction.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Cdtr.Id?.PrvtId.Othr.Id ||
+    transaction.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Cdtr.Id?.PrvtId.Othr.Id ??
     '';
   const CreDtTm = transaction.CstmrCdtTrfInitn.GrpHdr.CreDtTm;
   const debtorAcctId = transaction.CstmrCdtTrfInitn.PmtInf.DbtrAcct.Id.Othr.Id;
   const debtorId =
-    transaction.CstmrCdtTrfInitn.PmtInf.Dbtr.Id?.PrvtId.Othr.Id || '';
+    transaction.CstmrCdtTrfInitn.PmtInf.Dbtr.Id?.PrvtId.Othr.Id ?? '';
   const EndToEndId =
     transaction.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.PmtId.EndToEndId;
   const lat =

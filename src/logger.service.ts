@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-extraneous-class */
 import log4js from 'log4js';
 import { configuration } from './config';
 
@@ -64,7 +65,8 @@ export abstract class LoggerService {
     innerError?: unknown,
     serviceOperation?: string,
   ): void {
-    let errMessage = typeof message === 'string' ? message : message.stack;
+    let errMessage: string =
+      typeof message === 'string' ? message : JSON.stringify(message.stack);
 
     if (innerError && innerError instanceof Error) {
       errMessage += `\r\n${innerError.message}${
@@ -73,7 +75,9 @@ export abstract class LoggerService {
     }
 
     logger.error(
-      `${LoggerService.messageStamp(serviceOperation)}[ERROR] - ${errMessage}`,
+      `${LoggerService.messageStamp(
+        serviceOperation,
+      )}[ERROR] - ${JSON.stringify(errMessage)}`,
     );
   }
 }

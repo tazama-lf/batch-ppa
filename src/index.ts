@@ -1,9 +1,8 @@
 import axios from 'axios';
 import apm from 'elastic-apm-node';
-import { Context } from 'koa';
-import NodeCache from 'node-cache';
+import { type Context } from 'koa';
 import App from './app';
-import { ArangoDBService } from './clients';
+import { ArangoDBService, RedisService } from './clients';
 import { configuration } from './config';
 import { LoggerService } from './logger.service';
 import { SendLineMessages } from './services/file.service';
@@ -12,7 +11,6 @@ import {
   ServicesContainer,
   initCacheDatabase,
 } from './services/services-container';
-import { RedisService } from './clients';
 
 /*
  * Initialize the APM Logging
@@ -77,15 +75,18 @@ if (
   const signals: NodeJS.Signals[] = ['SIGTERM', 'SIGINT', 'SIGUSR2'];
 
   signals.forEach((signal) => {
-    process.once(signal, () => terminate(signal));
+    process.once(signal, () => {
+      terminate(signal);
+    });
   });
 }
 
 // read batch file line-by-line
-export async function processLineByLine() {
+export const processLineByLine = async (): Promise<void> => {
   switch (configuration.data.type) {
     case 'textfile':
-      return await SendLineMessages();
+      await SendLineMessages();
+      break;
 
     case 'xml':
       GetPacs008FromXML();
@@ -95,16 +96,21 @@ export async function processLineByLine() {
       console.log('No Data Method Set.');
       throw new Error('No Data Method Set in environment.');
   }
-}
+};
 
-const executePost = async (endpoint: string, request: any) => {
+const executePost = async (
+  endpoint: string,
+  request: unknown,
+): Promise<void> => {
   const span = apm.startSpan(`POST ${endpoint}`);
   try {
     const crspRes = await axios.post(endpoint, request);
 
     if (crspRes.status !== 200) {
       LoggerService.error(
-        `CRSP Response StatusCode != 200, request:\r\n${request}`,
+        `CRSP Response StatusCode != 200, request:\r\n${JSON.stringify(
+          request,
+        )}`,
       );
     }
     LoggerService.log(
@@ -117,7 +123,7 @@ const executePost = async (endpoint: string, request: any) => {
     LoggerService.error(
       `Error while sending request to CRSP at ${
         endpoint ?? ''
-      } with message: ${error}`,
+      } with message: ${JSON.stringify(error)}`,
     );
     LoggerService.trace(`CRSP Error Request:\r\n${JSON.stringify(request)}`);
   }

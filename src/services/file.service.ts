@@ -1,4 +1,4 @@
-import { Pain001 } from '../classes/pain.001.001.11';
+import { type Pain001 } from '../classes/pain.001.001.11';
 import * as fs from 'fs';
 import * as readline from 'readline';
 import { v4 as uuidv4 } from 'uuid';
@@ -14,8 +14,8 @@ import { executePost } from './utilities.service';
 import { handleTransaction } from './save.transactions.service';
 
 export const GetPain001FromLine = (columns: string[]): Pain001 => {
-  let end2endID = uuidv4().replace('-', '');
-  let testID = uuidv4().replace('-', '');
+  const end2endID = uuidv4().replace('-', '');
+  const testID = uuidv4().replace('-', '');
 
   const pain001: Pain001 = {
     CstmrCdtTrfInitn: {
@@ -84,11 +84,12 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
           Id: {
             Othr: {
               Id:
-                columns[14] == 'Y'
+                columns[14] === 'Y'
                   ? `${columns[17]}${columns[13]}`
                   : `${columns[17]}`,
               SchmeNm: {
-                Prtry: columns[14] == 'Y' ? 'SUSPENSE_ACCOUNT' : 'USER_ACCOUNT',
+                Prtry:
+                  columns[14] === 'Y' ? 'SUSPENSE_ACCOUNT' : 'USER_ACCOUNT',
               },
             },
           },
@@ -158,12 +159,12 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
             Id: {
               Othr: {
                 Id:
-                  columns[14] == 'Y'
+                  columns[14] === 'Y'
                     ? `${columns[18]}${columns[14]}`
                     : `${columns[18]}`,
                 SchmeNm: {
                   Prtry:
-                    columns[14] == 'Y' ? 'SUSPENSE_ACCOUNT' : 'USER_ACCOUNT',
+                    columns[14] === 'Y' ? 'SUSPENSE_ACCOUNT' : 'USER_ACCOUNT',
                 },
               },
             },
@@ -225,9 +226,9 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
     EndToEndId: end2endID,
     TxTp: 'pain.001.001.11',
     DebtorAcctId:
-      columns[14] == 'Y' ? `${columns[17]}${columns[13]}` : `${columns[17]}`,
+      columns[14] === 'Y' ? `${columns[17]}${columns[13]}` : `${columns[17]}`,
     CreditorAcctId:
-      columns[14] == 'Y' ? `${columns[18]}${columns[14]}` : `${columns[18]}`,
+      columns[14] === 'Y' ? `${columns[18]}${columns[14]}` : `${columns[18]}`,
     CreDtTm: new Date(columns[0]).toISOString(),
   };
 
@@ -304,7 +305,7 @@ export const SendLineMessages = async (): Promise<number> => {
             (columns[24].toString().trim() === 'N' &&
               value[0][0].report.status === 'NALT') ||
             (columns[24].toString().trim() === 'Y' &&
-              value[0][0].report.status == 'ALT')
+              value[0][0].report.status === 'ALT')
           ) {
             LoggerService.log(`Report Matches Test Data`);
           } else {
@@ -321,7 +322,7 @@ export const SendLineMessages = async (): Promise<number> => {
   }
   return counter;
 
-  function delay(time) {
-    return new Promise((resolve) => setTimeout(resolve, time));
+  async function delay(time: number | undefined): Promise<unknown> {
+    return await new Promise((resolve) => setTimeout(resolve, time));
   }
 };
