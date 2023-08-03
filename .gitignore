@@ -68,3 +68,4 @@ template
 
 # certificates
 *.crt
+uploads/input.txt
