@@ -9,10 +9,6 @@ import { type TransactionRelationship } from '../interfaces/iTransactionRelation
 import { cacheDatabaseClient } from './services-container';
 import { LoggerService } from '../logger.service';
 
-const calculateDuration = (startTime: bigint): number => {
-  const endTime = process.hrtime.bigint();
-  return Number(endTime - startTime);
-};
 
 export const handleTransaction = async (transaction: Pain001 | Pain013 | Pacs008): Promise<Pain001 | Pain013 | Pacs008> => {
   switch (transaction.TxTp) {
@@ -33,7 +29,6 @@ export const handleTransaction = async (transaction: Pain001 | Pain013 | Pacs008
 const handlePain001 = async (transaction: Pain001): Promise<Pain001> => {
   LoggerService.log('Start - Handle transaction data');
   const span = apm.startSpan('Handle transaction data');
-  const startTime = process.hrtime.bigint();
 
   transaction.EndToEndId = transaction.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.PmtId.EndToEndId;
   transaction.DebtorAcctId = transaction.CstmrCdtTrfInitn.PmtInf.DbtrAcct.Id.Othr.Id;
@@ -107,7 +102,6 @@ const handlePain001 = async (transaction: Pain001): Promise<Pain001> => {
 const handlePain013 = async (transaction: Pain013): Promise<Pain013> => {
   LoggerService.log('Start - Handle transaction data');
   const span = apm.startSpan('Handle transaction data');
-  const startTime = process.hrtime.bigint();
 
   transaction.EndToEndId = transaction.CdtrPmtActvtnReq.PmtInf.CdtTrfTxInf.PmtId.EndToEndId;
 
@@ -170,7 +164,6 @@ const handlePain013 = async (transaction: Pain013): Promise<Pain013> => {
 const handlePacs008 = async (transaction: Pacs008): Promise<Pacs008> => {
   LoggerService.log('Start - Handle transaction data');
   const span = apm.startSpan('Handle transaction data');
-  const startTime = process.hrtime.bigint();
 
   transaction.EndToEndId = transaction.FIToFICstmrCdt.CdtTrfTxInf.PmtId.EndToEndId;
   transaction.DebtorAcctId = transaction.FIToFICstmrCdt.CdtTrfTxInf.DbtrAcct.Id.Othr.Id;
