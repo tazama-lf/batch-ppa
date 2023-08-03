@@ -3,10 +3,13 @@ import { Context, Next } from 'koa';
 import { processLineByLine } from '.';
 import { LoggerService } from './logger.service';
 
-export const handleExecute = async (ctx: Context, next: Next): Promise<Context> => {
+export const handleExecute = async (
+  ctx: Context,
+  next: Next,
+): Promise<Context> => {
   LoggerService.log('Start - Handle execute request');
   try {
-    let counter : number = await processLineByLine() || 0;
+    let counter: number = (await processLineByLine()) || 0;
     await next();
     ctx.body = `${counter - 1} Transactions were submitted in executed batch`;
     return ctx;
@@ -22,7 +25,10 @@ export const handleExecute = async (ctx: Context, next: Next): Promise<Context> 
   }
 };
 
-export const handleFileUpload = async (ctx: Context, next: Next): Promise<Context> => {
+export const handleFileUpload = async (
+  ctx: Context,
+  next: Next,
+): Promise<Context> => {
   LoggerService.log('Start - Handle quote reply request');
   try {
     ctx.status = 200;

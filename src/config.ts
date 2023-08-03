@@ -13,7 +13,7 @@ export interface IConfig {
   functionName: string;
   port: number;
   verifyReports: string;
-  delay: number,
+  delay: number;
   apm: {
     secretToken: string;
     serviceName: string;
@@ -47,7 +47,7 @@ export interface IConfig {
   };
   data: {
     type: string;
-  }
+  };
 }
 
 export const configuration: IConfig = {
@@ -66,10 +66,18 @@ export const configuration: IConfig = {
     pseudonymsdb: <string>process.env.PSEUDONYMS_DATABASE,
     pseudonymscollection: <string>process.env.PSEUDONYMS_COLLECTION,
     transactionhistorydb: <string>process.env.TRANSACTIONHISTORY_DATABASE,
-    transactionhistory_pain001_collection: <string>process.env.TRANSACTIONHISTORY_PAIN001_COLLECTION,
-    transactionhistory_pain013_collection: <string>process.env.TRANSACTIONHISTORY_PAIN013_COLLECTION,
-    transactionhistory_pacs008_collection: <string>process.env.TRANSACTIONHISTORY_PACS008_COLLECTION,
-    transactionhistory_pacs002_collection: <string>process.env.TRANSACTIONHISTORY_PACS002_COLLECTION,
+    transactionhistory_pain001_collection: <string>(
+      process.env.TRANSACTIONHISTORY_PAIN001_COLLECTION
+    ),
+    transactionhistory_pain013_collection: <string>(
+      process.env.TRANSACTIONHISTORY_PAIN013_COLLECTION
+    ),
+    transactionhistory_pacs008_collection: <string>(
+      process.env.TRANSACTIONHISTORY_PACS008_COLLECTION
+    ),
+    transactionhistory_pacs002_collection: <string>(
+      process.env.TRANSACTIONHISTORY_PACS002_COLLECTION
+    ),
     password: <string>process.env.DATABASE_PASSWORD,
     url: <string>process.env.DATABASE_URL,
     user: <string>process.env.DATABASE_USER,

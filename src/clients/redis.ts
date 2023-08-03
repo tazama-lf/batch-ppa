@@ -10,7 +10,7 @@ export class RedisService {
       db: configuration.redis?.db,
       host: configuration.redis?.host,
       port: configuration.redis?.port,
-      password: configuration.redis?.auth
+      password: configuration.redis?.auth,
     });
 
     this.client.on('connect', () => {
@@ -25,7 +25,11 @@ export class RedisService {
     new Promise((resolve) => {
       this.client.smembers(key, (err, res) => {
         if (err) {
-          LoggerService.error('Error while getting key from redis with message:', err, 'RedisService');
+          LoggerService.error(
+            'Error while getting key from redis with message:',
+            err,
+            'RedisService',
+          );
 
           resolve(['']);
         }
@@ -33,11 +37,15 @@ export class RedisService {
       });
     });
 
-  setJson = (key: string, value: string,expire : number): Promise<number> =>
+  setJson = (key: string, value: string, expire: number): Promise<number> =>
     new Promise((resolve) => {
       this.client.sadd(key, value, (err, res) => {
         if (err) {
-          LoggerService.error('Error while adding key to redis with message:', err, 'RedisService');
+          LoggerService.error(
+            'Error while adding key to redis with message:',
+            err,
+            'RedisService',
+          );
 
           resolve(-1);
         }
@@ -49,7 +57,11 @@ export class RedisService {
     new Promise((resolve) => {
       this.client.del(key, (err, res) => {
         if (err) {
-          LoggerService.error('Error while deleting key from redis with message:', err, 'RedisService');
+          LoggerService.error(
+            'Error while deleting key from redis with message:',
+            err,
+            'RedisService',
+          );
 
           resolve(0);
         }
@@ -59,24 +71,29 @@ export class RedisService {
 
   addOneGetAll = (key: string, value: string): Promise<string[] | null> =>
     new Promise((resolve) => {
-      this.client.multi()
-      .sadd(key, value)
-      .smembers(key)
-      .exec((err, res) => {
-        // smembers result
-        if (res && res[1] && res[1][1]) {
-          resolve(res[1][1] as string[])
-        }
+      this.client
+        .multi()
+        .sadd(key, value)
+        .smembers(key)
+        .exec((err, res) => {
+          // smembers result
+          if (res && res[1] && res[1][1]) {
+            resolve(res[1][1] as string[]);
+          }
 
-        if (err) {
-          LoggerService.error('Error while executing transaction on redis with message:', err, 'RedisService');
-        }
+          if (err) {
+            LoggerService.error(
+              'Error while executing transaction on redis with message:',
+              err,
+              'RedisService',
+            );
+          }
 
-        resolve(null);
-      });
+          resolve(null);
+        });
     });
 
-    quit() {
-      this.client.quit();
+  quit() {
+    this.client.quit();
   }
 }

@@ -1,4 +1,4 @@
-import { InitgPty, InitgPtyID } from "./pain.001.001.11";
+import { InitgPty, InitgPtyID } from './pain.001.001.11';
 
 export interface Pacs008 {
   TxTp: string;

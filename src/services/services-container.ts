@@ -16,23 +16,37 @@ export class ServicesContainer {
   }
 
   public static async getDatabaseInstance(): Promise<ArangoDBService> {
-    if (!ServicesContainer.databaseClient) ServicesContainer.databaseClient = new ArangoDBService();
+    if (!ServicesContainer.databaseClient)
+      ServicesContainer.databaseClient = new ArangoDBService();
 
     return ServicesContainer.databaseClient;
   }
 
-  public static async getCacheDatabaseInstance(expire: number, redisService: RedisService): Promise<CacheDatabaseService> {
+  public static async getCacheDatabaseInstance(
+    expire: number,
+    redisService: RedisService,
+  ): Promise<CacheDatabaseService> {
     if (!ServicesContainer.cacheDatabaseClient) {
       const dbService = await this.getDatabaseInstance();
-      ServicesContainer.cacheDatabaseClient = await CacheDatabaseService.create(dbService, redisService, expire);
+      ServicesContainer.cacheDatabaseClient = await CacheDatabaseService.create(
+        dbService,
+        redisService,
+        expire,
+      );
     }
 
     return ServicesContainer.cacheDatabaseClient;
   }
 }
 
-export const initCacheDatabase = async (expire: number, redisService: RedisService): Promise<void> => {
-  cacheDatabaseClient = await ServicesContainer.getCacheDatabaseInstance(expire, redisService);
+export const initCacheDatabase = async (
+  expire: number,
+  redisService: RedisService,
+): Promise<void> => {
+  cacheDatabaseClient = await ServicesContainer.getCacheDatabaseInstance(
+    expire,
+    redisService,
+  );
 };
 
 export let cacheDatabaseClient: CacheDatabaseService;

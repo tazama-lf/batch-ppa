@@ -8,7 +8,10 @@ import { configuration } from './config';
 import { LoggerService } from './logger.service';
 import { SendLineMessages } from './services/file.service';
 import { GetPacs008FromXML } from './services/xml.service';
-import { ServicesContainer, initCacheDatabase } from './services/services-container';
+import {
+  ServicesContainer,
+  initCacheDatabase,
+} from './services/services-container';
 import { RedisService } from './clients';
 
 /*
@@ -54,9 +57,14 @@ function terminate(signal: NodeJS.Signals): void {
 /*
  * Start server
  **/
-if (Object.values(require.cache).filter(async (m) => m?.children.includes(module))) {
+if (
+  Object.values(require.cache).filter(async (m) => m?.children.includes(module))
+) {
   const server = app.listen(configuration.port, async () => {
-    LoggerService.log(`API server listening on PORT ${configuration.port}`, 'execute');
+    LoggerService.log(
+      `API server listening on PORT ${configuration.port}`,
+      'execute',
+    );
     await initCacheDatabase(configuration.cacheTTL, cacheClient);
   });
   server.on('error', handleError);
@@ -95,12 +103,22 @@ const executePost = async (endpoint: string, request: any) => {
     const crspRes = await axios.post(endpoint, request);
 
     if (crspRes.status !== 200) {
-      LoggerService.error(`CRSP Response StatusCode != 200, request:\r\n${request}`);
+      LoggerService.error(
+        `CRSP Response StatusCode != 200, request:\r\n${request}`,
+      );
     }
-    LoggerService.log(`CRSP Reponse - ${crspRes.status} with data\n ${JSON.stringify(crspRes.data)}`);
+    LoggerService.log(
+      `CRSP Reponse - ${crspRes.status} with data\n ${JSON.stringify(
+        crspRes.data,
+      )}`,
+    );
     span?.end();
   } catch (error) {
-    LoggerService.error(`Error while sending request to CRSP at ${endpoint ?? ''} with message: ${error}`);
+    LoggerService.error(
+      `Error while sending request to CRSP at ${
+        endpoint ?? ''
+      } with message: ${error}`,
+    );
     LoggerService.trace(`CRSP Error Request:\r\n${JSON.stringify(request)}`);
   }
 };

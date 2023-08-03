@@ -11,8 +11,11 @@ export class ArangoDBService {
   pseudonymsClient: Database;
 
   constructor() {
-    const caOption = fs.existsSync(configuration.cert) ? [fs.readFileSync(configuration.cert)] : [];
-    if (caOption.length === 0) LoggerService.warn('🟠 ArangoDB was not supplied with a certificate');
+    const caOption = fs.existsSync(configuration.cert)
+      ? [fs.readFileSync(configuration.cert)]
+      : [];
+    if (caOption.length === 0)
+      LoggerService.warn('🟠 ArangoDB was not supplied with a certificate');
     this.pseudonymsClient = new Database({
       url: configuration.db.url,
       databaseName: configuration.db.pseudonymsdb,
@@ -56,26 +59,54 @@ export class ArangoDBService {
 
       return results;
     } catch (error) {
-      LoggerService.error('Error while executing query from arango with message:', error as Error, 'ArangoDBService');
-      throw new Error(`Error while executing query from arango with message: ${error as Error}`);
+      LoggerService.error(
+        'Error while executing query from arango with message:',
+        error as Error,
+        'ArangoDBService',
+      );
+      throw new Error(
+        `Error while executing query from arango with message: ${
+          error as Error
+        }`,
+      );
     }
   }
 
-  async save(client: Database, collectionName: string, data: any, saveOptions?: any): Promise<void> {
-    const span = apm.startSpan(`Save ${collectionName} document in ${client.name}`);
+  async save(
+    client: Database,
+    collectionName: string,
+    data: any,
+    saveOptions?: any,
+  ): Promise<void> {
+    const span = apm.startSpan(
+      `Save ${collectionName} document in ${client.name}`,
+    );
     try {
-      await client.collection(collectionName).save(data, saveOptions || undefined);
+      await client
+        .collection(collectionName)
+        .save(data, saveOptions || undefined);
       span?.end();
     } catch (error) {
-      LoggerService.error(`Error while saving data to collection ${collectionName} with document\n ${JSON.stringify(data)}`);
-      if (saveOptions) LoggerService.error(`With save options: ${JSON.stringify(saveOptions)}`);
+      LoggerService.error(
+        `Error while saving data to collection ${collectionName} with document\n ${JSON.stringify(
+          data,
+        )}`,
+      );
+      if (saveOptions)
+        LoggerService.error(
+          `With save options: ${JSON.stringify(saveOptions)}`,
+        );
       LoggerService.error(JSON.stringify(error));
-      throw new Error(`Error while saving data to collection ${collectionName}`);
+      throw new Error(
+        `Error while saving data to collection ${collectionName}`,
+      );
     }
   }
 
   async getPseudonyms(hash: string): Promise<any> {
-    const db = this.pseudonymsClient.collection(configuration.db.pseudonymscollection);
+    const db = this.pseudonymsClient.collection(
+      configuration.db.pseudonymscollection,
+    );
     const query = aql`FOR i IN ${db}
         FILTER i.pseudonym == ${hash}
         RETURN i`;
@@ -84,7 +115,9 @@ export class ArangoDBService {
   }
 
   async getTransactionHistoryPacs008(EndToEndId: string): Promise<any> {
-    const db = this.transactionHistoryClient.collection(configuration.db.transactionhistory_pacs008_collection);
+    const db = this.transactionHistoryClient.collection(
+      configuration.db.transactionhistory_pacs008_collection,
+    );
     const query = aql`FOR doc IN ${db}
       FILTER doc.EndToEndId == ${EndToEndId}
       RETURN doc`;
@@ -94,7 +127,7 @@ export class ArangoDBService {
 
   async getTransactionReport(EndToEndId: string): Promise<any> {
     // const db = this.transactionHistoryClient.collection(configuration.db.transactionhistory_pacs008_collection);
-    const db = this.transactionHistoryClient.collection("transactions");
+    const db = this.transactionHistoryClient.collection('transactions');
     const query = aql`FOR doc IN ${db}
       FILTER doc.transaction.EndToEndId == ${EndToEndId}
       RETURN doc`;
@@ -103,7 +136,12 @@ export class ArangoDBService {
   }
 
   async addAccount(hash: string): Promise<any> {
-    return this.save(this.pseudonymsClient, 'accounts', { _key: hash }, { overwriteMode: 'ignore' });
+    return this.save(
+      this.pseudonymsClient,
+      'accounts',
+      { _key: hash },
+      { overwriteMode: 'ignore' },
+    );
   }
 
   async addEntity(entityId: string, CreDtTm: string): Promise<any> {
@@ -119,7 +157,11 @@ export class ArangoDBService {
     );
   }
 
-  async addAccountHolder(entityId: string, accountId: string, CreDtTm: string): Promise<any> {
+  async addAccountHolder(
+    entityId: string,
+    accountId: string,
+    CreDtTm: string,
+  ): Promise<any> {
     return this.save(
       this.pseudonymsClient,
       'account_holder',
@@ -153,14 +195,24 @@ export class ArangoDBService {
     );
   }
 
-  async saveTransactionHistory(transaction: any, transactionhistorycollection: string): Promise<any> {
-    return this.save(this.transactionHistoryClient, transactionhistorycollection, transaction, {
-      overwriteMode: 'ignore',
-    });
+  async saveTransactionHistory(
+    transaction: any,
+    transactionhistorycollection: string,
+  ): Promise<any> {
+    return this.save(
+      this.transactionHistoryClient,
+      transactionhistorycollection,
+      transaction,
+      {
+        overwriteMode: 'ignore',
+      },
+    );
   }
 
   async getTransactionPain001(endToEnd: string): Promise<any> {
-    const db = this.transactionHistoryClient.collection(configuration.db.transactionhistory_pain001_collection);
+    const db = this.transactionHistoryClient.collection(
+      configuration.db.transactionhistory_pain001_collection,
+    );
     const query = aql`FOR doc IN ${db}
       FILTER doc.EndToEndId == ${endToEnd}
       RETURN doc`;
@@ -168,8 +220,13 @@ export class ArangoDBService {
   }
 
   async savePseudonym(pseudonym: any): Promise<any> {
-    return this.save(this.pseudonymsClient, configuration.db.pseudonymscollection, pseudonym, {
-      overwriteMode: 'ignore',
-    });
+    return this.save(
+      this.pseudonymsClient,
+      configuration.db.pseudonymscollection,
+      pseudonym,
+      {
+        overwriteMode: 'ignore',
+      },
+    );
   }
 }

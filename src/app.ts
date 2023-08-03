@@ -14,7 +14,7 @@ class App extends Koa {
 
     // bodyparser needs to be loaded first in order to work
     this.servers = [];
-    this.use(bodyParser({formLimit: "150mb"}));
+    this.use(bodyParser({ formLimit: '150mb' }));
     this._configureRoutes();
   }
 
@@ -23,7 +23,6 @@ class App extends Koa {
     this.use(router.allowedMethods());
 
     this.use(helmet());
-
   }
 
   // configureMiddlewares(): void {
