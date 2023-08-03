@@ -150,17 +150,6 @@ const handlePain013 = async (transaction: Pain013): Promise<Pain013> => {
     TxTp,
   };
 
-  let dataCache;
-  try {
-    const dataCacheJSON = await cacheClient.getJson(transaction.EndToEndId);
-    dataCache = JSON.parse(dataCacheJSON.toString()) as DataCache;
-  } catch (ex) {
-    LoggerService.log(
-      `Could not retrieve data cache for : ${transaction.EndToEndId} from redis. Proceeding with Arango Call.`,
-    );
-    dataCache = await rebuildCache(transaction.EndToEndId);
-  }
-
   transaction._key = MsgId;
 
   try {
@@ -223,17 +212,6 @@ const handlePacs008 = async (transaction: Pacs008): Promise<Pacs008> => {
     PmtInfId,
     TxTp,
   };
-
-  let dataCache;
-  try {
-    const dataCacheJSON = await cacheClient.getJson(transaction.EndToEndId);
-    dataCache = JSON.parse(dataCacheJSON.toString()) as DataCache;
-  } catch (ex) {
-    LoggerService.log(
-      `Could not retrieve data cache for : ${transaction.EndToEndId} from redis. Proceeding with Arango Call.`,
-    );
-    dataCache = await rebuildCache(transaction.EndToEndId);
-  }
 
   try {
     await Promise.all([
