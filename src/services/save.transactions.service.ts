@@ -14,27 +14,23 @@ const calculateDuration = (startTime: bigint): number => {
   return Number(endTime - startTime);
 };
 
-export const handleTransaction = async (transaction: unknown): Promise<void> => {
-  const transObject = transaction as Pain001 | Pain013 | Pacs008 ;
-  switch (transObject.TxTp) {
+export const handleTransaction = async (transaction: Pain001 | Pain013 | Pacs008): Promise<Pain001 | Pain013 | Pacs008> => {
+  switch (transaction.TxTp) {
     case 'pain.001.001.11':
-      await handlePain001(transObject as Pain001);
-      break;
+      return await handlePain001(transaction as Pain001);
 
     case 'pain.013.001.09':
-      await handlePain013(transObject as Pain013);
-      break;
+      return await handlePain013(transaction as Pain013);
 
     case 'pacs.008.001.10':
-      await handlePacs008(transObject as Pacs008);
-      break;
+      return await handlePacs008(transaction as Pacs008);
 
     default:
-      break;
+       throw Error("Error while selecting transaction type.")
   }
 };
 
-const handlePain001 = async (transaction: Pain001): Promise<void> => {
+const handlePain001 = async (transaction: Pain001): Promise<Pain001> => {
   LoggerService.log('Start - Handle transaction data');
   const span = apm.startSpan('Handle transaction data');
   const startTime = process.hrtime.bigint();
@@ -105,9 +101,10 @@ const handlePain001 = async (transaction: Pain001): Promise<void> => {
 
   span?.end();
   LoggerService.log('END - Handle transaction data');
+  return transaction;
 };
 
-const handlePain013 = async (transaction: Pain013): Promise<void> => {
+const handlePain013 = async (transaction: Pain013): Promise<Pain013> => {
   LoggerService.log('Start - Handle transaction data');
   const span = apm.startSpan('Handle transaction data');
   const startTime = process.hrtime.bigint();
@@ -167,9 +164,10 @@ const handlePain013 = async (transaction: Pain013): Promise<void> => {
 
   span?.end();
   LoggerService.log('END - Handle transaction data');
+  return transaction;
 };
 
-const handlePacs008 = async (transaction: Pacs008): Promise<void> => {
+const handlePacs008 = async (transaction: Pacs008): Promise<Pacs008> => {
   LoggerService.log('Start - Handle transaction data');
   const span = apm.startSpan('Handle transaction data');
   const startTime = process.hrtime.bigint();
@@ -229,6 +227,8 @@ const handlePacs008 = async (transaction: Pacs008): Promise<void> => {
   }
 
   span?.end();
+  LoggerService.log('END - Handle transaction data');
+  return transaction;
 };
 
 

@@ -1,5 +1,7 @@
 import { Pain001 } from '../classes/pain.001.001.11';
-
+import { Pacs002 } from '../classes/pacs.002.001.12';
+import { Pacs008 } from '../classes/pacs.008.001.10';
+import { Pain013 } from '../classes/pain.013.001.09';
 import * as fs from 'fs';
 import * as readline from 'readline';
 import { v4 as uuidv4 } from 'uuid';
@@ -8,6 +10,7 @@ import { configuration } from '../config';
 import { LoggerService } from '../logger.service';
 import { GetPacs002, GetPacs008, GetPain013 } from './message.generation.service';
 import { executePost } from './utilities.service';
+import { handleTransaction } from './save.transactions.service';
 
 export const GetPain001FromLine = (columns: string[]): Pain001 => {
   let end2endID = uuidv4().replace('-', '');
@@ -246,22 +249,25 @@ export const SendLineMessages = async () : Promise<number> => {
     const currentPacs002 = GetPacs002(currentPain001, currentPain013);
 
     LoggerService.log('Sending Pain001 message...');
-    const pain001Result = await executePost(
-      `${configuration.tmsEndpoint}execute`,
-      currentPain001,
-    );
+    const pain001Result = await handleTransaction(currentPain001)
+    // const pain001Result = await executePost(
+    //   `${configuration.tmsEndpoint}execute`,
+    //   currentPain001,
+    // );
 
     LoggerService.log('Sending Pain013 message...');
-    const pain013Result = await executePost(
-      `${configuration.tmsEndpoint}quoteReply`,
-      currentPain013,
-    );
+    const pain013Result = await handleTransaction(currentPain013);
+    // const pain013Result = await executePost(
+    //   `${configuration.tmsEndpoint}quoteReply`,
+    //   currentPain013,
+    // );
 
     LoggerService.log('Sending Pacs008 message...');
-    const pacs008Result = await executePost(
-      `${configuration.tmsEndpoint}transfer`,
-      currentPacs008,
-    );
+    const pacs008Result = await handleTransaction(currentPacs008);
+    // const pacs008Result = await executePost(
+    //   `${configuration.tmsEndpoint}transfer`,
+    //   currentPacs008,
+    // );
 
     LoggerService.log('Sending Pacs002 message...');
     const pacs002Result = await executePost(
