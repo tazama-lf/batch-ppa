@@ -9,7 +9,7 @@ export const handleExecute = async (
 ): Promise<Context> => {
   LoggerService.log('Start - Handle execute request');
   try {
-    await processLineByLine();
+    await processLineByLine(ctx?.request?.body);
     await next();
     ctx.body = `Transactions were submitted`;
     return ctx;

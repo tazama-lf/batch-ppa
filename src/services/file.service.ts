@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { type Pain001 } from '../classes/pain.001.001.11';
 import * as fs from 'fs';
 import * as readline from 'readline';
@@ -12,8 +13,13 @@ import {
 } from './message.generation.service';
 import { executePost } from './utilities.service';
 import { handleTransaction } from './save.transactions.service';
+import { type Pain013 } from '../classes/pain.013.001.09';
+import { type Pacs008 } from '../classes/pacs.008.001.10';
 
-export const GetPain001FromLine = (columns: string[]): Pain001 => {
+export const GetPain001FromLine = (
+  columns: string[],
+  date: string,
+): Pain001 => {
   const end2endID = uuidv4().replace('-', '');
   const testID = uuidv4().replace('-', '');
 
@@ -21,7 +27,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
     CstmrCdtTrfInitn: {
       GrpHdr: {
         MsgId: testID,
-        CreDtTm: new Date(columns[0]).toISOString(),
+        CreDtTm: date.length ? date : new Date(columns[0]).toISOString(),
         InitgPty: {
           Nm: columns[13],
           Id: {
@@ -235,7 +241,27 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
   return pain001;
 };
 
-export const SendLineMessages = async (): Promise<number> => {
+const sendPrepareTransaction = async (
+  currentPain001: Pain001,
+  currentPain013: Pain013,
+  currentPacs008: Pacs008,
+): Promise<{
+  pain001Result: Pain001;
+  pain013Result: Pain013;
+  pacs008Result: Pacs008;
+}> => {
+  LoggerService.log('Sending Pain001 message...');
+  const pain001Result = (await handleTransaction(currentPain001)) as Pain001;
+
+  LoggerService.log('Sending Pain013 message...');
+  const pain013Result = (await handleTransaction(currentPain013)) as Pain013;
+
+  LoggerService.log('Sending Pacs008 message...');
+  const pacs008Result = (await handleTransaction(currentPacs008)) as Pacs008;
+  return { pain001Result, pain013Result, pacs008Result };
+};
+
+export const SendLineMessages = async (requestBody: any): Promise<number> => {
   const fileStream = fs.createReadStream('./uploads/input.txt');
 
   const rl = readline.createInterface({
@@ -255,31 +281,46 @@ export const SendLineMessages = async (): Promise<number> => {
     }
 
     const columns = line.split('|');
+    let date = '';
+    if (requestBody.setDate) {
+      if (String(requestBody.setDate) === 'now')
+        date = new Date().toISOString();
+      if (new Date(String(requestBody.setDate)).getMilliseconds() > 0)
+        date = new Date(String(requestBody.setDate)).toISOString();
+    }
 
-    const currentPain001 = GetPain001FromLine(columns);
-    const currentPain013 = GetPain013(currentPain001);
-    const currentPacs008 = GetPacs008(currentPain001);
-    const currentPacs002 = GetPacs002(currentPain001, currentPain013);
+    let currentPain001: Pain001;
+    let currentPain013: Pain013;
+    let currentPacs008: Pacs008;
 
-    LoggerService.log('Sending Pain001 message...');
-    const pain001Result = await handleTransaction(currentPain001);
-
-    LoggerService.log('Sending Pain013 message...');
-    const pain013Result = await handleTransaction(currentPain013);
-
-    LoggerService.log('Sending Pacs008 message...');
-    const pacs008Result = await handleTransaction(currentPacs008);
-
-    LoggerService.log('Sending Pacs002 message...');
-    const pacs002Result = await executePost(
-      `${configuration.tmsEndpoint}transfer-response`,
-      currentPacs002,
-    );
-
-    if (pacs002Result && pacs008Result && pain001Result && pain013Result) {
+    let pacs002Result = false;
+    if (requestBody.pacs002) {
+      currentPain001 = await dbService.getRelatedPain001(columns[2]);
+      currentPain013 = await dbService.getRelatedPain013(columns[2]);
+      LoggerService.log('Sending Pacs002 message...');
+      const currentPacs002 = GetPacs002(currentPain001, currentPain013);
       LoggerService.log(
-        `${currentPacs002.FIToFIPmtSts.GrpHdr.MsgId} - Submitted`,
+        `${JSON.stringify(
+          currentPacs002.FIToFIPmtSts.GrpHdr.MsgId,
+        )} - Submitted`,
       );
+      pacs002Result = await executePost(
+        `${configuration.tmsEndpoint}transfer-response`,
+        currentPacs002,
+      );
+    } else {
+      currentPain001 = GetPain001FromLine(columns, date);
+      currentPacs008 = GetPacs008(currentPain001);
+      currentPain013 = GetPain013(currentPain001);
+
+      await sendPrepareTransaction(
+        currentPain001,
+        currentPain013,
+        currentPacs008,
+      );
+    }
+
+    if (pacs002Result) {
       await delay(configuration.delay);
 
       if (configuration.verifyReports) {

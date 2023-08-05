@@ -4,6 +4,8 @@ import * as fs from 'fs';
 import { configuration } from '../config';
 import { type TransactionRelationship } from '../interfaces/iTransactionRelationship';
 import { LoggerService } from '../logger.service';
+import { type Pain001 } from '../classes/pain.001.001.11';
+import { type Pain013 } from '../classes/pain.013.001.09';
 
 export class ArangoDBService {
   transactionHistoryClient: Database;
@@ -111,6 +113,43 @@ export class ArangoDBService {
         RETURN i`;
 
     return await this.query(query, this.pseudonymsClient);
+  }
+
+  async getRelatedPain013(messageId: string): Promise<Pain013> {
+    const db = this.transactionHistoryClient.collection(
+      configuration.db.transactionhistory_pain013_collection,
+    );
+    const query = aql`FOR doc IN ${db}
+        FILTER doc.CdtrPmtActvtnReq.PmtInf.PmtInfId == ${messageId}
+        RETURN doc`;
+    try {
+      return (
+        (await this.query(query, this.transactionHistoryClient)) as Pain013
+      )[0][0];
+    } catch {
+      throw new Error(
+        `Error trying to retrieve Pain013 for current pacs008 try preparing for this transaction - ${messageId}`,
+      );
+    }
+  }
+
+  async getRelatedPain001(messageId: string): Promise<Pain001> {
+    const db = this.transactionHistoryClient.collection(
+      configuration.db.transactionhistory_pain001_collection,
+    );
+    const query = aql`FOR doc IN ${db}
+        FILTER doc.CstmrCdtTrfInitn.PmtInf.PmtInfId == ${messageId}
+        RETURN doc`;
+
+    try {
+      return (
+        (await this.query(query, this.transactionHistoryClient)) as Pain001
+      )[0][0];
+    } catch {
+      throw new Error(
+        `Error trying to retrieve Pain001 for current pacs008 try preparing for this transaction - ${messageId}`,
+      );
+    }
   }
 
   async getTransactionHistoryPacs008(EndToEndId: string): Promise<unknown> {
