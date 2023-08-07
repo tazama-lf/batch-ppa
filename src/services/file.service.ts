@@ -11,7 +11,12 @@ import {
   GetPacs008,
   GetPain013,
 } from './message.generation.service';
-import { executePost } from './utilities.service';
+import {
+  executePost,
+  updateMessageTimestampsPacs008,
+  updateMessageTimestampsPain001,
+  updateMessageTimestampsPain013,
+} from './utilities.service';
 import { handleTransaction } from './save.transactions.service';
 import { type Pain013 } from '../classes/pain.013.001.09';
 import { type Pacs008 } from '../classes/pacs.008.001.10';
@@ -241,6 +246,28 @@ export const GetPain001FromLine = (
   return pain001;
 };
 
+const getPrepareMessagesFromMessageIds = async (
+  messageIds: string[],
+): Promise<{
+  pain001Messages: Pain001[];
+  pain013Messages: Pain013[];
+  pacs008Messages: Pacs008[];
+}> => {
+  const pain001Messages = (await dbService.getRelatedMessages(
+    messageIds,
+    'pain001',
+  )) as unknown as Pain001[];
+  const pain013Messages = (await dbService.getRelatedMessages(
+    messageIds,
+    'pain013',
+  )) as unknown as Pain013[];
+  const pacs008Messages = (await dbService.getRelatedMessages(
+    messageIds,
+    'pacs008',
+  )) as unknown as Pacs008[];
+  return { pain001Messages, pain013Messages, pacs008Messages };
+};
+
 const sendPrepareTransaction = async (
   currentPain001: Pain001,
   currentPain013: Pain013,
@@ -261,7 +288,7 @@ const sendPrepareTransaction = async (
   return { pain001Result, pain013Result, pacs008Result };
 };
 
-export const SendLineMessages = async (requestBody: any): Promise<number> => {
+export const SendLineMessages = async (requestBody: any): Promise<string> => {
   const fileStream = fs.createReadStream('./uploads/input.txt');
 
   const rl = readline.createInterface({
@@ -271,6 +298,42 @@ export const SendLineMessages = async (requestBody: any): Promise<number> => {
 
   // Note: we use the crlfDelay option to recognize all instances of CR LF
   // ('\r\n') in input.txt as a single line break.
+
+  if (requestBody.update) {
+    let counter = 0;
+    const messageIds: string[] = [];
+    for await (const line of rl) {
+      if (counter === 0) {
+        counter++;
+        continue;
+      }
+      messageIds[counter - 1] = line.split('|')[2];
+      counter++;
+    }
+
+    const { pacs008Messages, pain001Messages, pain013Messages } =
+      await getPrepareMessagesFromMessageIds(messageIds);
+
+    const pacs008Transactions = updateMessageTimestampsPacs008(pacs008Messages);
+    const pain001Transactions = updateMessageTimestampsPain001(pain001Messages);
+    const pain013Transactions = updateMessageTimestampsPain013(pain013Messages);
+
+    // Save with new Timestamp
+    await dbService.saveTransactionHistory(
+      pacs008Transactions,
+      configuration.db.transactionhistory_pacs008_collection,
+    );
+    await dbService.saveTransactionHistory(
+      pain001Transactions,
+      configuration.db.transactionhistory_pain001_collection,
+    );
+    await dbService.saveTransactionHistory(
+      pain013Transactions,
+      configuration.db.transactionhistory_pain013_collection,
+    );
+
+    return `${counter} Pain001, Pain013 and Pacs008 messages update CreTmDt attribute`;
+  }
 
   let counter = 0;
   for await (const line of rl) {
@@ -361,8 +424,7 @@ export const SendLineMessages = async (requestBody: any): Promise<number> => {
     }
     counter++;
   }
-  return counter;
-
+  return `${counter} Submitted Transaction`;
   async function delay(time: number | undefined): Promise<unknown> {
     return await new Promise((resolve) => setTimeout(resolve, time));
   }

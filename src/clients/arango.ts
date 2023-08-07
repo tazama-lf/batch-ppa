@@ -6,6 +6,9 @@ import { type TransactionRelationship } from '../interfaces/iTransactionRelation
 import { LoggerService } from '../logger.service';
 import { type Pain001 } from '../classes/pain.001.001.11';
 import { type Pain013 } from '../classes/pain.013.001.09';
+import { type Pacs002 } from '../classes/pacs.002.001.12';
+import { type Pacs008 } from '../classes/pacs.008.001.10';
+import { type GeneratedAqlQuery } from 'arangojs/aql';
 
 export class ArangoDBService {
   transactionHistoryClient: Database;
@@ -113,6 +116,47 @@ export class ArangoDBService {
         RETURN i`;
 
     return await this.query(query, this.pseudonymsClient);
+  }
+
+  async getRelatedMessages(
+    messageIds: string[],
+    MessageType: string,
+  ): Promise<Pain001[] | Pain013[] | Pacs002[] | Pacs008[]> {
+    let collection: string;
+    let filter: GeneratedAqlQuery;
+
+    switch (MessageType) {
+      case 'pain001':
+        collection = configuration.db.transactionhistory_pain001_collection;
+        filter = aql` FILTER doc.CstmrCdtTrfInitn.PmtInf.PmtInfId IN ${messageIds}`;
+        break;
+      case 'pain013':
+        collection = configuration.db.transactionhistory_pain013_collection;
+        filter = aql` FILTER doc.CdtrPmtActvtnReq.PmtInf.PmtInfId IN ${messageIds}`;
+        break;
+      case 'pacs008':
+        collection = configuration.db.transactionhistory_pacs008_collection;
+        filter = aql` FILTER doc.FIToFICstmrCdt.CdtTrfTxInf.PmtId.InstrId IN ${messageIds}`;
+        break;
+      default:
+        throw new Error('Message type was not correctly specified');
+    }
+
+    const db = this.transactionHistoryClient.collection(collection);
+    const query = aql`FOR doc IN ${db}
+        ${filter}
+        RETURN doc`;
+
+    try {
+      return (
+        (await this.query(query, this.transactionHistoryClient)) as
+          | Pain013
+          | Pain001
+          | Pacs008
+      )[0];
+    } catch {
+      throw new Error(`Error messages for provided message ids`);
+    }
   }
 
   async getRelatedPain013(messageId: string): Promise<Pain013> {
@@ -230,7 +274,7 @@ export class ArangoDBService {
         lat: tR.lat,
         long: tR.long,
       },
-      { overwriteMode: 'ignore' },
+      { overwriteMode: '' },
     );
   }
 
