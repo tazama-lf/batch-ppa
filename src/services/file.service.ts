@@ -24,7 +24,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
     CstmrCdtTrfInitn: {
       GrpHdr: {
         MsgId: testID,
-        CreDtTm: String(new Date()),
+        CreDtTm: new Date().toISOString(),
         InitgPty: {
           Nm: columns[13],
           Id: {
@@ -232,7 +232,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
       columns[14] === 'Y' ? `${columns[17]}${columns[13]}` : `${columns[17]}`,
     CreditorAcctId:
       columns[14] === 'Y' ? `${columns[18]}${columns[14]}` : `${columns[18]}`,
-    CreDtTm: new Date(columns[0]).toISOString(),
+    CreDtTm: new Date().toISOString(),
   };
 
   return pain001;
@@ -263,7 +263,7 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
   // ('\r\n') in input.txt as a single line break.
   if (
     (requestBody.update && requestBody.pacs002) ||
-    (!requestBody.pacs002 && !requestBody.update)
+    (requestBody.pacs002 === undefined && requestBody.update === undefined)
   ) {
     throw new Error(
       'Updating and sending messages with one request is not allowed',
