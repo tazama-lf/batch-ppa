@@ -320,35 +320,29 @@ export const GetPacs008 = (pain01: Pain001): Pacs008 => {
   return pacs008;
 };
 
-export const GetPacs002 = (pain01: Pain001, pain013: Pain013): Pacs002 => {
+export const GetPacs002 = (columns: string[], date: Date): Pacs002 => {
   const pacs002: Pacs002 = {
     TxTp: 'pacs.002.001.12',
-    EndToEndId: pain01.EndToEndId,
+    EndToEndId: columns[2],
     FIToFIPmtSts: {
       GrpHdr: {
         MsgId: uuidv4().replace('-', ''),
-        CreDtTm: new Date(
-          new Date(pain01.CstmrCdtTrfInitn.GrpHdr.CreDtTm).getTime() + 30,
-        ).toISOString(),
+        CreDtTm: new Date(new Date(date).getTime() + 1000).toISOString(),
       },
       TxInfAndSts: {
-        OrgnlInstrId: pain01.CstmrCdtTrfInitn.PmtInf.PmtInfId,
-        OrgnlEndToEndId:
-          pain013.CdtrPmtActvtnReq.PmtInf.CdtTrfTxInf.PmtId.EndToEndId,
+        OrgnlInstrId: columns[2],
+        OrgnlEndToEndId: columns[2],
         TxSts: 'ACCC',
         ChrgsInf: [
           {
             Amt: {
               Amt: 0,
-              Ccy: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt
-                .Ccy,
+              Ccy: columns[11],
             },
             Agt: {
               FinInstnId: {
                 ClrSysMmbId: {
-                  MmbId:
-                    pain01.CstmrCdtTrfInitn.PmtInf.DbtrAgt.FinInstnId
-                      .ClrSysMmbId.MmbId,
+                  MmbId: `${columns[10]}${columns[15]}`,
                 },
               },
             },
@@ -356,15 +350,12 @@ export const GetPacs002 = (pain01: Pain001, pain013: Pain013): Pacs002 => {
           {
             Amt: {
               Amt: 0,
-              Ccy: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt
-                .Ccy,
+              Ccy: columns[11],
             },
             Agt: {
               FinInstnId: {
                 ClrSysMmbId: {
-                  MmbId:
-                    pain01.CstmrCdtTrfInitn.PmtInf.DbtrAgt.FinInstnId
-                      .ClrSysMmbId.MmbId,
+                  MmbId: `${columns[10]}${columns[15]}`,
                 },
               },
             },
@@ -372,36 +363,29 @@ export const GetPacs002 = (pain01: Pain001, pain013: Pain013): Pacs002 => {
           {
             Amt: {
               Amt: 0,
-              Ccy: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt
-                .Ccy,
+              Ccy: columns[11],
             },
             Agt: {
               FinInstnId: {
                 ClrSysMmbId: {
-                  MmbId:
-                    pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAgt
-                      .FinInstnId.ClrSysMmbId.MmbId,
+                  MmbId: `${columns[10]}${columns[16]}`,
                 },
               },
             },
           },
         ],
-        AccptncDtTm: new Date(), // inquire
+        AccptncDtTm: new Date(),
         InstgAgt: {
           FinInstnId: {
             ClrSysMmbId: {
-              MmbId:
-                pain01.CstmrCdtTrfInitn.PmtInf.DbtrAgt.FinInstnId.ClrSysMmbId
-                  .MmbId,
+              MmbId: `${columns[10]}${columns[15]}`,
             },
           },
         },
         InstdAgt: {
           FinInstnId: {
             ClrSysMmbId: {
-              MmbId:
-                pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAgt.FinInstnId
-                  .ClrSysMmbId.MmbId,
+              MmbId: `${columns[10]}${columns[16]}`,
             },
           },
         },

@@ -11,12 +11,7 @@ import {
   GetPacs008,
   GetPain013,
 } from './message.generation.service';
-import {
-  executePost,
-  updateMessageTimestampsPacs008,
-  updateMessageTimestampsPain001,
-  updateMessageTimestampsPain013,
-} from './utilities.service';
+import { executePost } from './utilities.service';
 import { handleTransaction } from './save.transactions.service';
 import { type Pain013 } from '../classes/pain.013.001.09';
 import { type Pacs008 } from '../classes/pacs.008.001.10';
@@ -25,7 +20,7 @@ export const GetPain001FromLine = (
   columns: string[],
   date: string,
 ): Pain001 => {
-  const end2endID = uuidv4().replace('-', '');
+  const end2endID = columns[2];
   const testID = uuidv4().replace('-', '');
 
   const pain001: Pain001 = {
@@ -246,28 +241,6 @@ export const GetPain001FromLine = (
   return pain001;
 };
 
-const getPrepareMessagesFromMessageIds = async (
-  messageIds: string[],
-): Promise<{
-  pain001Messages: Pain001[];
-  pain013Messages: Pain013[];
-  pacs008Messages: Pacs008[];
-}> => {
-  const pain001Messages = (await dbService.getRelatedMessages(
-    messageIds,
-    'pain001',
-  )) as unknown as Pain001[];
-  const pain013Messages = (await dbService.getRelatedMessages(
-    messageIds,
-    'pain013',
-  )) as unknown as Pain013[];
-  const pacs008Messages = (await dbService.getRelatedMessages(
-    messageIds,
-    'pacs008',
-  )) as unknown as Pacs008[];
-  return { pain001Messages, pain013Messages, pacs008Messages };
-};
-
 const sendPrepareTransaction = async (
   currentPain001: Pain001,
   currentPain013: Pain013,
@@ -300,42 +273,18 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
   // ('\r\n') in input.txt as a single line break.
 
   if (requestBody.update) {
-    let counter = 0;
-    const messageIds: string[] = [];
-    for await (const line of rl) {
-      if (counter === 0) {
-        counter++;
-        continue;
-      }
-      messageIds[counter - 1] = line.split('|')[2];
-      counter++;
-    }
-
-    const { pacs008Messages, pain001Messages, pain013Messages } =
-      await getPrepareMessagesFromMessageIds(messageIds);
-
-    const pacs008Transactions = updateMessageTimestampsPacs008(pacs008Messages);
-    const pain001Transactions = updateMessageTimestampsPain001(pain001Messages);
-    const pain013Transactions = updateMessageTimestampsPain013(pain013Messages);
-
-    // Save with new Timestamp
-    await dbService.saveTransactionHistory(
-      pacs008Transactions,
-      configuration.db.transactionhistory_pacs008_collection,
-    );
-    await dbService.saveTransactionHistory(
-      pain001Transactions,
-      configuration.db.transactionhistory_pain001_collection,
-    );
-    await dbService.saveTransactionHistory(
-      pain013Transactions,
-      configuration.db.transactionhistory_pain013_collection,
-    );
-
-    return `${counter} Pain001, Pain013 and Pacs008 messages update CreTmDt attribute`;
+    await dbService.UpdateHistoryTransactionsTimestamp();
+    await dbService.UpdatePseudonymEdgesTimestamp();
   }
 
   let counter = 0;
+  let oldestTimestamp: Date;
+  let delta = 0;
+  if (requestBody.pacs002) {
+    oldestTimestamp = await dbService.getOldestTimestampPacs008();
+    delta = Date.now() - new Date(oldestTimestamp).getTime();
+  }
+
   for await (const line of rl) {
     // Each line in input.txt will be successively available here as `line`.
     if (counter === 0) {
@@ -344,6 +293,7 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
     }
 
     const columns = line.split('|');
+    const EndToEndId = columns[2];
     let date = '';
     if (requestBody.setDate) {
       if (String(requestBody.setDate) === 'now')
@@ -358,10 +308,8 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
 
     let pacs002Result = false;
     if (requestBody.pacs002) {
-      currentPain001 = await dbService.getRelatedPain001(columns[2]);
-      currentPain013 = await dbService.getRelatedPain013(columns[2]);
       LoggerService.log('Sending Pacs002 message...');
-      const currentPacs002 = GetPacs002(currentPain001, currentPain013);
+      const currentPacs002 = GetPacs002(columns, new Date(delta + Date.now()));
       LoggerService.log(
         `${JSON.stringify(
           currentPacs002.FIToFIPmtSts.GrpHdr.MsgId,
@@ -389,9 +337,7 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
       if (configuration.verifyReports) {
         let value;
         try {
-          value = await dbService.getTransactionReport(
-            currentPain001.EndToEndId,
-          );
+          value = await dbService.getTransactionReport(EndToEndId);
         } catch (ex) {
           LoggerService.error(
             `Failed to communicate with Arango to check report. ${JSON.stringify(
@@ -401,9 +347,7 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
         }
 
         if (value && value.length > 0) {
-          LoggerService.log(
-            `Report generated for: ${currentPain001.EndToEndId}`,
-          );
+          LoggerService.log(`Report generated for: ${EndToEndId}`);
 
           if (
             (columns[24].toString().trim() === 'N' &&
@@ -416,9 +360,7 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
             LoggerService.log(`Report does not match Test Data`);
           }
         } else {
-          LoggerService.log(
-            `Failed to generate report for: ${currentPain001.EndToEndId}`,
-          );
+          LoggerService.log(`Failed to generate report for: ${EndToEndId}`);
         }
       }
     }
