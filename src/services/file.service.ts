@@ -16,10 +16,7 @@ import { handleTransaction } from './save.transactions.service';
 import { type Pain013 } from '../classes/pain.013.001.09';
 import { type Pacs008 } from '../classes/pacs.008.001.10';
 
-export const GetPain001FromLine = (
-  columns: string[],
-  date: string,
-): Pain001 => {
+export const GetPain001FromLine = (columns: string[]): Pain001 => {
   const end2endID = columns[2];
   const testID = uuidv4().replace('-', '');
 
@@ -27,7 +24,7 @@ export const GetPain001FromLine = (
     CstmrCdtTrfInitn: {
       GrpHdr: {
         MsgId: testID,
-        CreDtTm: date.length ? date : new Date(columns[0]).toISOString(),
+        CreDtTm: String(new Date()),
         InitgPty: {
           Nm: columns[13],
           Id: {
@@ -286,6 +283,7 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
     }
     await dbService.UpdateHistoryTransactionsTimestamp();
     await dbService.UpdatePseudonymEdgesTimestamp();
+    return 'Updated the timestamp of the prepare data';
   }
 
   let counter = 0;
@@ -306,13 +304,6 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
 
     const columns = line.split('|');
     const EndToEndId = columns[2];
-    let date = '';
-    if (requestBody.setDate) {
-      if (String(requestBody.setDate) === 'now')
-        date = new Date().toISOString();
-      if (new Date(String(requestBody.setDate)).getMilliseconds() > 0)
-        date = new Date(String(requestBody.setDate)).toISOString();
-    }
 
     let currentPain001: Pain001;
     let currentPain013: Pain013;
@@ -332,7 +323,7 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
         currentPacs002,
       );
     } else {
-      currentPain001 = GetPain001FromLine(columns, date);
+      currentPain001 = GetPain001FromLine(columns);
       currentPacs008 = GetPacs008(currentPain001);
       currentPain013 = GetPain013(currentPain001);
 

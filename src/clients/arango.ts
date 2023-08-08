@@ -201,14 +201,18 @@ export class ArangoDBService {
                                   REMOVE pacs002 IN ${dbPacs002}`;
 
     const pacs002PseudonymQuery = aql`FOR pacs002 IN transactionRelationship
-    FILTER pacs002.TxTp == "pacs.002.001.12"
-    REMOVE pacs002 IN transactionRelationship`;
+                                  FILTER pacs002.TxTp == "pacs.002.001.12"
+                                  REMOVE pacs002 IN transactionRelationship`;
+
+    const removeReportQuery = aql`FOR reports IN transactions
+                                  REMOVE reports IN transactions`;
 
     await this.query(
       pacs002TransactionHistoryQuery,
       this.transactionHistoryClient,
     );
     await this.query(pacs002PseudonymQuery, this.pseudonymsClient);
+    await this.query(removeReportQuery, this.transactionHistoryClient);
   }
 
   async UpdateHistoryTransactionsTimestamp(): Promise<void> {
