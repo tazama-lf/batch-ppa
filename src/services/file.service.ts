@@ -271,8 +271,19 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
 
   // Note: we use the crlfDelay option to recognize all instances of CR LF
   // ('\r\n') in input.txt as a single line break.
+  if (
+    (requestBody.update && requestBody.pacs002) ||
+    (!requestBody.pacs002 && !requestBody.update)
+  ) {
+    throw new Error(
+      'Updating and sending messages with one request is not allowed',
+    );
+  }
 
   if (requestBody.update) {
+    if (requestBody.update.seedPacs002) {
+      await dbService.RemovePacs002Pseudonym();
+    }
     await dbService.UpdateHistoryTransactionsTimestamp();
     await dbService.UpdatePseudonymEdgesTimestamp();
   }
@@ -280,6 +291,7 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
   let counter = 0;
   let oldestTimestamp: Date;
   let delta = 0;
+
   if (requestBody.pacs002) {
     oldestTimestamp = await dbService.getOldestTimestampPacs008();
     delta = Date.now() - new Date(oldestTimestamp).getTime();

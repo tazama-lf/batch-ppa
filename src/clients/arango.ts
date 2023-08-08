@@ -192,6 +192,25 @@ export class ArangoDBService {
     }
   }
 
+  async RemovePacs002Pseudonym(): Promise<void> {
+    const dbPacs002 = this.transactionHistoryClient.collection(
+      configuration.db.transactionhistory_pacs002_collection,
+    );
+    const pacs002TransactionHistoryQuery = aql`
+                                  FOR pacs002 IN ${dbPacs002}
+                                  REMOVE pacs002 IN ${dbPacs002}`;
+
+    const pacs002PseudonymQuery = aql`FOR pacs002 IN transactionRelationship
+    FILTER pacs002.TxTp == "pacs.002.001.12"
+    REMOVE pacs002 IN transactionRelationship`;
+
+    await this.query(
+      pacs002TransactionHistoryQuery,
+      this.transactionHistoryClient,
+    );
+    await this.query(pacs002PseudonymQuery, this.pseudonymsClient);
+  }
+
   async UpdateHistoryTransactionsTimestamp(): Promise<void> {
     const dbPacs008 = this.transactionHistoryClient.collection(
       configuration.db.transactionhistory_pacs008_collection,
