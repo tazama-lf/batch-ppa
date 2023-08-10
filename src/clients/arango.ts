@@ -4,6 +4,11 @@ import * as fs from 'fs';
 import { configuration } from '../config';
 import { type TransactionRelationship } from '../interfaces/iTransactionRelationship';
 import { LoggerService } from '../logger.service';
+import { type Pain001 } from '../classes/pain.001.001.11';
+import { type Pain013 } from '../classes/pain.013.001.09';
+import { type Pacs002 } from '../classes/pacs.002.001.12';
+import { type Pacs008 } from '../classes/pacs.008.001.10';
+import { type GeneratedAqlQuery } from 'arangojs/aql';
 
 export class ArangoDBService {
   transactionHistoryClient: Database;
@@ -113,6 +118,182 @@ export class ArangoDBService {
     return await this.query(query, this.pseudonymsClient);
   }
 
+  async UpdatePseudonymEdgesTimestamp(): Promise<void> {
+    const queryPacs008 = aql`
+                        LET newestPacs008 = (
+                            FOR pacs008 IN transactionRelationship
+                                FILTER pacs008.TxTp == "pacs.008.001.10"
+                                SORT pacs008.CreDtTm DESC
+                                LIMIT 1
+                            RETURN pacs008
+                        )
+
+                        LET timeDeltaToNow = DATE_DIFF(DATE_TIMESTAMP(newestPacs008[0].CreDtTm), DATE_NOW(), "millisecond", false)
+
+                        FOR doc IN transactionRelationship
+                            FILTER doc.TxTp == "pacs.008.001.10"
+                        UPDATE doc WITH { CreDtTm: DATE_ADD(DATE_TIMESTAMP(doc.CreDtTm), timeDeltaToNow, "millisecond") } IN transactionRelationship
+                        `;
+
+    const queryPacs013 = aql`
+                            LET newestPain013 = (
+                                FOR pain013 IN transactionRelationship
+                                    FILTER pain013.TxTp == "pain.013.001.09"
+                                    SORT pain013.CreDtTm DESC
+                                    LIMIT 1
+                                RETURN pain013
+                            )
+
+                            LET timeDeltaToNow = DATE_DIFF(DATE_TIMESTAMP(newestPain013[0].CreDtTm), DATE_NOW(), "millisecond", false)
+
+                            FOR doc IN transactionRelationship
+                                FILTER doc.TxTp == "pain.013.001.09"
+                            UPDATE doc WITH { CreDtTm: DATE_ADD(DATE_TIMESTAMP(doc.CreDtTm), timeDeltaToNow, "millisecond") } IN transactionRelationship
+                            `;
+
+    const queryPacs001 = aql`
+                          LET newestPain001 = (
+                              FOR pain001 IN transactionRelationship
+                                  FILTER pain001.TxTp == "pain.001.001.11"
+                                  SORT pain001.CreDtTm DESC
+                                  LIMIT 1
+                              RETURN pain001
+                          )
+
+                          LET newestPain013 = (
+                              FOR pain013 IN transactionRelationship
+                                  SORT pain013.CreDtTm DESC
+                                  LIMIT 1
+                              RETURN pain013
+                          )
+
+                          LET newestPacs008 = (
+                              FOR pacs008 IN transactionRelationship
+                                  SORT pacs008.CreDtTm DESC
+                                  LIMIT 1
+                              RETURN pacs008
+                          )
+
+                          LET timeDeltaToNow = DATE_DIFF(DATE_TIMESTAMP(newestPain001[0].CreDtTm), DATE_NOW(), "millisecond", false)
+
+                          FOR doc IN transactionRelationship
+                              FILTER doc.TxTp == "pain.001.001.11"
+                          UPDATE doc WITH { CreDtTm: DATE_ADD(DATE_TIMESTAMP(doc.CreDtTm), timeDeltaToNow, "millisecond") } IN transactionRelationship
+                          `;
+
+    try {
+      await this.query(queryPacs001, this.pseudonymsClient);
+      await this.query(queryPacs013, this.pseudonymsClient);
+      await this.query(queryPacs008, this.pseudonymsClient);
+    } catch {
+      throw new Error(
+        `Error trying to shift timestap of transaction relationships`,
+      );
+    }
+  }
+
+  async RemovePacs002Pseudonym(): Promise<void> {
+    const dbPacs002 = this.transactionHistoryClient.collection(
+      configuration.db.transactionhistory_pacs002_collection,
+    );
+    const pacs002TransactionHistoryQuery = aql`
+                                  FOR pacs002 IN ${dbPacs002}
+                                  REMOVE pacs002 IN ${dbPacs002}`;
+
+    const pacs002PseudonymQuery = aql`FOR pacs002 IN transactionRelationship
+                                  FILTER pacs002.TxTp == "pacs.002.001.12"
+                                  REMOVE pacs002 IN transactionRelationship`;
+
+    const removeReportQuery = aql`FOR reports IN transactions
+                                  REMOVE reports IN transactions`;
+
+    await this.query(
+      pacs002TransactionHistoryQuery,
+      this.transactionHistoryClient,
+    );
+    await this.query(pacs002PseudonymQuery, this.pseudonymsClient);
+    await this.query(removeReportQuery, this.transactionHistoryClient);
+  }
+
+  async UpdateHistoryTransactionsTimestamp(): Promise<void> {
+    const dbPacs008 = this.transactionHistoryClient.collection(
+      configuration.db.transactionhistory_pacs008_collection,
+    );
+    const dbPain013 = this.transactionHistoryClient.collection(
+      configuration.db.transactionhistory_pain013_collection,
+    );
+    const dbPain001 = this.transactionHistoryClient.collection(
+      configuration.db.transactionhistory_pain001_collection,
+    );
+    const queryPacs008 = aql`LET newestPacs008 = (
+                                FOR pacs008 IN ${dbPacs008}
+                                    SORT pacs008.FIToFICstmrCdt.GrpHdr.CreDtTm DESC
+                                    LIMIT 1
+                                RETURN pacs008
+                            )
+                            LET timeDeltaToNow = DATE_DIFF(DATE_TIMESTAMP(newestPacs008[0].FIToFICstmrCdt.GrpHdr.CreDtTm), DATE_NOW(), "millisecond", false)
+                            FOR doc IN ${dbPacs008}
+                                LET newDoc = {"GrpHdr": {"CreDtTm": DATE_ADD(DATE_TIMESTAMP(doc.FIToFICstmrCdt.GrpHdr.CreDtTm), timeDeltaToNow, "millisecond")}}
+                              UPDATE doc WITH { FIToFICstmrCdtTrf: MERGE(doc.FIToFICstmrCdt, newDoc) } IN ${dbPacs008}`;
+
+    const queryPacs013 = aql`LET newestPain013 = (
+                          FOR pain013 IN ${dbPain013}
+                              SORT pain013.CdtrPmtActvtnReq.GrpHdr.CreDtTm DESC
+                              LIMIT 1
+                          RETURN pain013
+                      )
+
+                      LET timeDeltaToNow = DATE_DIFF(DATE_TIMESTAMP(newestPain013[0].CdtrPmtActvtnReq.GrpHdr.CreDtTm), DATE_NOW(), "millisecond", false)
+
+                      FOR doc IN ${dbPain013}
+                          LET newDoc = {"GrpHdr": {"CreDtTm": DATE_ADD(DATE_TIMESTAMP(doc.CdtrPmtActvtnReq.GrpHdr.CreDtTm), timeDeltaToNow, "millisecond")}}
+                      UPDATE doc WITH { CdtrPmtActvtnReq: MERGE(doc.CdtrPmtActvtnReq, newDoc) } IN ${dbPain013}`;
+
+    const queryPacs001 = aql`LET newestPain001 = (
+                            FOR pain001 IN ${dbPain001}
+                                SORT pain001.CstmrCdtTrfInitn.GrpHdr.CreDtTm DESC
+                                LIMIT 1
+                            RETURN pain001
+                        )
+
+                        LET timeDeltaToNow = DATE_DIFF(DATE_TIMESTAMP(newestPain001[0].CstmrCdtTrfInitn.GrpHdr.CreDtTm), DATE_NOW(), "millisecond", false)
+
+                        FOR doc IN ${dbPain001}
+                            LET newDoc = {"GrpHdr": {"CreDtTm": DATE_ADD(DATE_TIMESTAMP(doc.CstmrCdtTrfInitn.GrpHdr.CreDtTm), timeDeltaToNow, "millisecond")}}
+                        UPDATE doc WITH { CstmrCdtTrfInitn: MERGE(doc.CstmrCdtTrfInitn, newDoc) } IN ${dbPain001}`;
+
+    try {
+      await this.query(queryPacs001, this.transactionHistoryClient);
+      await this.query(queryPacs013, this.transactionHistoryClient);
+      await this.query(queryPacs008, this.transactionHistoryClient);
+    } catch {
+      throw new Error(
+        `Error while trying to shift timestamp of transactions history`,
+      );
+    }
+  }
+
+  async getOldestTimestampPacs008(): Promise<Date> {
+    const db = this.transactionHistoryClient.collection(
+      configuration.db.transactionhistory_pacs008_collection,
+    );
+    const query = aql`
+        FOR pacs008 IN ${db}
+        SORT pacs008.FIToFICstmrCdt.GrpHdr.CreDtTm ASC
+        LIMIT 1
+        RETURN pacs008.FIToFICstmrCdt.GrpHdr.CreDtTm`;
+
+    try {
+      return (
+        (await this.query(query, this.transactionHistoryClient)) as Date
+      )[0][0];
+    } catch {
+      throw new Error(
+        `Error while trying to retrieve oldest timestamp pacs008`,
+      );
+    }
+  }
+
   async getTransactionHistoryPacs008(EndToEndId: string): Promise<unknown> {
     const db = this.transactionHistoryClient.collection(
       configuration.db.transactionhistory_pacs008_collection,
@@ -191,7 +372,7 @@ export class ArangoDBService {
         lat: tR.lat,
         long: tR.long,
       },
-      { overwriteMode: 'ignore' },
+      { overwriteMode: '' },
     );
   }
 

@@ -82,10 +82,12 @@ if (
 }
 
 // read batch file line-by-line
-export const processLineByLine = async (): Promise<void> => {
+export const processLineByLine = async (
+  requestBody: unknown,
+): Promise<void> => {
   switch (configuration.data.type) {
     case 'textfile':
-      await SendLineMessages();
+      await SendLineMessages(requestBody);
       break;
 
     case 'xml':

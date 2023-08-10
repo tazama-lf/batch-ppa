@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { type Pain001 } from '../classes/pain.001.001.11';
 import * as fs from 'fs';
 import * as readline from 'readline';
@@ -12,16 +13,18 @@ import {
 } from './message.generation.service';
 import { executePost } from './utilities.service';
 import { handleTransaction } from './save.transactions.service';
+import { type Pain013 } from '../classes/pain.013.001.09';
+import { type Pacs008 } from '../classes/pacs.008.001.10';
 
 export const GetPain001FromLine = (columns: string[]): Pain001 => {
-  const end2endID = uuidv4().replace('-', '');
+  const end2endID = columns[2];
   const testID = uuidv4().replace('-', '');
 
   const pain001: Pain001 = {
     CstmrCdtTrfInitn: {
       GrpHdr: {
         MsgId: testID,
-        CreDtTm: new Date(columns[0]).toISOString(),
+        CreDtTm: new Date().toISOString(),
         InitgPty: {
           Nm: columns[13],
           Id: {
@@ -229,13 +232,62 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
       columns[14] === 'Y' ? `${columns[17]}${columns[13]}` : `${columns[17]}`,
     CreditorAcctId:
       columns[14] === 'Y' ? `${columns[18]}${columns[14]}` : `${columns[18]}`,
-    CreDtTm: new Date(columns[0]).toISOString(),
+    CreDtTm: new Date().toISOString(),
   };
 
   return pain001;
 };
 
-export const SendLineMessages = async (): Promise<number> => {
+const sendPrepareTransaction = async (
+  currentPain001: Pain001,
+  currentPain013: Pain013,
+  currentPacs008: Pacs008,
+): Promise<{
+  pain001Result: Pain001;
+  pain013Result: Pain013;
+  pacs008Result: Pacs008;
+}> => {
+  LoggerService.log('Sending Pain001 message...');
+  const pain001Result = (await handleTransaction(currentPain001)) as Pain001;
+
+  LoggerService.log('Sending Pain013 message...');
+  const pain013Result = (await handleTransaction(currentPain013)) as Pain013;
+
+  LoggerService.log('Sending Pacs008 message...');
+  const pacs008Result = (await handleTransaction(currentPacs008)) as Pacs008;
+  return { pain001Result, pain013Result, pacs008Result };
+};
+
+export const SendLineMessages = async (requestBody: any): Promise<string> => {
+  // Note: we use the crlfDelay option to recognize all instances of CR LF
+  // ('\r\n') in input.txt as a single line break.
+  if (
+    (requestBody.update && requestBody.pacs002) ||
+    (requestBody.pacs002 === undefined && requestBody.update === undefined)
+  ) {
+    throw new Error(
+      'Updating and sending messages with one request is not allowed',
+    );
+  }
+
+  if (requestBody.update) {
+    if (requestBody.update.seedPacs002) {
+      await dbService.RemovePacs002Pseudonym();
+    }
+    await dbService.UpdateHistoryTransactionsTimestamp();
+    await dbService.UpdatePseudonymEdgesTimestamp();
+    return 'Updated the timestamp of the prepare data';
+  }
+
+  let counter = 0;
+  let oldestTimestamp: Date;
+  let delta = 0;
+
+  if (requestBody.pacs002) {
+    oldestTimestamp = await dbService.getOldestTimestampPacs008();
+    delta = Date.now() - new Date(oldestTimestamp).getTime();
+  }
+
   const fileStream = fs.createReadStream('./uploads/input.txt');
 
   const rl = readline.createInterface({
@@ -243,10 +295,6 @@ export const SendLineMessages = async (): Promise<number> => {
     crlfDelay: Infinity,
   });
 
-  // Note: we use the crlfDelay option to recognize all instances of CR LF
-  // ('\r\n') in input.txt as a single line break.
-
-  let counter = 0;
   for await (const line of rl) {
     // Each line in input.txt will be successively available here as `line`.
     if (counter === 0) {
@@ -255,39 +303,44 @@ export const SendLineMessages = async (): Promise<number> => {
     }
 
     const columns = line.split('|');
+    const EndToEndId = columns[2];
 
-    const currentPain001 = GetPain001FromLine(columns);
-    const currentPain013 = GetPain013(currentPain001);
-    const currentPacs008 = GetPacs008(currentPain001);
-    const currentPacs002 = GetPacs002(currentPain001, currentPain013);
+    let currentPain001: Pain001;
+    let currentPain013: Pain013;
+    let currentPacs008: Pacs008;
 
-    LoggerService.log('Sending Pain001 message...');
-    const pain001Result = await handleTransaction(currentPain001);
-
-    LoggerService.log('Sending Pain013 message...');
-    const pain013Result = await handleTransaction(currentPain013);
-
-    LoggerService.log('Sending Pacs008 message...');
-    const pacs008Result = await handleTransaction(currentPacs008);
-
-    LoggerService.log('Sending Pacs002 message...');
-    const pacs002Result = await executePost(
-      `${configuration.tmsEndpoint}transfer-response`,
-      currentPacs002,
-    );
-
-    if (pacs002Result && pacs008Result && pain001Result && pain013Result) {
+    let pacs002Result = false;
+    if (requestBody.pacs002) {
+      LoggerService.log('Sending Pacs002 message...');
+      const currentPacs002 = GetPacs002(columns, new Date(delta + Date.now()));
       LoggerService.log(
-        `${currentPacs002.FIToFIPmtSts.GrpHdr.MsgId} - Submitted`,
+        `${JSON.stringify(
+          currentPacs002.FIToFIPmtSts.GrpHdr.MsgId,
+        )} - Submitted`,
       );
+      pacs002Result = await executePost(
+        `${configuration.tmsEndpoint}transfer-response`,
+        currentPacs002,
+      );
+    } else {
+      currentPain001 = GetPain001FromLine(columns);
+      currentPacs008 = GetPacs008(currentPain001);
+      currentPain013 = GetPain013(currentPain001);
+
+      await sendPrepareTransaction(
+        currentPain001,
+        currentPain013,
+        currentPacs008,
+      );
+    }
+
+    if (pacs002Result) {
       await delay(configuration.delay);
 
       if (configuration.verifyReports) {
         let value;
         try {
-          value = await dbService.getTransactionReport(
-            currentPain001.EndToEndId,
-          );
+          value = await dbService.getTransactionReport(EndToEndId);
         } catch (ex) {
           LoggerService.error(
             `Failed to communicate with Arango to check report. ${JSON.stringify(
@@ -297,9 +350,7 @@ export const SendLineMessages = async (): Promise<number> => {
         }
 
         if (value && value.length > 0) {
-          LoggerService.log(
-            `Report generated for: ${currentPain001.EndToEndId}`,
-          );
+          LoggerService.log(`Report generated for: ${EndToEndId}`);
 
           if (
             (columns[24].toString().trim() === 'N' &&
@@ -312,16 +363,13 @@ export const SendLineMessages = async (): Promise<number> => {
             LoggerService.log(`Report does not match Test Data`);
           }
         } else {
-          LoggerService.log(
-            `Failed to generate report for: ${currentPain001.EndToEndId}`,
-          );
+          LoggerService.log(`Failed to generate report for: ${EndToEndId}`);
         }
       }
     }
     counter++;
   }
-  return counter;
-
+  return `${counter} Submitted Transaction`;
   async function delay(time: number | undefined): Promise<unknown> {
     return await new Promise((resolve) => setTimeout(resolve, time));
   }
