@@ -205,6 +205,7 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
       }
       counter++;
     }
+    LoggerService.log(`Try ${index} had ${counter} transactions submitted`);
   }
   return `${counter} Submitted Transaction`;
   async function delay(time: number | undefined): Promise<unknown> {
