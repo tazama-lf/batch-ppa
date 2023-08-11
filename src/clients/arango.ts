@@ -118,6 +118,24 @@ export class ArangoDBService {
     return await this.query(query, this.pseudonymsClient);
   }
 
+  async getUnExistingTransactions(endToEndIds: string[]): Promise<string[][]> {
+    const query = aql`LET refArr = (${endToEndIds})
+
+                                    LET postedArr = (
+                                        FOR doc IN transactions
+                                        RETURN doc.transaction.FIToFIPmtSts.TxInfAndSts.OrgnlEndToEndId
+                                    )
+
+                                    FOR doc IN refArr
+                                        FILTER doc NOT IN postedArr
+                                    RETURN doc`;
+
+    return (await this.query(
+      query,
+      this.transactionHistoryClient,
+    )) as string[][];
+  }
+
   async UpdatePseudonymEdgesTimestamp(): Promise<void> {
     const queryPacs008 = aql`
                         LET newestPacs008 = (

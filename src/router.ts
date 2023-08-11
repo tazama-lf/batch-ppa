@@ -8,5 +8,6 @@ router.get('/', handleHealthCheck);
 router.get('/health', handleHealthCheck);
 router.post('/executeBatch', handleExecute);
 router.post('/uploadFile', handleFileUpload);
+router.post('/repairBatch', handleFileUpload);
 
 export default router;

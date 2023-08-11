@@ -87,6 +87,7 @@ ENV STREAM_SUBJECT=
 ENV ACK_POLICY=Explicit
 ENV PRODUCER_STORAGE=File
 ENV PRODUCER_RETENTION_POLICY=Workqueue
+ENV RETRY=2
 
 # Set healthcheck command
 HEALTHCHECK --interval=60s CMD [ -e /tmp/.lock ] || exit 1

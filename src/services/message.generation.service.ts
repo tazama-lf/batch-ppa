@@ -2,8 +2,229 @@ import { type Pacs002 } from '../classes/pacs.002.001.12';
 import { type Pacs008 } from '../classes/pacs.008.001.10';
 import { type Pain001 } from '../classes/pain.001.001.11';
 import { type Pain013 } from '../classes/pain.013.001.09';
-
 import { v4 as uuidv4 } from 'uuid';
+
+export const GetPain001FromLine = (columns: string[]): Pain001 => {
+  const end2endID = columns[2];
+  const testID = uuidv4().replace('-', '');
+
+  const pain001: Pain001 = {
+    CstmrCdtTrfInitn: {
+      GrpHdr: {
+        MsgId: testID,
+        CreDtTm: new Date().toISOString(),
+        InitgPty: {
+          Nm: columns[13],
+          Id: {
+            PrvtId: {
+              DtAndPlcOfBirth: {
+                BirthDt: new Date('1968-02-01'),
+                CityOfBirth: 'Unknown',
+                CtryOfBirth: 'ZZ',
+              },
+              Othr: {
+                Id: columns[17],
+                SchmeNm: {
+                  Prtry: 'ACCOUNT NUMBER',
+                },
+              },
+            },
+          },
+          CtctDtls: {
+            MobNb: '+11-762995524',
+          },
+        },
+        NbOfTxs: 1,
+      },
+      PmtInf: {
+        PmtInfId: columns[2],
+        PmtMtd: 'TRA',
+        ReqdAdvcTp: {
+          DbtAdvc: {
+            Cd: 'ADWD',
+            Prtry: 'Advice with transaction details',
+          },
+        },
+        ReqdExctnDt: {
+          Dt: new Date(columns[0]).toISOString().substring(0, 10),
+          DtTm: new Date(columns[0]).toISOString(),
+        },
+        Dbtr: {
+          Nm: columns[13],
+          CtctDtls: {
+            MobNb: '+11-762995524',
+          },
+          Id: {
+            PrvtId: {
+              DtAndPlcOfBirth: {
+                BirthDt: new Date('1968-02-01'),
+                CityOfBirth: 'Unknown',
+                CtryOfBirth: 'ZZ',
+              },
+              Othr: {
+                Id: columns[17],
+                SchmeNm: {
+                  Prtry: 'ACCOUNT NUMBER',
+                },
+              },
+            },
+          },
+        },
+
+        DbtrAcct: {
+          Id: {
+            Othr: {
+              Id:
+                columns[14] === 'Y'
+                  ? `${columns[17]}${columns[13]}`
+                  : `${columns[17]}`,
+              SchmeNm: {
+                Prtry:
+                  columns[14] === 'Y' ? 'SUSPENSE_ACCOUNT' : 'USER_ACCOUNT',
+              },
+            },
+          },
+          Nm: columns[13],
+        },
+        DbtrAgt: {
+          FinInstnId: {
+            ClrSysMmbId: {
+              MmbId: `${columns[10]}${columns[15]}`,
+            },
+          },
+        },
+        CdtTrfTxInf: {
+          PmtId: {
+            EndToEndId: end2endID,
+          },
+          PmtTpInf: {
+            CtgyPurp: {
+              Prtry: columns[3],
+            },
+          },
+          Amt: {
+            InstdAmt: {
+              Amt: {
+                Amt: parseInt(columns[12]),
+                Ccy: columns[11],
+              },
+            },
+            EqvtAmt: {
+              Amt: {
+                Amt: parseInt(columns[12]),
+                Ccy: columns[11],
+              },
+              CcyOfTrf: columns[11],
+            },
+          },
+          ChrgBr: 'DEBT',
+          CdtrAgt: {
+            FinInstnId: {
+              ClrSysMmbId: {
+                MmbId: `${columns[10]}${columns[16]}`,
+              },
+            },
+          },
+          Cdtr: {
+            Nm: columns[14],
+            Id: {
+              PrvtId: {
+                DtAndPlcOfBirth: {
+                  BirthDt: new Date('1968-02-01'),
+                  CityOfBirth: 'Unknown',
+                  CtryOfBirth: 'ZZ',
+                },
+                Othr: {
+                  Id: columns[18],
+                  SchmeNm: {
+                    Prtry: 'ACCOUNT NUMBER',
+                  },
+                },
+              },
+            },
+            CtctDtls: {
+              MobNb: '+11-762995523',
+            },
+          },
+          CdtrAcct: {
+            Id: {
+              Othr: {
+                Id:
+                  columns[14] === 'Y'
+                    ? `${columns[18]}${columns[14]}`
+                    : `${columns[18]}`,
+                SchmeNm: {
+                  Prtry:
+                    columns[14] === 'Y' ? 'SUSPENSE_ACCOUNT' : 'USER_ACCOUNT',
+                },
+              },
+            },
+            Nm: columns[14],
+          },
+          Purp: {
+            Cd: 'MP2P',
+          },
+          RgltryRptg: {
+            Dtls: {
+              Tp: 'REPORTING CODE',
+              Cd: columns[19],
+            },
+          },
+          RmtInf: {
+            Ustrd: '',
+          },
+          SplmtryData: {
+            Envlp: {
+              Doc: {
+                Dbtr: {
+                  FrstNm: columns[13].split(' ')[0],
+                  MddlNm: '',
+                  LastNm: columns[13].split(' ')[1],
+                  MrchntClssfctnCd: 'BLANK',
+                },
+                Cdtr: {
+                  FrstNm: columns[14].split(' ')[0],
+                  MddlNm: '',
+                  LastNm: columns[14].split(' ')[1],
+                  MrchntClssfctnCd: 'BLANK',
+                },
+                DbtrFinSvcsPrvdrFees: {
+                  Amt: 0,
+                  Ccy: columns[11],
+                },
+                Xprtn: new Date(
+                  new Date(columns[0]).getTime() + 5 * 60000,
+                ).toISOString(),
+              },
+            },
+          },
+        },
+      },
+      SplmtryData: {
+        Envlp: {
+          Doc: {
+            InitgPty: {
+              InitrTp: '',
+              Glctn: {
+                Lat: '',
+                Long: '',
+              },
+            },
+          },
+        },
+      },
+    },
+    EndToEndId: end2endID,
+    TxTp: 'pain.001.001.11',
+    DebtorAcctId:
+      columns[14] === 'Y' ? `${columns[17]}${columns[13]}` : `${columns[17]}`,
+    CreditorAcctId:
+      columns[14] === 'Y' ? `${columns[18]}${columns[14]}` : `${columns[18]}`,
+    CreDtTm: new Date().toISOString(),
+  };
+
+  return pain001;
+};
 
 export const GetPain013 = (pain01: Pain001): Pain013 => {
   const pain013: Pain013 = {
