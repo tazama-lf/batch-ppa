@@ -89,6 +89,9 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
     }
     await dbService.UpdateHistoryTransactionsTimestamp();
     await dbService.UpdatePseudonymEdgesTimestamp();
+    LoggerService.log(
+      `Updating preparation data transaction's created time date`,
+    );
     return 'Updated the timestamp of the prepare data';
   }
 
@@ -112,6 +115,9 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
         }),
       );
       if (!missedEndToEndIds?.length) break;
+      LoggerService.log(
+        `Batch had ${missedEndToEndIds.length} transactions missed`,
+      );
     }
 
     const rl = readline.createInterface({
