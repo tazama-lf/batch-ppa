@@ -210,6 +210,44 @@ export class ArangoDBService {
     }
   }
 
+  async SyncPacs002AndTransaction(): Promise<void> {
+    const removeNoReportPacs002 = `
+    LET pacs002List = (
+      FOR report IN transactions
+       RETURN report.transaction.FIToFIPmtSts.TxInfAndSts.OrgnlEndToEndId
+      )
+
+      LET pacs002NoReport = (
+      FOR pacs002 IN  transactionHistoryPacs002
+          FILTER pacs002.EndToEndId NOT IN pacs002List
+          RETURN pacs002.EndToEndId
+      )
+
+      FOR pacs002D IN transactionHistoryPacs002
+          FILTER pacs002D.EndToEndId IN pacs002NoReport
+          REMOVE pacs002D IN transactionHistoryPacs002
+      `;
+    const removeReportNoPacs002 = `
+      LET pacs002List = (
+        FOR doc IN transactionHistoryPacs002
+         RETURN doc.EndToEndId
+        )
+
+        LET reportNoPacs002 = (
+        FOR report IN transactions
+            FILTER report.transaction.FIToFIPmtSts.TxInfAndSts.OrgnlEndToEndId NOT IN pacs002List
+            RETURN report.transaction.FIToFIPmtSts.TxInfAndSts.OrgnlEndToEndId
+        )
+
+        FOR transactionD IN transactions
+            FILTER transactionD.transaction.FIToFIPmtSts.TxInfAndSts.OrgnlEndToEndId IN reportNoPacs002
+            REMOVE transactionD IN transactions
+        `;
+
+    await this.query(removeNoReportPacs002, this.transactionHistoryClient);
+    await this.query(removeReportNoPacs002, this.transactionHistoryClient);
+  }
+
   async RemovePacs002Pseudonym(): Promise<void> {
     const dbPacs002 = this.transactionHistoryClient.collection(
       configuration.db.transactionhistory_pacs002_collection,

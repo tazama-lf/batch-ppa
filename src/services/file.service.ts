@@ -2,7 +2,7 @@
 import { type Pain001 } from '../classes/pain.001.001.11';
 import * as fs from 'fs';
 import * as readline from 'readline';
-import { dbService } from '..';
+import { databaseClient, dbService } from '..';
 import { configuration } from '../config';
 import { LoggerService } from '../logger.service';
 import {
@@ -205,6 +205,7 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
       }
       counter++;
     }
+    databaseClient.SyncPacs002AndTransaction();
     LoggerService.log(`Try ${index} had ${counter} transactions submitted`);
   }
   return `${counter} Submitted Transaction`;
