@@ -19,16 +19,12 @@ import { type Pacs008 } from '../classes/pacs.008.001.10';
 const getMissingTransaction = async (
   batchSourceFileLine: readline.Interface,
 ): Promise<string[]> => {
-  let counter = 0;
   let endToEndIds: string[] = [];
   for await (const line of batchSourceFileLine) {
-    if (counter === 0) {
-      counter++;
-      continue;
-    }
     const columns = line.split('|');
+    if (!new Date(columns[Fields.PROCESSING_DATE_TIME]).getTime()) continue;
+
     endToEndIds.push(columns[Fields.END_TO_END_TRANSACTION_ID]);
-    counter++;
   }
 
   endToEndIds = (await dbService.getUnExistingTransactions(endToEndIds))[0];
@@ -95,7 +91,6 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
     return 'Updated the timestamp of the prepare data';
   }
 
-  let counter = 0;
   let oldestTimestamp: Date;
   let delta = 0;
 
@@ -125,15 +120,11 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
       crlfDelay: Infinity,
     });
 
-    counter = 0;
     for await (const line of rl) {
       // Each line in input.txt will be successively available here as `line`.
-      if (counter === 0) {
-        counter++;
-        continue;
-      }
-
       const columns = line.split('|');
+      if (!new Date(columns[Fields.PROCESSING_DATE_TIME]).getTime()) continue;
+
       const EndToEndId = columns[Fields.END_TO_END_TRANSACTION_ID];
 
       let currentPain001: Pain001;
@@ -149,11 +140,9 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
             ).length
           ) {
             pacs002Result = await sendPacs002Transaction(columns, delta);
-            counter++;
             await delay(configuration.delay);
             continue;
           } else {
-            counter++;
             continue;
           }
         }
@@ -207,12 +196,10 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
           }
         }
       }
-      counter++;
     }
     databaseClient.SyncPacs002AndTransaction();
-    LoggerService.log(`Try ${index} had ${counter} transactions submitted`);
   }
-  return `${counter} Submitted Transaction`;
+  return `Submitted Transactions`;
   async function delay(time: number | undefined): Promise<unknown> {
     return await new Promise((resolve) => setTimeout(resolve, time));
   }
