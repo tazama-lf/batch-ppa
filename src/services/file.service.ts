@@ -11,7 +11,7 @@ import {
   GetPain013,
   GetPain001FromLine,
 } from './message.generation.service';
-import { executePost } from './utilities.service';
+import { executePost, Fields } from './utilities.service';
 import { handleTransaction } from './save.transactions.service';
 import { type Pain013 } from '../classes/pain.013.001.09';
 import { type Pacs008 } from '../classes/pacs.008.001.10';
@@ -27,7 +27,7 @@ const getMissingTransaction = async (
       continue;
     }
     const columns = line.split('|');
-    endToEndIds[counter - 1] = columns[2];
+    endToEndIds.push(columns[Fields.END_TO_END_TRANSACTION_ID]);
     counter++;
   }
 
@@ -134,7 +134,7 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
       }
 
       const columns = line.split('|');
-      const EndToEndId = columns[2];
+      const EndToEndId = columns[Fields.END_TO_END_TRANSACTION_ID];
 
       let currentPain001: Pain001;
       let currentPain013: Pain013;
@@ -189,9 +189,13 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
             LoggerService.log(`Report generated for: ${EndToEndId}`);
 
             if (
-              (columns[24].toString().trim() === 'N' &&
+              (columns[Fields.RECEIVER_SUSPENSE_ACCOUNT_FLAG]
+                .toString()
+                .trim() === 'N' &&
                 value[0][0].report.status === 'NALT') ||
-              (columns[24].toString().trim() === 'Y' &&
+              (columns[Fields.RECEIVER_SUSPENSE_ACCOUNT_FLAG]
+                .toString()
+                .trim() === 'Y' &&
                 value[0][0].report.status === 'ALT')
             ) {
               LoggerService.log(`Report Matches Test Data`);
