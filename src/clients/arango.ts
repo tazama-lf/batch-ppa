@@ -118,6 +118,24 @@ export class ArangoDBService {
     return await this.query(query, this.pseudonymsClient);
   }
 
+  async getUnExistingTransactions(endToEndIds: string[]): Promise<string[][]> {
+    const query = aql`LET refArr = (${endToEndIds})
+
+                                    LET postedArr = (
+                                        FOR doc IN transactions
+                                        RETURN doc.transaction.FIToFIPmtSts.TxInfAndSts.OrgnlEndToEndId
+                                    )
+
+                                    FOR doc IN refArr
+                                        FILTER doc NOT IN postedArr
+                                    RETURN doc`;
+
+    return (await this.query(
+      query,
+      this.transactionHistoryClient,
+    )) as string[][];
+  }
+
   async UpdatePseudonymEdgesTimestamp(): Promise<void> {
     const queryPacs008 = aql`
                         LET newestPacs008 = (
@@ -190,6 +208,46 @@ export class ArangoDBService {
         `Error trying to shift timestap of transaction relationships`,
       );
     }
+  }
+
+  async SyncPacs002AndTransaction(): Promise<void> {
+    const removeNoReportPacs002 = `
+    LET pacs002List = (
+      FOR report IN transactions
+       RETURN report.transaction.FIToFIPmtSts.TxInfAndSts.OrgnlEndToEndId
+      )
+
+      LET pacs002NoReport = (
+      FOR pacs002 IN  transactionHistoryPacs002
+          FILTER pacs002.EndToEndId NOT IN pacs002List
+          RETURN pacs002.EndToEndId
+      )
+
+      FOR pacs002D IN transactionHistoryPacs002
+          FILTER pacs002D.EndToEndId IN pacs002NoReport
+          REMOVE pacs002D IN transactionHistoryPacs002
+      `;
+    const removeReportNoPacs002 = `
+      LET pacs002List = (
+        FOR doc IN transactionHistoryPacs002
+         RETURN doc.EndToEndId
+        )
+
+        LET reportNoPacs002 = (
+        FOR report IN transactions
+            FILTER report.transaction.FIToFIPmtSts.TxInfAndSts.OrgnlEndToEndId NOT IN pacs002List
+            RETURN report.transaction.FIToFIPmtSts.TxInfAndSts.OrgnlEndToEndId
+        )
+
+        FOR transactionD IN transactions
+            FILTER transactionD.transaction.FIToFIPmtSts.TxInfAndSts.OrgnlEndToEndId IN reportNoPacs002
+            REMOVE transactionD IN transactions
+        `;
+
+    Promise.all([
+      await this.query(removeNoReportPacs002, this.transactionHistoryClient),
+      await this.query(removeReportNoPacs002, this.transactionHistoryClient),
+    ]);
   }
 
   async RemovePacs002Pseudonym(): Promise<void> {

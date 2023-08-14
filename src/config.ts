@@ -14,6 +14,7 @@ export interface IConfig {
   port: number;
   verifyReports: string;
   delay: number;
+  retry: number;
   apm: {
     secretToken: string;
     serviceName: string;
@@ -62,6 +63,7 @@ export const configuration: IConfig = {
   tmsEndpoint: process.env.TMS_ENDPOINT as string,
   verifyReports: process.env.VERIFY_REPORTS as string,
   delay: parseInt(process.env.DELAY!, 0),
+  retry: parseInt(process.env.RETRY!, 0) || 1,
   db: {
     pseudonymsdb: process.env.PSEUDONYMS_DATABASE as string,
     pseudonymscollection: process.env.PSEUDONYMS_COLLECTION as string,
