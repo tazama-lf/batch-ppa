@@ -244,8 +244,10 @@ export class ArangoDBService {
             REMOVE transactionD IN transactions
         `;
 
-    await this.query(removeNoReportPacs002, this.transactionHistoryClient);
-    await this.query(removeReportNoPacs002, this.transactionHistoryClient);
+    Promise.all([
+      await this.query(removeNoReportPacs002, this.transactionHistoryClient),
+      await this.query(removeReportNoPacs002, this.transactionHistoryClient),
+    ]);
   }
 
   async RemovePacs002Pseudonym(): Promise<void> {
