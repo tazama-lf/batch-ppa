@@ -114,13 +114,13 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
           Amt: {
             InstdAmt: {
               Amt: {
-                Amt: parseInt(columns[Fields.TOTAL_PAYMENT_AMOUNT]),
+                Amt: Number(columns[Fields.TOTAL_PAYMENT_AMOUNT]),
                 Ccy: columns[Fields.PAYMENT_CURRENCY_CODE],
               },
             },
             EqvtAmt: {
               Amt: {
-                Amt: parseInt(columns[Fields.TOTAL_PAYMENT_AMOUNT]),
+                Amt: Number(columns[Fields.TOTAL_PAYMENT_AMOUNT]),
                 Ccy: columns[Fields.PAYMENT_CURRENCY_CODE],
               },
               CcyOfTrf: columns[Fields.PAYMENT_CURRENCY_CODE],
