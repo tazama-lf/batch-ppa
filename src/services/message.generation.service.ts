@@ -8,6 +8,8 @@ import { Fields } from './utilities.service';
 export const GetPain001FromLine = (columns: string[]): Pain001 => {
   const end2endID = columns[Fields.MESSAGE_ID];
   const testID = uuidv4().replace('-', '');
+  const SENDER_NAME = columns[Fields.SENDER_NAME];
+  const RECEIVER_NAME = columns[Fields.RECEIVER_NAME];
 
   const pain001: Pain001 = {
     CstmrCdtTrfInitn: {
@@ -78,14 +80,14 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
           Id: {
             Othr: {
               Id:
-                columns[Fields.RECEIVER_NAME] === 'Y'
-                  ? `${columns[Fields.SENDER_ACCOUNT]}${
-                      columns[Fields.SENDER_NAME]
-                    }`
+                columns[Fields.SENDER_SUSPENSE_ACCOUNT_FLAG].trim() === 'Y'
+                  ? `${columns[Fields.SENDER_ACCOUNT]}${SENDER_NAME.substring(
+                      SENDER_NAME.length - 6,
+                    )}`
                   : `${columns[Fields.SENDER_ACCOUNT]}`,
               SchmeNm: {
                 Prtry:
-                  columns[Fields.RECEIVER_NAME] === 'Y'
+                  columns[Fields.SENDER_SUSPENSE_ACCOUNT_FLAG].trim() === 'Y'
                     ? 'SUSPENSE_ACCOUNT'
                     : 'USER_ACCOUNT',
               },
@@ -161,14 +163,15 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
             Id: {
               Othr: {
                 Id:
-                  columns[Fields.RECEIVER_NAME] === 'Y'
-                    ? `${columns[Fields.RECEIVER_ACCOUNT]}${
-                        columns[Fields.RECEIVER_NAME]
-                      }`
+                  columns[Fields.RECEIVER_SUSPENSE_ACCOUNT_FLAG].trim() === 'Y'
+                    ? `${
+                        columns[Fields.RECEIVER_ACCOUNT]
+                      }${RECEIVER_NAME.substring(RECEIVER_NAME.length - 6)}`
                     : `${columns[Fields.RECEIVER_ACCOUNT]}`,
                 SchmeNm: {
                   Prtry:
-                    columns[Fields.RECEIVER_NAME] === 'Y'
+                    columns[Fields.RECEIVER_SUSPENSE_ACCOUNT_FLAG].trim() ===
+                    'Y'
                       ? 'SUSPENSE_ACCOUNT'
                       : 'USER_ACCOUNT',
                 },
@@ -233,12 +236,16 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
     EndToEndId: end2endID,
     TxTp: 'pain.001.001.11',
     DebtorAcctId:
-      columns[Fields.RECEIVER_NAME] === 'Y'
-        ? `${columns[Fields.SENDER_ACCOUNT]}${columns[Fields.SENDER_NAME]}`
+      columns[Fields.SENDER_SUSPENSE_ACCOUNT_FLAG].trim() === 'Y'
+        ? `${columns[Fields.SENDER_ACCOUNT]}${SENDER_NAME.substring(
+            SENDER_NAME.length - 6,
+          )}`
         : `${columns[Fields.SENDER_ACCOUNT]}`,
     CreditorAcctId:
-      columns[Fields.RECEIVER_NAME] === 'Y'
-        ? `${columns[Fields.RECEIVER_ACCOUNT]}${columns[Fields.RECEIVER_NAME]}`
+      columns[Fields.RECEIVER_SUSPENSE_ACCOUNT_FLAG].trim() === 'Y'
+        ? `${columns[Fields.RECEIVER_ACCOUNT]}${RECEIVER_NAME.substring(
+            RECEIVER_NAME.length - 6,
+          )}`
         : `${columns[Fields.RECEIVER_ACCOUNT]}`,
     CreDtTm: new Date().toISOString(),
   };
