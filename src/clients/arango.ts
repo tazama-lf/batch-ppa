@@ -4,11 +4,6 @@ import * as fs from 'fs';
 import { configuration } from '../config';
 import { type TransactionRelationship } from '../interfaces/iTransactionRelationship';
 import { LoggerService } from '../logger.service';
-import { type Pain001 } from '../classes/pain.001.001.11';
-import { type Pain013 } from '../classes/pain.013.001.09';
-import { type Pacs002 } from '../classes/pacs.002.001.12';
-import { type Pacs008 } from '../classes/pacs.008.001.10';
-import { type GeneratedAqlQuery } from 'arangojs/aql';
 
 export class ArangoDBService {
   transactionHistoryClient: Database;
@@ -211,7 +206,7 @@ export class ArangoDBService {
   }
 
   async SyncPacs002AndTransaction(): Promise<void> {
-    const removeNoReportPacs002 = `
+    const removeNoReportPacs002 = aql`
     LET pacs002List = (
       FOR report IN transactions
        RETURN report.transaction.FIToFIPmtSts.TxInfAndSts.OrgnlEndToEndId
@@ -227,7 +222,7 @@ export class ArangoDBService {
           FILTER pacs002D.EndToEndId IN pacs002NoReport
           REMOVE pacs002D IN transactionHistoryPacs002
       `;
-    const removeReportNoPacs002 = `
+    const removeReportNoPacs002 = aql`
       LET pacs002List = (
         FOR doc IN transactionHistoryPacs002
          RETURN doc.EndToEndId
@@ -244,7 +239,26 @@ export class ArangoDBService {
             REMOVE transactionD IN transactions
         `;
 
+    const reportList = aql`
+            FOR report IN transactions
+            RETURN report.transaction.FIToFIPmtSts.TxInfAndSts.OrgnlEndToEndId`;
+    const lisOfReports = await this.query(
+      reportList,
+      this.transactionHistoryClient,
+    );
+
+    const removeEdgeNoReport = aql`
+        LET edgeNoReport = (
+          FOR edge IN  transactionRelationship
+            FILTER edge.EndToEndId NOT IN ${lisOfReports ? lisOfReports[0] : ''}
+            RETURN edge.EndToEndId
+        )
+        FOR edgeDel IN transactionRelationship
+            FILTER edgeDel.EndToEndId IN edgeNoReport
+            REMOVE edgeDel IN transactionRelationship`;
+
     Promise.all([
+      await this.query(removeEdgeNoReport, this.pseudonymsClient),
       await this.query(removeNoReportPacs002, this.transactionHistoryClient),
       await this.query(removeReportNoPacs002, this.transactionHistoryClient),
     ]);
