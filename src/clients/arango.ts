@@ -403,7 +403,7 @@ export class ArangoDBService {
       this.pseudonymsClient,
       'account_holder',
       {
-        _key: entityId,
+        _key: `${accountId}${entityId}`,
         _from: `entities/${entityId}`,
         _to: `accounts/${accountId}`,
         CreDtTm,
