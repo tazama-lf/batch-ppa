@@ -249,21 +249,15 @@ export class ArangoDBService {
     );
 
     const removeEdgeNoReport = aql`
-        LET edgeNoReport = (
-          FOR edge IN  transactionRelationship
-            FILTER edge.TxTp == "pacs.002.001.12"
-            AND edge.EndToEndId NOT IN ${
-              lisOfReports && lisOfReports[0] ? lisOfReports[0] : ['']
-            }
-            RETURN edge.EndToEndId
-        )
         FOR edgeDel IN transactionRelationship
             FILTER edgeDel.TxTp == "pacs.002.001.12"
-            AND edgeDel.EndToEndId IN edgeNoReport
+            AND edgeDel.EndToEndId NOT IN ${
+              lisOfReports && lisOfReports[0] ? lisOfReports[0] : ['']
+            }
             REMOVE edgeDel IN transactionRelationship`;
 
     Promise.all([
-      await this.query(removeEdgeNoReport, this.pseudonymsClient),
+      // await this.query(removeEdgeNoReport, this.pseudonymsClient),
       await this.query(removeNoReportPacs002, this.transactionHistoryClient),
       await this.query(removeReportNoPacs002, this.transactionHistoryClient),
     ]);
