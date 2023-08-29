@@ -242,6 +242,7 @@ export class ArangoDBService {
     const reportList = aql`
             FOR report IN transactions
             RETURN report.transaction.FIToFIPmtSts.TxInfAndSts.OrgnlEndToEndId`;
+
     const lisOfReports = await this.query(
       reportList,
       this.transactionHistoryClient,
@@ -251,7 +252,9 @@ export class ArangoDBService {
         LET edgeNoReport = (
           FOR edge IN  transactionRelationship
             FILTER edge.TxTp == "pacs.002.001.12"
-            AND edge.EndToEndId NOT IN ${lisOfReports ? lisOfReports[0] : ''}
+            AND edge.EndToEndId NOT IN ${
+              lisOfReports && lisOfReports[0] ? lisOfReports[0] : ['']
+            }
             RETURN edge.EndToEndId
         )
         FOR edgeDel IN transactionRelationship
