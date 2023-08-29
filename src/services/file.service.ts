@@ -197,7 +197,7 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
         }
       }
     }
-    databaseClient.SyncPacs002AndTransaction();
+    // databaseClient.SyncPacs002AndTransaction();
   }
   return `Submitted Transactions`;
   async function delay(time: number | undefined): Promise<unknown> {
