@@ -32,6 +32,22 @@ const getMissingTransaction = async (
   return endToEndIds;
 };
 
+const getOldestPacs002 = async (
+  batchSourceFileLineOld: readline.Interface,
+): Promise<Date> => {
+  const dateArray = new Array<Date>();
+
+  for await (const lineOldest of batchSourceFileLineOld) {
+    const columns = lineOldest.split('|');
+    if (!new Date(columns[Fields.PROCESSING_DATE_TIME]).getTime()) continue;
+    dateArray.push(new Date(columns[Fields.PROCESSING_DATE_TIME]));
+  }
+  const oldestDate = dateArray.sort((a, b) => {
+    return Date.parse(a.toDateString()) - Date.parse(b.toDateString());
+  });
+  return oldestDate[0];
+};
+
 const sendPacs002Transaction = async (
   columns: string[],
   delta: number,
@@ -97,7 +113,16 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
   let delta = 0;
 
   if (requestBody.pacs002) {
+    const oldestTimestampPacs002 = (
+      await getOldestPacs002(
+        readline.createInterface({
+          input: fs.createReadStream('./uploads/input.txt'),
+          crlfDelay: Infinity,
+        }),
+      )
+    ).getTime();
     oldestTimestamp = await dbService.getOldestTimestampPacs008();
+    delta = new Date(oldestTimestamp).getTime() - oldestTimestampPacs002;
   }
 
   const retry = requestBody.pacs002.overwrite ? configuration.retry : 1;
@@ -134,9 +159,6 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
 
       let pacs002Result = false;
       if (requestBody.pacs002) {
-        delta =
-          new Date(oldestTimestamp).getTime() -
-          new Date(columns[Fields.PROCESSING_DATE_TIME]).getTime();
         if (requestBody.pacs002.overwrite) {
           if (
             missedEndToEndIds.filter(

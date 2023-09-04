@@ -305,7 +305,7 @@ export class ArangoDBService {
                             LET timeDeltaToNow = DATE_DIFF(DATE_TIMESTAMP(newestPacs008[0].FIToFICstmrCdt.GrpHdr.CreDtTm), DATE_NOW(), "millisecond", false)
                             FOR doc IN ${dbPacs008}
                                 LET newDoc = {"GrpHdr": {"CreDtTm": DATE_ADD(DATE_TIMESTAMP(doc.FIToFICstmrCdt.GrpHdr.CreDtTm), timeDeltaToNow, "millisecond")}}
-                              UPDATE doc WITH { FIToFICstmrCdtTrf: MERGE(doc.FIToFICstmrCdt, newDoc) } IN ${dbPacs008}`;
+                              UPDATE doc WITH { FIToFICstmrCdt: MERGE(doc.FIToFICstmrCdt, newDoc) } IN ${dbPacs008}`;
 
     const queryPacs013 = aql`LET newestPain013 = (
                           FOR pain013 IN ${dbPain013}
