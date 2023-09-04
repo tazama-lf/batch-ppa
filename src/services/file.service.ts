@@ -37,7 +37,9 @@ const sendPacs002Transaction = async (
   delta: number,
 ): Promise<boolean> => {
   LoggerService.log('Sending Pacs002 message...');
-  const currentPacs002 = GetPacs002(columns, new Date(delta + Date.now()));
+  const newPacs002Date =
+    new Date(columns[Fields.PROCESSING_DATE_TIME]).getTime() + delta;
+  const currentPacs002 = GetPacs002(columns, new Date(newPacs002Date));
   LoggerService.log(
     `${JSON.stringify(currentPacs002.FIToFIPmtSts.GrpHdr.MsgId)} - Submitted`,
   );
@@ -91,12 +93,11 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
     return 'Updated the timestamp of the prepare data';
   }
 
-  let oldestTimestamp: Date;
+  let oldestTimestamp: Date = new Date();
   let delta = 0;
 
   if (requestBody.pacs002) {
     oldestTimestamp = await dbService.getOldestTimestampPacs008();
-    delta = Date.now() - new Date(oldestTimestamp).getTime();
   }
 
   const retry = requestBody.pacs002.overwrite ? configuration.retry : 1;
@@ -133,6 +134,9 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
 
       let pacs002Result = false;
       if (requestBody.pacs002) {
+        delta =
+          new Date(oldestTimestamp).getTime() -
+          new Date(columns[Fields.PROCESSING_DATE_TIME]).getTime();
         if (requestBody.pacs002.overwrite) {
           if (
             missedEndToEndIds.filter(
