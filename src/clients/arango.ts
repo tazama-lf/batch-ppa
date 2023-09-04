@@ -350,9 +350,8 @@ export class ArangoDBService {
     );
     const query = aql`
         FOR pacs008 IN ${db}
-        SORT pacs008.FIToFICstmrCdt.GrpHdr.CreDtTm DESC
-        LIMIT 1
-        RETURN pacs008.FIToFICstmrCdt.GrpHdr.CreDtTm`;
+        COLLECT AGGREGATE oldestPacs008 = MIN(pacs008.FIToFICstmrCdt.GrpHdr.CreDtTm)
+    RETURN oldestPacs008`;
 
     try {
       return (
