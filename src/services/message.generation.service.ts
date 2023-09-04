@@ -15,7 +15,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
     CstmrCdtTrfInitn: {
       GrpHdr: {
         MsgId: testID,
-        CreDtTm: new Date().toISOString(),
+        CreDtTm: new Date(columns[Fields.PROCESSING_DATE_TIME]).toISOString(),
         InitgPty: {
           Nm: columns[Fields.SENDER_NAME],
           Id: {
