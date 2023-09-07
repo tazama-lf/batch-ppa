@@ -1,4 +1,3 @@
-import axios from 'axios';
 import apm from 'elastic-apm-node';
 import { type Context } from 'koa';
 import App from './app';
@@ -7,6 +6,10 @@ import { configuration } from './config';
 import { LoggerService } from './logger.service';
 import { SendLineMessages } from './services/file.service';
 import { GetPacs008FromXML } from './services/xml.service';
+import {
+  type IStartupService,
+  StartupFactory,
+} from '@frmscoe/frms-coe-startup-lib';
 import {
   ServicesContainer,
   initCacheDatabase,
@@ -27,6 +30,7 @@ if (configuration.apm.active === 'true') {
 }
 
 export const app = new App();
+export let natsServer: IStartupService;
 
 export const cache = ServicesContainer.getCacheInstance();
 export const databaseClient = new ArangoDBService();
@@ -52,18 +56,29 @@ function terminate(signal: NodeJS.Signals): void {
   }
 }
 
-/*
- * Start server
- **/
+export const runNatsServer = async (): Promise<void> => {
+  for (let retryCount = 0; retryCount < 10; retryCount++) {
+    LoggerService.log(`Connecting to nats server...`);
+    if (!(await natsServer.initProducer())) {
+      await new Promise((resolve) => setTimeout(resolve, 5000));
+    } else {
+      LoggerService.log(`Connected to nats`);
+      break;
+    }
+  }
+};
+
 if (
   Object.values(require.cache).filter(async (m) => m?.children.includes(module))
 ) {
   const server = app.listen(configuration.port, async () => {
+    natsServer = new StartupFactory();
     LoggerService.log(
       `API server listening on PORT ${configuration.port}`,
       'execute',
     );
     await initCacheDatabase(configuration.cacheTTL, cacheClient);
+    await runNatsServer();
   });
   server.on('error', handleError);
 
@@ -99,40 +114,6 @@ export const processLineByLine = async (
       throw new Error('No Data Method Set in environment.');
   }
 };
-
-const executePost = async (
-  endpoint: string,
-  request: unknown,
-): Promise<void> => {
-  const span = apm.startSpan(`POST ${endpoint}`);
-  try {
-    const crspRes = await axios.post(endpoint, request);
-
-    if (crspRes.status !== 200) {
-      LoggerService.error(
-        `CRSP Response StatusCode != 200, request:\r\n${JSON.stringify(
-          request,
-        )}`,
-      );
-    }
-    LoggerService.log(
-      `CRSP Reponse - ${crspRes.status} with data\n ${JSON.stringify(
-        crspRes.data,
-      )}`,
-    );
-    span?.end();
-  } catch (error) {
-    LoggerService.error(
-      `Error while sending request to CRSP at ${
-        endpoint ?? ''
-      } with message: ${JSON.stringify(error)}`,
-    );
-    LoggerService.trace(`CRSP Error Request:\r\n${JSON.stringify(request)}`);
-  }
-};
-
-// Enable for testing without using Rest API
-// processLineByLine();
 
 export const dbService = new ArangoDBService();
 export default app;

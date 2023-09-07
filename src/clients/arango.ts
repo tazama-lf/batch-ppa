@@ -377,11 +377,12 @@ export class ArangoDBService {
 
   async getTransactionReport(EndToEndId: string): Promise<unknown> {
     const db = this.transactionHistoryClient.collection('transactions');
-    const query = aql`FOR doc IN ${db}
-      FILTER doc.transaction.EndToEndId == ${EndToEndId}
+    const query = aql`
+      FOR doc IN ${db}
+      FILTER doc.transaction.FIToFIPmtSts.TxInfAndSts.OrgnlEndToEndId == ${EndToEndId}
       RETURN doc`;
-
-    return await this.query(query, this.transactionHistoryClient);
+    const report = await this.query(query, this.transactionHistoryClient);
+    return report;
   }
 
   async addAccount(hash: string): Promise<void> {

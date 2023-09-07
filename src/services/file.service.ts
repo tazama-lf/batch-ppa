@@ -2,7 +2,8 @@
 import { type Pain001 } from '../classes/pain.001.001.11';
 import * as fs from 'fs';
 import * as readline from 'readline';
-import { databaseClient, dbService } from '..';
+import { dbService } from '..';
+import sendMissingTransactionsCMS from '../utils/patchcms-tools';
 import { configuration } from '../config';
 import { LoggerService } from '../logger.service';
 import {
@@ -88,6 +89,11 @@ const sendPrepareTransaction = async (
 export const SendLineMessages = async (requestBody: any): Promise<string> => {
   // Note: we use the crlfDelay option to recognize all instances of CR LF
   // ('\r\n') in input.txt as a single line break.
+  if (requestBody.cmspatch.length) {
+    sendMissingTransactionsCMS(requestBody.cmspatch as string[]);
+    return 'Patching the missing transactions';
+  }
+
   if (
     (requestBody.update && requestBody.pacs002) ||
     (requestBody.pacs002 === undefined && requestBody.update === undefined)

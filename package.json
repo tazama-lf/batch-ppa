@@ -31,6 +31,7 @@
   ],
   "license": "ISC",
   "dependencies": {
+    "@frmscoe/frms-coe-startup-lib": "^0.0.15",
     "@log4js-node/logstash-http": "^1.1.0",
     "@types/formidable": "^3.4.0",
     "arangojs": "^8.4.0",
