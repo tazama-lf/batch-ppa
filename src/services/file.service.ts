@@ -89,8 +89,8 @@ const sendPrepareTransaction = async (
 export const SendLineMessages = async (requestBody: any): Promise<string> => {
   // Note: we use the crlfDelay option to recognize all instances of CR LF
   // ('\r\n') in input.txt as a single line break.
-  if (requestBody.cmspatch.length) {
-    sendMissingTransactionsCMS(requestBody.cmspatch as string[]);
+  if (requestBody.cmspatch) {
+    sendMissingTransactionsCMS();
     return 'Patching the missing transactions';
   }
 

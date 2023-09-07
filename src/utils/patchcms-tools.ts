@@ -1,12 +1,25 @@
 import { dbService, natsServer } from '..';
+import * as fs from 'fs';
+import * as readline from 'readline';
+import { LoggerService } from '../logger.service';
 
-const sendMissingTransactionsCMS = async (
-  endToEndIds: string[],
-): Promise<void> => {
-  for (let index = 0; index < endToEndIds.length; index++) {
+const sendMissingTransactionsCMS = async (): Promise<void> => {
+  const rl = readline.createInterface({
+    input: fs.createReadStream('./uploads/input.txt'),
+    crlfDelay: Infinity,
+  });
+
+  for await (const line of rl) {
     // Request report on the arango
+    if (line.length !== 32) {
+      LoggerService.error(
+        'File is not a patch file or EndToEndId not equal to 33 long',
+      );
+      return;
+    }
+
     const report = (await dbService.getTransactionReport(
-      endToEndIds[index],
+      line.trim(),
     )) as object;
 
     // Send to CMS
