@@ -11,7 +11,7 @@ const sendMissingTransactionsCMS = async (): Promise<void> => {
 
   for await (const line of rl) {
     // Request report on the arango
-    if (line.length !== 32) {
+    if (line.length < 30) {
       LoggerService.error(
         'File is not a patch file or EndToEndId not equal to 33 long',
       );
