@@ -1,10 +1,11 @@
-import { dbService, natsServer } from '..';
+/* eslint-disable @typescript-eslint/no-explicit-any */
+import { databaseClient, natsServer } from '..';
 import * as fs from 'fs';
 import * as readline from 'readline';
 import { LoggerService } from '../logger.service';
 
 const sendMissingTransactionsCMS = async (): Promise<void> => {
-  LoggerService.error('Started Patching the batch from cms');
+  LoggerService.log('Started Patching the batch from cms');
   const rl = readline.createInterface({
     input: fs.createReadStream('./uploads/input.txt'),
     crlfDelay: Infinity,
@@ -19,18 +20,23 @@ const sendMissingTransactionsCMS = async (): Promise<void> => {
       continue;
     }
 
-    LoggerService.error(`Transaction ${line} is being evaluated`);
+    LoggerService.log(`Transaction ${line} is being evaluated`);
 
-    const report = (await dbService.getTransactionReport(
-      line.trim(),
-    )) as object;
+    try {
+      const report = (await databaseClient.getTransactionReport(
+        line.trim(),
+      )) as object;
 
-    LoggerService.error(`Transaction ${line} was sent to CMS for reporting`);
-    // Send to CMS
-    await natsServer.handleResponse({ ...report[0][0] });
+      LoggerService.log(`Transaction ${line} was sent to CMS for reporting`);
+      // Send to CMS
+
+      await natsServer.handleResponse({ ...report[0][0] });
+    } catch (Err: any) {
+      LoggerService.error(Err?.message);
+    }
   }
 
-  LoggerService.error('Finished Patching the batch from cms');
+  LoggerService.log('Finished Patching the batch from cms');
 };
 
 export default sendMissingTransactionsCMS;

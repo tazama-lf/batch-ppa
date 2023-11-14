@@ -115,5 +115,4 @@ export const processLineByLine = async (
   }
 };
 
-export const dbService = new ArangoDBService();
 export default app;

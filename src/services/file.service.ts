@@ -2,7 +2,7 @@
 import { type Pain001 } from '../classes/pain.001.001.11';
 import * as fs from 'fs';
 import * as readline from 'readline';
-import { dbService } from '..';
+import { databaseClient } from '..';
 import sendMissingTransactionsCMS from '../utils/patchcms-tools';
 import { configuration } from '../config';
 import { LoggerService } from '../logger.service';
@@ -28,7 +28,9 @@ const getMissingTransaction = async (
     endToEndIds.push(columns[Fields.END_TO_END_TRANSACTION_ID]);
   }
 
-  endToEndIds = (await dbService.getUnExistingTransactions(endToEndIds))[0];
+  endToEndIds = (
+    await databaseClient.getUnExistingTransactions(endToEndIds)
+  )[0];
 
   return endToEndIds;
 };
@@ -105,10 +107,10 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
 
   if (requestBody.update) {
     if (requestBody.update.seedPacs002) {
-      await dbService.RemovePacs002Pseudonym();
+      await databaseClient.RemovePacs002Pseudonym();
     }
-    await dbService.UpdateHistoryTransactionsTimestamp();
-    await dbService.UpdatePseudonymEdgesTimestamp();
+    await databaseClient.UpdateHistoryTransactionsTimestamp();
+    await databaseClient.UpdatePseudonymEdgesTimestamp();
     LoggerService.log(
       `Updating preparation data transaction's created time date`,
     );
@@ -127,7 +129,7 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
         }),
       )
     ).getTime();
-    oldestTimestamp = await dbService.getOldestTimestampPacs008();
+    oldestTimestamp = await databaseClient.getOldestTimestampPacs008();
     delta = new Date(oldestTimestamp).getTime() - oldestTimestampPacs002;
   }
 
@@ -197,7 +199,7 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
         if (configuration.verifyReports) {
           let value;
           try {
-            value = await dbService.getTransactionReport(EndToEndId);
+            value = await databaseClient.getTransactionReport(EndToEndId);
           } catch (ex) {
             LoggerService.error(
               `Failed to communicate with Arango to check report. ${JSON.stringify(
