@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 import { type Pacs002 } from '../classes/pacs.002.001.12';
 import { type Pacs008 } from '../classes/pacs.008.001.10';
 import { type Pain001 } from '../classes/pain.001.001.11';

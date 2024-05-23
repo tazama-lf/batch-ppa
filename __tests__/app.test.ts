@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import axios from 'axios';
 import { Pacs002 } from '../src/classes/pacs.002.001.12';

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 // import { createHash } from 'node:crypto';
 // import { Pacs008 } from '../classes/pacs.008.001.10';
 // import { Pain001 } from '../classes/pain.001.001.11';

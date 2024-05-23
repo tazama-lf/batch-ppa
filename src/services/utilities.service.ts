@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 import axios from 'axios';
 import apm from 'elastic-apm-node';
 import { LoggerService } from '../logger.service';

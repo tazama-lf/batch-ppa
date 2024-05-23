@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import { type Pain001 } from '../classes/pain.001.001.11';
 import * as fs from 'fs';

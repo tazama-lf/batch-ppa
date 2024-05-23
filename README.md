@@ -1,3 +1,5 @@
+<!-- SPDX-License-Identifier: Apache-2.0 -->
+
 # Batch PPA Documentation
 
 - [Batch PPA Documentation](#batch-ppa-documentation)

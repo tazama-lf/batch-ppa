@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 import Router from 'koa-router';
 import { handleHealthCheck } from './health.controller';
 import { handleExecute, handleFileUpload } from './app.controller';

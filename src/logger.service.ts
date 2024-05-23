@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 /* eslint-disable @typescript-eslint/no-extraneous-class */
 import log4js from 'log4js';
 import { configuration } from './config';
