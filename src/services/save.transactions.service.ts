@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 import apm from 'elastic-apm-node';
 import { cacheClient, databaseClient } from '..';
 import { type Pain001 } from '../classes/pain.001.001.11';

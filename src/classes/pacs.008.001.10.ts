@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 import { type InitgPty, type InitgPtyID } from './pain.001.001.11';
 
 export interface Pacs008 {

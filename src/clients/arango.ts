@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 import { aql, Database } from 'arangojs';
 import apm from 'elastic-apm-node';
 import * as fs from 'fs';

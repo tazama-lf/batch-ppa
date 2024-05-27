@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 import { type RedisService, ArangoDBService } from '../clients';
 import NodeCache from 'node-cache';
 import { CacheDatabaseService } from '../clients/cache-database';

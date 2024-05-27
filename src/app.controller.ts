@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 import { IncomingForm } from 'formidable';
 import { type Context, type Next } from 'koa';
 import { processLineByLine } from '.';
