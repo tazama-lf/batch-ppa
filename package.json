@@ -34,7 +34,7 @@
     "@log4js-node/logstash-http": "^1.1.0",
     "@types/formidable": "^3.4.0",
     "arangojs": "^8.4.0",
-    "axios": "^1.6.0",
+    "axios": "^1.6.1",
     "dotenv": "^16.3.1",
     "elastic-apm-node": "^3.51.0",
     "formidable": "^3.5.0",
