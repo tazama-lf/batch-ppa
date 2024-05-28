@@ -202,7 +202,7 @@ describe('App Controller & Logic Service', () => {
     });
   });
 
-  describe('Send Transaction to CRSP', () => {
+  describe('Send Transaction to event-director', () => {
     it('fail gracefully', async() => {
       jest.spyOn(axios, 'post').mockImplementation((url: string, data?: any) => {
         return new Promise((resolve, reject) => {
