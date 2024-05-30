@@ -1,5 +1,16 @@
+# SPDX-License-Identifier: Apache-2.0
+
+**/__tests__
+tsconfig.json
 coverage
 templates
 build
 node_modules
 docs
+**/node_modules
+*.spec.ts
+*.test.ts
+jest.config.ts
+.eslintrc.js
+setup.jest.js
+global.d.ts

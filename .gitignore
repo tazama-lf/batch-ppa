@@ -1,3 +1,5 @@
+# SPDX-License-Identifier: Apache-2.0
+
 # Logs
 logs
 *.log
@@ -68,3 +70,5 @@ template
 
 # certificates
 *.crt
+uploads
+uploads/input.txt

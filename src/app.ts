@@ -1,11 +1,12 @@
+// SPDX-License-Identifier: Apache-2.0
+
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { Server } from 'http';
+import { type Server } from 'http';
 import Koa from 'koa';
 import bodyParser from 'koa-bodyparser';
 // import router from './router';
 import helmet from 'koa-helmet';
 import router from './router';
-import { LoggerService } from './logger.service';
 
 class App extends Koa {
   public servers: Server[];
@@ -14,7 +15,7 @@ class App extends Koa {
 
     // bodyparser needs to be loaded first in order to work
     this.servers = [];
-    this.use(bodyParser({formLimit: "150mb"}));
+    this.use(bodyParser({ formLimit: '150mb' }));
     this._configureRoutes();
   }
 
@@ -23,7 +24,6 @@ class App extends Koa {
     this.use(router.allowedMethods());
 
     this.use(helmet());
-
   }
 
   // configureMiddlewares(): void {

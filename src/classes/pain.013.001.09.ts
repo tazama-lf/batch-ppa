@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 export interface Pain013 {
   TxTp: string;
   EndToEndId: string;
@@ -89,7 +91,7 @@ export interface EqvtAmt {
 }
 
 export interface EqvtAmtAmt {
-  Amt: Number;
+  Amt: number;
   Ccy: string;
 }
 

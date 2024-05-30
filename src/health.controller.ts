@@ -1,4 +1,6 @@
-import { Context } from 'koa';
+// SPDX-License-Identifier: Apache-2.0
+
+import { type Context } from 'koa';
 
 const handleMonitorTransaction = (ctx: Context): Context => {
   ctx.body = { result: 'Transaction is valid' };
