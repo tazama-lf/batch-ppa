@@ -10,11 +10,11 @@ export const executePost = async (
 ): Promise<boolean> => {
   const span = apm.startSpan(`POST ${endpoint}`);
   try {
-    const crspRes = await axios.post(endpoint, request);
+    const eventDirectorRes = await axios.post(endpoint, request);
 
-    if (crspRes.status !== 200) {
+    if (eventDirectorRes.status !== 200) {
       LoggerService.error(
-        `CRSP Response StatusCode != 200, request:\r\n${JSON.stringify(
+        `Event-Director Response StatusCode != 200, request:\r\n${JSON.stringify(
           request,
         )}`,
       );
@@ -22,14 +22,13 @@ export const executePost = async (
     }
     span?.end();
     return true;
-    // LoggerService.log(`CRSP Reponse - ${crspRes.status} with data\n ${JSON.stringify(crspRes.data)}`);
   } catch (error) {
     LoggerService.error(
-      `Error while sending request to CRSP at ${
+      `Error while sending request to Event-Director at ${
         endpoint ?? ''
       } with message: ${JSON.stringify(error)}`,
     );
-    LoggerService.trace(`CRSP Error Request:\r\n${JSON.stringify(request)}`);
+    LoggerService.trace(`Event-Director Error Request:\r\n${JSON.stringify(request)}`);
     return false;
   }
 };

@@ -174,4 +174,19 @@ describe('App Controller & Logic Service', () => {
       expect(error).toEqual('');
     });
   });
+
+  describe('Send Transaction to event-director', () => {
+    it('fail gracefully', async() => {
+      jest.spyOn(axios, 'post').mockImplementation((url: string, data?: any) => {
+        return new Promise((resolve, reject) => {
+          resolve({ status: 500 });
+        });
+      });
+
+      const request = getMockRequestPacs008() as Pacs008;
+      await handlePacs008(request);  
+
+      expect(axios.post).toBeCalledTimes(1)
+    }) 
+  });
 });
