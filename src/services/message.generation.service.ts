@@ -49,9 +49,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
           },
         },
         ReqdExctnDt: {
-          Dt: new Date(columns[Fields.PROCESSING_DATE_TIME])
-            .toISOString()
-            .substring(0, 10),
+          Dt: new Date(columns[Fields.PROCESSING_DATE_TIME]).toISOString().substring(0, 10),
           DtTm: new Date(columns[Fields.PROCESSING_DATE_TIME]).toISOString(),
         },
         Dbtr: {
@@ -81,15 +79,10 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
             Othr: {
               Id:
                 columns[Fields.RECEIVER_NAME] === 'Y'
-                  ? `${columns[Fields.SENDER_ACCOUNT]}${
-                      columns[Fields.SENDER_NAME]
-                    }`
+                  ? `${columns[Fields.SENDER_ACCOUNT]}${columns[Fields.SENDER_NAME]}`
                   : `${columns[Fields.SENDER_ACCOUNT]}`,
               SchmeNm: {
-                Prtry:
-                  columns[Fields.RECEIVER_NAME] === 'Y'
-                    ? 'SUSPENSE_ACCOUNT'
-                    : 'USER_ACCOUNT',
+                Prtry: columns[Fields.RECEIVER_NAME] === 'Y' ? 'SUSPENSE_ACCOUNT' : 'USER_ACCOUNT',
               },
             },
           },
@@ -98,9 +91,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
         DbtrAgt: {
           FinInstnId: {
             ClrSysMmbId: {
-              MmbId: `${columns[Fields.PAYMENT_COUNTRY_CODE]}${
-                columns[Fields.SENDER_AGENT_SPID]
-              }`,
+              MmbId: `${columns[Fields.PAYMENT_COUNTRY_CODE]}${columns[Fields.SENDER_AGENT_SPID]}`,
             },
           },
         },
@@ -132,9 +123,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
           CdtrAgt: {
             FinInstnId: {
               ClrSysMmbId: {
-                MmbId: `${columns[Fields.PAYMENT_COUNTRY_CODE]}${
-                  columns[Fields.RECEIVER_AGENT_SPID]
-                }`,
+                MmbId: `${columns[Fields.PAYMENT_COUNTRY_CODE]}${columns[Fields.RECEIVER_AGENT_SPID]}`,
               },
             },
           },
@@ -164,15 +153,10 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
               Othr: {
                 Id:
                   columns[Fields.RECEIVER_NAME] === 'Y'
-                    ? `${columns[Fields.RECEIVER_ACCOUNT]}${
-                        columns[Fields.RECEIVER_NAME]
-                      }`
+                    ? `${columns[Fields.RECEIVER_ACCOUNT]}${columns[Fields.RECEIVER_NAME]}`
                     : `${columns[Fields.RECEIVER_ACCOUNT]}`,
                 SchmeNm: {
-                  Prtry:
-                    columns[Fields.RECEIVER_NAME] === 'Y'
-                      ? 'SUSPENSE_ACCOUNT'
-                      : 'USER_ACCOUNT',
+                  Prtry: columns[Fields.RECEIVER_NAME] === 'Y' ? 'SUSPENSE_ACCOUNT' : 'USER_ACCOUNT',
                 },
               },
             },
@@ -209,10 +193,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
                   Amt: 0,
                   Ccy: columns[Fields.PAYMENT_CURRENCY_CODE],
                 },
-                Xprtn: new Date(
-                  new Date(columns[Fields.PROCESSING_DATE_TIME]).getTime() +
-                    5 * 60000,
-                ).toISOString(),
+                Xprtn: new Date(new Date(columns[Fields.PROCESSING_DATE_TIME]).getTime() + 5 * 60000).toISOString(),
               },
             },
           },
@@ -255,9 +236,7 @@ export const GetPain013 = (pain01: Pain001): Pain013 => {
     CdtrPmtActvtnReq: {
       GrpHdr: {
         MsgId: uuidv4().replace('-', ''),
-        CreDtTm: new Date(
-          new Date(pain01.CstmrCdtTrfInitn.GrpHdr.CreDtTm).getTime() + 10,
-        ).toISOString(),
+        CreDtTm: new Date(new Date(pain01.CstmrCdtTrfInitn.GrpHdr.CreDtTm).getTime() + 10).toISOString(),
         NbOfTxs: 1,
         InitgPty: {
           Nm: pain01.CstmrCdtTrfInitn.GrpHdr.InitgPty.Nm,
@@ -276,8 +255,7 @@ export const GetPain013 = (pain01: Pain001): Pain013 => {
           DtTm: pain01.CstmrCdtTrfInitn.PmtInf.ReqdExctnDt.DtTm,
         },
         XpryDt: {
-          DtTm: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.SplmtryData.Envlp.Doc
-            .Xprtn,
+          DtTm: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.SplmtryData.Envlp.Doc.Xprtn,
         },
         Dbtr: {
           Nm: pain01.CstmrCdtTrfInitn.PmtInf.Dbtr.Nm,
@@ -288,8 +266,7 @@ export const GetPain013 = (pain01: Pain001): Pain013 => {
             Othr: {
               Id: pain01.CstmrCdtTrfInitn.PmtInf.DbtrAcct.Id.Othr.Id,
               SchmeNm: {
-                Prtry:
-                  pain01.CstmrCdtTrfInitn.PmtInf.DbtrAcct.Id.Othr.SchmeNm.Prtry,
+                Prtry: pain01.CstmrCdtTrfInitn.PmtInf.DbtrAcct.Id.Othr.SchmeNm.Prtry,
               },
               Nm: pain01.CstmrCdtTrfInitn.PmtInf.DbtrAcct.Nm,
             },
@@ -298,51 +275,39 @@ export const GetPain013 = (pain01: Pain001): Pain013 => {
         DbtrAgt: {
           FinInstnId: {
             ClrSysMmbId: {
-              MmbId:
-                pain01.CstmrCdtTrfInitn.PmtInf.DbtrAgt.FinInstnId.ClrSysMmbId
-                  .MmbId,
+              MmbId: pain01.CstmrCdtTrfInitn.PmtInf.DbtrAgt.FinInstnId.ClrSysMmbId.MmbId,
             },
           },
         },
         CdtTrfTxInf: {
           PmtId: {
-            EndToEndId:
-              pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.PmtId.EndToEndId,
+            EndToEndId: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.PmtId.EndToEndId,
           },
           PmtTpInf: {
             CtgyPurp: {
-              Prtry:
-                pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.PmtTpInf.CtgyPurp
-                  .Prtry,
+              Prtry: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.PmtTpInf.CtgyPurp.Prtry,
             },
           },
           Amt: {
             InstdAmt: {
               Amt: {
-                Amt: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt
-                  .Amt,
-                Ccy: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt
-                  .Ccy,
+                Amt: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt.Amt,
+                Ccy: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt.Ccy,
               },
             },
             EqvtAmt: {
               Amt: {
-                Amt: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.EqvtAmt.Amt
-                  .Amt,
-                Ccy: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.EqvtAmt.Amt
-                  .Ccy,
+                Amt: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.EqvtAmt.Amt.Amt,
+                Ccy: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.EqvtAmt.Amt.Ccy,
               },
-              CcyOfTrf:
-                pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.EqvtAmt.CcyOfTrf,
+              CcyOfTrf: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.EqvtAmt.CcyOfTrf,
             },
           },
           ChrgBr: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.ChrgBr,
           CdtrAgt: {
             FinInstnId: {
               ClrSysMmbId: {
-                MmbId:
-                  pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAgt.FinInstnId
-                    .ClrSysMmbId.MmbId,
+                MmbId: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAgt.FinInstnId.ClrSysMmbId.MmbId,
               },
             },
           },
@@ -353,12 +318,9 @@ export const GetPain013 = (pain01: Pain001): Pain013 => {
           CdtrAcct: {
             Id: {
               Othr: {
-                Id: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAcct.Id.Othr
-                  .Id,
+                Id: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAcct.Id.Othr.Id,
                 SchmeNm: {
-                  Prtry:
-                    pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAcct.Id.Othr
-                      .SchmeNm.Prtry,
+                  Prtry: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAcct.Id.Othr.SchmeNm.Prtry,
                 },
               },
             },
@@ -427,9 +389,7 @@ export const GetPacs008 = (pain01: Pain001): Pacs008 => {
     FIToFICstmrCdt: {
       GrpHdr: {
         MsgId: uuidv4().replace('-', ''),
-        CreDtTm: new Date(
-          new Date(pain01.CstmrCdtTrfInitn.GrpHdr.CreDtTm).getTime() + 20,
-        ).toISOString(),
+        CreDtTm: new Date(new Date(pain01.CstmrCdtTrfInitn.GrpHdr.CreDtTm).getTime() + 20).toISOString(),
         NbOfTxs: pain01.CstmrCdtTrfInitn.GrpHdr.NbOfTxs,
         SttlmInf: {
           SttlmMtd: 'CLRG',
@@ -442,33 +402,26 @@ export const GetPacs008 = (pain01: Pain001): Pacs008 => {
         },
         IntrBkSttlmAmt: {
           Amt: {
-            Amt: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt
-              .Amt,
-            Ccy: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt
-              .Ccy,
+            Amt: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt.Amt,
+            Ccy: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt.Ccy,
           },
         },
         InstdAmt: {
           Amt: {
-            Amt: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt
-              .Amt,
-            Ccy: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt
-              .Ccy,
+            Amt: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt.Amt,
+            Ccy: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt.Ccy,
           },
         },
         ChrgBr: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.ChrgBr,
         ChrgsInf: {
           Amt: {
             Amt: 0,
-            Ccy: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt
-              .Ccy,
+            Ccy: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt.Ccy,
           },
           Agt: {
             FinInstnId: {
               ClrSysMmbId: {
-                MmbId:
-                  pain01.CstmrCdtTrfInitn.PmtInf.DbtrAgt.FinInstnId.ClrSysMmbId
-                    .MmbId,
+                MmbId: pain01.CstmrCdtTrfInitn.PmtInf.DbtrAgt.FinInstnId.ClrSysMmbId.MmbId,
               },
             },
           },
@@ -488,8 +441,7 @@ export const GetPacs008 = (pain01: Pain001): Pacs008 => {
             Othr: {
               Id: pain01.CstmrCdtTrfInitn.PmtInf.DbtrAcct.Id.Othr.Id,
               SchmeNm: {
-                Prtry:
-                  pain01.CstmrCdtTrfInitn.PmtInf.DbtrAcct.Id.Othr.SchmeNm.Prtry,
+                Prtry: pain01.CstmrCdtTrfInitn.PmtInf.DbtrAcct.Id.Othr.SchmeNm.Prtry,
               },
             },
           },
@@ -498,18 +450,14 @@ export const GetPacs008 = (pain01: Pain001): Pacs008 => {
         DbtrAgt: {
           FinInstnId: {
             ClrSysMmbId: {
-              MmbId:
-                pain01.CstmrCdtTrfInitn.PmtInf.DbtrAgt.FinInstnId.ClrSysMmbId
-                  .MmbId,
+              MmbId: pain01.CstmrCdtTrfInitn.PmtInf.DbtrAgt.FinInstnId.ClrSysMmbId.MmbId,
             },
           },
         },
         CdtrAgt: {
           FinInstnId: {
             ClrSysMmbId: {
-              MmbId:
-                pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAgt.FinInstnId
-                  .ClrSysMmbId.MmbId,
+              MmbId: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAgt.FinInstnId.ClrSysMmbId.MmbId,
             },
           },
         },
@@ -521,12 +469,9 @@ export const GetPacs008 = (pain01: Pain001): Pacs008 => {
         CdtrAcct: {
           Id: {
             Othr: {
-              Id: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAcct.Id.Othr
-                .Id,
+              Id: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAcct.Id.Othr.Id,
               SchmeNm: {
-                Prtry:
-                  pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAcct.Id.Othr
-                    .SchmeNm.Prtry,
+                Prtry: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAcct.Id.Othr.SchmeNm.Prtry,
               },
             },
           },
@@ -548,9 +493,7 @@ export const GetPacs008 = (pain01: Pain001): Pacs008 => {
       SplmtryData: {
         Envlp: {
           Doc: {
-            Xprtn:
-              pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.SplmtryData.Envlp.Doc
-                .Xprtn,
+            Xprtn: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.SplmtryData.Envlp.Doc.Xprtn,
           },
         },
       },
@@ -585,9 +528,7 @@ export const GetPacs002 = (columns: string[], date: Date): Pacs002 => {
             Agt: {
               FinInstnId: {
                 ClrSysMmbId: {
-                  MmbId: `${columns[Fields.PAYMENT_COUNTRY_CODE]}${
-                    columns[Fields.SENDER_AGENT_SPID]
-                  }`,
+                  MmbId: `${columns[Fields.PAYMENT_COUNTRY_CODE]}${columns[Fields.SENDER_AGENT_SPID]}`,
                 },
               },
             },
@@ -600,9 +541,7 @@ export const GetPacs002 = (columns: string[], date: Date): Pacs002 => {
             Agt: {
               FinInstnId: {
                 ClrSysMmbId: {
-                  MmbId: `${columns[Fields.PAYMENT_COUNTRY_CODE]}${
-                    columns[Fields.SENDER_AGENT_SPID]
-                  }`,
+                  MmbId: `${columns[Fields.PAYMENT_COUNTRY_CODE]}${columns[Fields.SENDER_AGENT_SPID]}`,
                 },
               },
             },
@@ -615,9 +554,7 @@ export const GetPacs002 = (columns: string[], date: Date): Pacs002 => {
             Agt: {
               FinInstnId: {
                 ClrSysMmbId: {
-                  MmbId: `${columns[Fields.PAYMENT_COUNTRY_CODE]}${
-                    columns[Fields.RECEIVER_AGENT_SPID]
-                  }`,
+                  MmbId: `${columns[Fields.PAYMENT_COUNTRY_CODE]}${columns[Fields.RECEIVER_AGENT_SPID]}`,
                 },
               },
             },
@@ -627,18 +564,14 @@ export const GetPacs002 = (columns: string[], date: Date): Pacs002 => {
         InstgAgt: {
           FinInstnId: {
             ClrSysMmbId: {
-              MmbId: `${columns[Fields.PAYMENT_COUNTRY_CODE]}${
-                columns[Fields.SENDER_AGENT_SPID]
-              }`,
+              MmbId: `${columns[Fields.PAYMENT_COUNTRY_CODE]}${columns[Fields.SENDER_AGENT_SPID]}`,
             },
           },
         },
         InstdAgt: {
           FinInstnId: {
             ClrSysMmbId: {
-              MmbId: `${columns[Fields.PAYMENT_COUNTRY_CODE]}${
-                columns[Fields.RECEIVER_AGENT_SPID]
-              }`,
+              MmbId: `${columns[Fields.PAYMENT_COUNTRY_CODE]}${columns[Fields.RECEIVER_AGENT_SPID]}`,
             },
           },
         },

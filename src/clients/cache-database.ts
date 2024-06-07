@@ -13,21 +13,13 @@ export class CacheDatabaseService {
   private readonly cacheClient: RedisService;
   cacheExpireTime: number;
 
-  private constructor(
-    dbClient: ArangoDBService,
-    cacheClient: RedisService,
-    expire: number,
-  ) {
+  private constructor(dbClient: ArangoDBService, cacheClient: RedisService, expire: number) {
     this.dbClient = dbClient;
     this.cacheClient = cacheClient;
     this.cacheExpireTime = expire;
   }
 
-  public static async create(
-    db: ArangoDBService,
-    cacheClient: RedisService,
-    expire: number,
-  ): Promise<CacheDatabaseService> {
+  public static async create(db: ArangoDBService, cacheClient: RedisService, expire: number): Promise<CacheDatabaseService> {
     return new CacheDatabaseService(db, cacheClient, expire);
   }
 
@@ -53,17 +45,11 @@ export class CacheDatabaseService {
     await this.dbClient.addEntity(entityId, CreDtTm);
   }
 
-  async addAccountHolder(
-    entityId: string,
-    accountId: string,
-    CreDtTm: string,
-  ): Promise<void> {
+  async addAccountHolder(entityId: string, accountId: string, CreDtTm: string): Promise<void> {
     await this.dbClient.addAccountHolder(entityId, accountId, CreDtTm);
   }
 
-  async saveTransactionRelationship(
-    tR: TransactionRelationship,
-  ): Promise<void> {
+  async saveTransactionRelationship(tR: TransactionRelationship): Promise<void> {
     await this.dbClient.saveTransactionRelationship(tR);
   }
 
@@ -72,16 +58,10 @@ export class CacheDatabaseService {
     transactionHistoryCollection: string,
     redisKey = '',
   ): Promise<void> {
-    if (redisKey)
-      await this.cacheClient.setJson(
-        redisKey,
-        JSON.stringify(transaction),
-        this.cacheExpireTime,
-      );
+    if (redisKey) {
+      await this.cacheClient.setJson(redisKey, JSON.stringify(transaction), this.cacheExpireTime);
+    }
 
-    await this.dbClient.saveTransactionHistory(
-      transaction,
-      transactionHistoryCollection,
-    );
+    await this.dbClient.saveTransactionHistory(transaction, transactionHistoryCollection);
   }
 }
