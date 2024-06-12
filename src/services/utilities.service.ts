@@ -4,30 +4,19 @@ import axios from 'axios';
 import apm from 'elastic-apm-node';
 import { LoggerService } from '../logger.service';
 
-export const executePost = async (
-  endpoint: string,
-  request: unknown,
-): Promise<boolean> => {
+export const executePost = async (endpoint: string, request: unknown): Promise<boolean> => {
   const span = apm.startSpan(`POST ${endpoint}`);
   try {
     const eventDirectorRes = await axios.post(endpoint, request);
 
     if (eventDirectorRes.status !== 200) {
-      LoggerService.error(
-        `Event-Director Response StatusCode != 200, request:\r\n${JSON.stringify(
-          request,
-        )}`,
-      );
+      LoggerService.error(`Event-Director Response StatusCode != 200, request:\r\n${JSON.stringify(request)}`);
       return false;
     }
     span?.end();
     return true;
   } catch (error) {
-    LoggerService.error(
-      `Error while sending request to Event-Director at ${
-        endpoint ?? ''
-      } with message: ${JSON.stringify(error)}`,
-    );
+    LoggerService.error(`Error while sending request to Event-Director at ${endpoint ?? ''} with message: ${JSON.stringify(error)}`);
     LoggerService.trace(`Event-Director Error Request:\r\n${JSON.stringify(request)}`);
     return false;
   }
