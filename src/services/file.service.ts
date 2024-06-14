@@ -7,20 +7,13 @@ import * as readline from 'readline';
 import { databaseClient, dbService } from '..';
 import { configuration } from '../config';
 import { LoggerService } from '../logger.service';
-import {
-  GetPacs002,
-  GetPacs008,
-  GetPain013,
-  GetPain001FromLine,
-} from './message.generation.service';
+import { GetPacs002, GetPacs008, GetPain013, GetPain001FromLine } from './message.generation.service';
 import { executePost, Fields } from './utilities.service';
 import { handleTransaction } from './save.transactions.service';
 import { type Pain013 } from '../classes/pain.013.001.09';
 import { type Pacs008 } from '../classes/pacs.008.001.10';
 
-const getMissingTransaction = async (
-  batchSourceFileLine: readline.Interface,
-): Promise<string[]> => {
+const getMissingTransaction = async (batchSourceFileLine: readline.Interface): Promise<string[]> => {
   let endToEndIds: string[] = [];
   for await (const line of batchSourceFileLine) {
     const columns = line.split('|');
@@ -34,19 +27,11 @@ const getMissingTransaction = async (
   return endToEndIds;
 };
 
-const sendPacs002Transaction = async (
-  columns: string[],
-  delta: number,
-): Promise<boolean> => {
+const sendPacs002Transaction = async (columns: string[], delta: number): Promise<boolean> => {
   LoggerService.log('Sending Pacs002 message...');
   const currentPacs002 = GetPacs002(columns, new Date(delta + Date.now()));
-  LoggerService.log(
-    `${JSON.stringify(currentPacs002.FIToFIPmtSts.GrpHdr.MsgId)} - Submitted`,
-  );
-  return await executePost(
-    `${configuration.tmsEndpoint}transfer-response`,
-    currentPacs002,
-  );
+  LoggerService.log(`${JSON.stringify(currentPacs002.FIToFIPmtSts.GrpHdr.MsgId)} - Submitted`);
+  return await executePost(`${configuration.tmsEndpoint}transfer-response`, currentPacs002);
 };
 
 const sendPrepareTransaction = async (
@@ -72,13 +57,8 @@ const sendPrepareTransaction = async (
 export const SendLineMessages = async (requestBody: any): Promise<string> => {
   // Note: we use the crlfDelay option to recognize all instances of CR LF
   // ('\r\n') in input.txt as a single line break.
-  if (
-    (requestBody.update && requestBody.pacs002) ||
-    (requestBody.pacs002 === undefined && requestBody.update === undefined)
-  ) {
-    throw new Error(
-      'Updating and sending messages with one request is not allowed',
-    );
+  if ((requestBody.update && requestBody.pacs002) || (requestBody.pacs002 === undefined && requestBody.update === undefined)) {
+    throw new Error('Updating and sending messages with one request is not allowed');
   }
 
   if (requestBody.update) {
@@ -87,9 +67,7 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
     }
     await dbService.UpdateHistoryTransactionsTimestamp();
     await dbService.UpdatePseudonymEdgesTimestamp();
-    LoggerService.log(
-      `Updating preparation data transaction's created time date`,
-    );
+    LoggerService.log("Updating preparation data transaction's created time date");
     return 'Updated the timestamp of the prepare data';
   }
 
@@ -112,9 +90,7 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
         }),
       );
       if (!missedEndToEndIds?.length) break;
-      LoggerService.log(
-        `Batch had ${missedEndToEndIds.length} transactions missed`,
-      );
+      LoggerService.log(`Batch had ${missedEndToEndIds.length} transactions missed`);
     }
 
     const rl = readline.createInterface({
@@ -136,11 +112,7 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
       let pacs002Result = false;
       if (requestBody.pacs002) {
         if (requestBody.pacs002.overwrite) {
-          if (
-            missedEndToEndIds.filter(
-              (missedEndToEndId) => missedEndToEndId === EndToEndId,
-            ).length
-          ) {
+          if (missedEndToEndIds.filter((missedEndToEndId) => missedEndToEndId === EndToEndId).length) {
             pacs002Result = await sendPacs002Transaction(columns, delta);
             await delay(configuration.delay);
             continue;
@@ -154,11 +126,7 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
         currentPacs008 = GetPacs008(currentPain001);
         currentPain013 = GetPain013(currentPain001);
 
-        await sendPrepareTransaction(
-          currentPain001,
-          currentPain013,
-          currentPacs008,
-        );
+        await sendPrepareTransaction(currentPain001, currentPain013, currentPacs008);
       }
 
       if (pacs002Result) {
@@ -169,29 +137,19 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
           try {
             value = await dbService.getTransactionReport(EndToEndId);
           } catch (ex) {
-            LoggerService.error(
-              `Failed to communicate with Arango to check report. ${JSON.stringify(
-                ex,
-              )}`,
-            );
+            LoggerService.error(`Failed to communicate with Arango to check report. ${JSON.stringify(ex)}`);
           }
 
           if (value && value.length > 0) {
             LoggerService.log(`Report generated for: ${EndToEndId}`);
 
             if (
-              (columns[Fields.RECEIVER_SUSPENSE_ACCOUNT_FLAG]
-                .toString()
-                .trim() === 'N' &&
-                value[0][0].report.status === 'NALT') ||
-              (columns[Fields.RECEIVER_SUSPENSE_ACCOUNT_FLAG]
-                .toString()
-                .trim() === 'Y' &&
-                value[0][0].report.status === 'ALT')
+              (columns[Fields.RECEIVER_SUSPENSE_ACCOUNT_FLAG].toString().trim() === 'N' && value[0][0].report.status === 'NALT') ||
+              (columns[Fields.RECEIVER_SUSPENSE_ACCOUNT_FLAG].toString().trim() === 'Y' && value[0][0].report.status === 'ALT')
             ) {
-              LoggerService.log(`Report Matches Test Data`);
+              LoggerService.log('Report Matches Test Data');
             } else {
-              LoggerService.log(`Report does not match Test Data`);
+              LoggerService.log('Report does not match Test Data');
             }
           } else {
             LoggerService.log(`Failed to generate report for: ${EndToEndId}`);
@@ -201,7 +159,7 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
     }
     databaseClient.SyncPacs002AndTransaction();
   }
-  return `Submitted Transactions`;
+  return 'Submitted Transactions';
   async function delay(time: number | undefined): Promise<unknown> {
     return await new Promise((resolve) => setTimeout(resolve, time));
   }

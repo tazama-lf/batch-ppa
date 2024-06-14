@@ -1,9 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
-/* eslint-disable*/
+/* eslint @typescript-eslint/explicit-function-return-type: "warn" */
+/* eslint @typescript-eslint/naming-convention: "warn" */
+/* eslint @typescript-eslint/no-unused-vars: "warn" */
 import * as fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
-import { Pacs008 } from '../classes/pacs.008.001.10';
 
 const xml2js = require('xml2js');
 // const fs = require('fs');

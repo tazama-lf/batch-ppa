@@ -6,22 +6,16 @@ import * as fs from 'fs';
 import { configuration } from '../config';
 import { type TransactionRelationship } from '../interfaces/iTransactionRelationship';
 import { LoggerService } from '../logger.service';
-import { type Pain001 } from '../classes/pain.001.001.11';
-import { type Pain013 } from '../classes/pain.013.001.09';
-import { type Pacs002 } from '../classes/pacs.002.001.12';
-import { type Pacs008 } from '../classes/pacs.008.001.10';
-import { type GeneratedAqlQuery } from 'arangojs/aql';
 
 export class ArangoDBService {
   transactionHistoryClient: Database;
   pseudonymsClient: Database;
 
   constructor() {
-    const caOption = fs.existsSync(configuration.cert)
-      ? [fs.readFileSync(configuration.cert)]
-      : [];
-    if (caOption.length === 0)
+    const caOption = fs.existsSync(configuration.cert) ? [fs.readFileSync(configuration.cert)] : [];
+    if (caOption.length === 0) {
       LoggerService.warn('🟠 ArangoDB was not supplied with a certificate');
+    }
     this.pseudonymsClient = new Database({
       url: configuration.db.url,
       databaseName: configuration.db.pseudonymsdb,
@@ -57,6 +51,7 @@ export class ArangoDBService {
   async query(query, client: Database): Promise<unknown> {
     const span = apm.startSpan(`Query in ${client.name}`);
     try {
+      // eslint-disable-next-line @typescript-eslint/no-unsafe-argument
       const cycles = await client.query(query);
       const results = await cycles.batches.all();
 
@@ -65,54 +60,28 @@ export class ArangoDBService {
 
       return results;
     } catch (error) {
-      LoggerService.error(
-        'Error while executing query from arango with message:',
-        error as Error,
-        'ArangoDBService',
-      );
-      throw new Error(
-        `Error while executing query from arango with message: ${JSON.stringify(
-          error as Error,
-        )}`,
-      );
+      LoggerService.error('Error while executing query from arango with message:', error as Error, 'ArangoDBService');
+      throw new Error(`Error while executing query from arango with message: ${JSON.stringify(error as Error)}`);
     }
   }
 
-  async save(
-    client: Database,
-    collectionName: string,
-    data: unknown,
-    saveOptions?: unknown,
-  ): Promise<void> {
-    const span = apm.startSpan(
-      `Save ${collectionName} document in ${client.name}`,
-    );
+  async save(client: Database, collectionName: string, data: unknown, saveOptions?: unknown): Promise<void> {
+    const span = apm.startSpan(`Save ${collectionName} document in ${client.name}`);
     try {
-      await client
-        .collection(collectionName)
-        .save(data, saveOptions || undefined);
+      await client.collection(collectionName).save(data, saveOptions || undefined);
       span?.end();
     } catch (error) {
-      LoggerService.error(
-        `Error while saving data to collection ${collectionName} with document\n ${JSON.stringify(
-          data,
-        )}`,
-      );
-      if (saveOptions)
-        LoggerService.error(
-          `With save options: ${JSON.stringify(saveOptions)}`,
-        );
+      LoggerService.error(`Error while saving data to collection ${collectionName} with document\n ${JSON.stringify(data)}`);
+      if (saveOptions) {
+        LoggerService.error(`With save options: ${JSON.stringify(saveOptions)}`);
+      }
       LoggerService.error(JSON.stringify(error));
-      throw new Error(
-        `Error while saving data to collection ${collectionName}`,
-      );
+      throw new Error(`Error while saving data to collection ${collectionName}`);
     }
   }
 
   async getPseudonyms(hash: string): Promise<unknown> {
-    const db = this.pseudonymsClient.collection(
-      configuration.db.pseudonymscollection,
-    );
+    const db = this.pseudonymsClient.collection(configuration.db.pseudonymscollection);
     const query = aql`FOR i IN ${db}
         FILTER i.pseudonym == ${hash}
         RETURN i`;
@@ -132,10 +101,7 @@ export class ArangoDBService {
                                         FILTER doc NOT IN postedArr
                                     RETURN doc`;
 
-    return (await this.query(
-      query,
-      this.transactionHistoryClient,
-    )) as string[][];
+    return (await this.query(query, this.transactionHistoryClient)) as string[][];
   }
 
   async UpdatePseudonymEdgesTimestamp(): Promise<void> {
@@ -206,9 +172,7 @@ export class ArangoDBService {
       await this.query(queryPacs013, this.pseudonymsClient);
       await this.query(queryPacs008, this.pseudonymsClient);
     } catch {
-      throw new Error(
-        `Error trying to shift timestap of transaction relationships`,
-      );
+      throw new Error('Error trying to shift timestap of transaction relationships');
     }
   }
 
@@ -253,9 +217,7 @@ export class ArangoDBService {
   }
 
   async RemovePacs002Pseudonym(): Promise<void> {
-    const dbPacs002 = this.transactionHistoryClient.collection(
-      configuration.db.transactionhistory_pacs002_collection,
-    );
+    const dbPacs002 = this.transactionHistoryClient.collection(configuration.db.transactionhistory_pacs002_collection);
     const pacs002TransactionHistoryQuery = aql`
                                   FOR pacs002 IN ${dbPacs002}
                                   REMOVE pacs002 IN ${dbPacs002}`;
@@ -267,24 +229,15 @@ export class ArangoDBService {
     const removeReportQuery = aql`FOR reports IN transactions
                                   REMOVE reports IN transactions`;
 
-    await this.query(
-      pacs002TransactionHistoryQuery,
-      this.transactionHistoryClient,
-    );
+    await this.query(pacs002TransactionHistoryQuery, this.transactionHistoryClient);
     await this.query(pacs002PseudonymQuery, this.pseudonymsClient);
     await this.query(removeReportQuery, this.transactionHistoryClient);
   }
 
   async UpdateHistoryTransactionsTimestamp(): Promise<void> {
-    const dbPacs008 = this.transactionHistoryClient.collection(
-      configuration.db.transactionhistory_pacs008_collection,
-    );
-    const dbPain013 = this.transactionHistoryClient.collection(
-      configuration.db.transactionhistory_pain013_collection,
-    );
-    const dbPain001 = this.transactionHistoryClient.collection(
-      configuration.db.transactionhistory_pain001_collection,
-    );
+    const dbPacs008 = this.transactionHistoryClient.collection(configuration.db.transactionhistory_pacs008_collection);
+    const dbPain013 = this.transactionHistoryClient.collection(configuration.db.transactionhistory_pain013_collection);
+    const dbPain001 = this.transactionHistoryClient.collection(configuration.db.transactionhistory_pain001_collection);
     const queryPacs008 = aql`LET newestPacs008 = (
                                 FOR pacs008 IN ${dbPacs008}
                                     SORT pacs008.FIToFICstmrCdt.GrpHdr.CreDtTm DESC
@@ -327,16 +280,12 @@ export class ArangoDBService {
       await this.query(queryPacs013, this.transactionHistoryClient);
       await this.query(queryPacs008, this.transactionHistoryClient);
     } catch {
-      throw new Error(
-        `Error while trying to shift timestamp of transactions history`,
-      );
+      throw new Error('Error while trying to shift timestamp of transactions history');
     }
   }
 
   async getOldestTimestampPacs008(): Promise<Date> {
-    const db = this.transactionHistoryClient.collection(
-      configuration.db.transactionhistory_pacs008_collection,
-    );
+    const db = this.transactionHistoryClient.collection(configuration.db.transactionhistory_pacs008_collection);
     const query = aql`
         FOR pacs008 IN ${db}
         SORT pacs008.FIToFICstmrCdt.GrpHdr.CreDtTm ASC
@@ -344,20 +293,14 @@ export class ArangoDBService {
         RETURN pacs008.FIToFICstmrCdt.GrpHdr.CreDtTm`;
 
     try {
-      return (
-        (await this.query(query, this.transactionHistoryClient)) as Date
-      )[0][0];
+      return ((await this.query(query, this.transactionHistoryClient)) as Date)[0][0];
     } catch {
-      throw new Error(
-        `Error while trying to retrieve oldest timestamp pacs008`,
-      );
+      throw new Error('Error while trying to retrieve oldest timestamp pacs008');
     }
   }
 
   async getTransactionHistoryPacs008(EndToEndId: string): Promise<unknown> {
-    const db = this.transactionHistoryClient.collection(
-      configuration.db.transactionhistory_pacs008_collection,
-    );
+    const db = this.transactionHistoryClient.collection(configuration.db.transactionhistory_pacs008_collection);
     const query = aql`FOR doc IN ${db}
       FILTER doc.EndToEndId == ${EndToEndId}
       RETURN doc`;
@@ -375,12 +318,7 @@ export class ArangoDBService {
   }
 
   async addAccount(hash: string): Promise<void> {
-    await this.save(
-      this.pseudonymsClient,
-      'accounts',
-      { _key: hash },
-      { overwriteMode: 'ignore' },
-    );
+    await this.save(this.pseudonymsClient, 'accounts', { _key: hash }, { overwriteMode: 'ignore' });
   }
 
   async addEntity(entityId: string, CreDtTm: string): Promise<void> {
@@ -396,11 +334,7 @@ export class ArangoDBService {
     );
   }
 
-  async addAccountHolder(
-    entityId: string,
-    accountId: string,
-    CreDtTm: string,
-  ): Promise<void> {
+  async addAccountHolder(entityId: string, accountId: string, CreDtTm: string): Promise<void> {
     await this.save(
       this.pseudonymsClient,
       'account_holder',
@@ -413,9 +347,7 @@ export class ArangoDBService {
     );
   }
 
-  async saveTransactionRelationship(
-    tR: TransactionRelationship,
-  ): Promise<void> {
+  async saveTransactionRelationship(tR: TransactionRelationship): Promise<void> {
     await this.save(
       this.pseudonymsClient,
       'transactionRelationship',
@@ -436,24 +368,14 @@ export class ArangoDBService {
     );
   }
 
-  async saveTransactionHistory(
-    transaction: unknown,
-    transactionhistorycollection: string,
-  ): Promise<void> {
-    await this.save(
-      this.transactionHistoryClient,
-      transactionhistorycollection,
-      transaction,
-      {
-        overwriteMode: 'ignore',
-      },
-    );
+  async saveTransactionHistory(transaction: unknown, transactionhistorycollection: string): Promise<void> {
+    await this.save(this.transactionHistoryClient, transactionhistorycollection, transaction, {
+      overwriteMode: 'ignore',
+    });
   }
 
   async getTransactionPain001(endToEnd: string): Promise<unknown> {
-    const db = this.transactionHistoryClient.collection(
-      configuration.db.transactionhistory_pain001_collection,
-    );
+    const db = this.transactionHistoryClient.collection(configuration.db.transactionhistory_pain001_collection);
     const query = aql`FOR doc IN ${db}
       FILTER doc.EndToEndId == ${endToEnd}
       RETURN doc`;
@@ -461,13 +383,8 @@ export class ArangoDBService {
   }
 
   async savePseudonym(pseudonym: unknown): Promise<void> {
-    await this.save(
-      this.pseudonymsClient,
-      configuration.db.pseudonymscollection,
-      pseudonym,
-      {
-        overwriteMode: 'ignore',
-      },
-    );
+    await this.save(this.pseudonymsClient, configuration.db.pseudonymscollection, pseudonym, {
+      overwriteMode: 'ignore',
+    });
   }
 }
