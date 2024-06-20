@@ -7,8 +7,8 @@
   - [1. Installation](#1-installation)
   - [2. Configuration](#2-configuration)
   - [3. Sending Batch Messages](#3-sending-batch-messages)
-    - [Step 1 /uploadfile](#step-1-uploadfile)
-    - [Step 2 /execute](#step-2-execute)
+    - [Step 1 /v1/uploadfile](#step-1-uploadfile)
+    - [Step 2 /v1/execute](#step-2-execute)
   - [3.1 Sending Preparation messages](#31-sending-preparation-messages)
   - [3.2. Sending PACS002 Messages](#32-sending-pacs002-messages)
   - [3.3 Resending of Pacs002 Messages](#33-resending-of-pacs002-messages)
@@ -38,13 +38,13 @@ Before using the application, you need to configure it by editing the .env.templ
 
 ## 3. Sending Batch Messages
 
-### Step 1 /uploadfile
+### Step 1 /v1/uploadfile
 
 Sending source file with transitions into the server-side host, the file is expected to have a delimiter of ‘|’ and have different fields of transitions which are mentioned in 4.1 this will get the execution of the batch ready. Now let’s get to how you do it, with a request tool like Postman that can send requests and the body of form data, which can attach to file, the file is limited to 100 MB now which should be 100 000 transactions in the batch. Make sure that you are pointing to your endpoint {yourhost}/uploadfile with Method of POST, then attach the file with the “batch” key name and then send the batch wait until finishes for step 2.
 
 Example:
 
-### Step 2 /execute
+### Step 2 /v1/execute
 
 As mentioned before batch ppa executes the batch in two steps, The first step is the execution of preparation messages which are pain001, pain013, and pacs008, and then the last step is the sending of pacs002 which will generate the report of FRMS.
 
