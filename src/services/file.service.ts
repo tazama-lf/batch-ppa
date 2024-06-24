@@ -31,7 +31,7 @@ const sendPacs002Transaction = async (columns: string[], delta: number): Promise
   LoggerService.log('Sending Pacs002 message...');
   const currentPacs002 = GetPacs002(columns, new Date(delta + Date.now()));
   LoggerService.log(`${JSON.stringify(currentPacs002.FIToFIPmtSts.GrpHdr.MsgId)} - Submitted`);
-  return await executePost(`${configuration.tmsEndpoint}/v1/pacs.002.001.12`, currentPacs002);
+  return await executePost(`${configuration.tmsEndpoint}/v1/evaluate/iso20022/pacs.002.001.12`, currentPacs002);
 };
 
 const sendPrepareTransaction = async (
