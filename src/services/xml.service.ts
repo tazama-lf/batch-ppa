@@ -24,7 +24,7 @@ export const GetPacs008FromXML = () => {
       // let pacs008: Pacs008 = {
       //     TxTp: 'pacs.008.001.10',
       //     EndToEndId: end2endID,
-      //     FIToFICstmrCdt: {
+      //     FIToFICstmrCdtTrf: {
       //       GrpHdr: {
       //         MsgId: uuidv4().replace('-',''),
       //         CreDtTm: result.RequestPayload.Document[0].FIToFICstmrCdtTrf[0].GrpHdr[0].CreDtTm[0],

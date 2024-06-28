@@ -240,14 +240,14 @@ export class ArangoDBService {
     const dbPain001 = this.transactionHistoryClient.collection(configuration.db.transactionhistory_pain001_collection);
     const queryPacs008 = aql`LET newestPacs008 = (
                                 FOR pacs008 IN ${dbPacs008}
-                                    SORT pacs008.FIToFICstmrCdt.GrpHdr.CreDtTm DESC
+                                    SORT pacs008.FIToFICstmrCdtTrf.GrpHdr.CreDtTm DESC
                                     LIMIT 1
                                 RETURN pacs008
                             )
-                            LET timeDeltaToNow = DATE_DIFF(DATE_TIMESTAMP(newestPacs008[0].FIToFICstmrCdt.GrpHdr.CreDtTm), DATE_NOW(), "millisecond", false)
+                            LET timeDeltaToNow = DATE_DIFF(DATE_TIMESTAMP(newestPacs008[0].FIToFICstmrCdtTrf.GrpHdr.CreDtTm), DATE_NOW(), "millisecond", false)
                             FOR doc IN ${dbPacs008}
-                                LET newDoc = {"GrpHdr": {"CreDtTm": DATE_ADD(DATE_TIMESTAMP(doc.FIToFICstmrCdt.GrpHdr.CreDtTm), timeDeltaToNow, "millisecond")}}
-                              UPDATE doc WITH { FIToFICstmrCdtTrf: MERGE(doc.FIToFICstmrCdt, newDoc) } IN ${dbPacs008}`;
+                                LET newDoc = {"GrpHdr": {"CreDtTm": DATE_ADD(DATE_TIMESTAMP(doc.FIToFICstmrCdtTrf.GrpHdr.CreDtTm), timeDeltaToNow, "millisecond")}}
+                              UPDATE doc WITH { FIToFICstmrCdtTrfTrf: MERGE(doc.FIToFICstmrCdtTrf, newDoc) } IN ${dbPacs008}`;
 
     const queryPacs013 = aql`LET newestPain013 = (
                           FOR pain013 IN ${dbPain013}
@@ -288,9 +288,9 @@ export class ArangoDBService {
     const db = this.transactionHistoryClient.collection(configuration.db.transactionhistory_pacs008_collection);
     const query = aql`
         FOR pacs008 IN ${db}
-        SORT pacs008.FIToFICstmrCdt.GrpHdr.CreDtTm ASC
+        SORT pacs008.FIToFICstmrCdtTrf.GrpHdr.CreDtTm ASC
         LIMIT 1
-        RETURN pacs008.FIToFICstmrCdt.GrpHdr.CreDtTm`;
+        RETURN pacs008.FIToFICstmrCdtTrf.GrpHdr.CreDtTm`;
 
     try {
       return ((await this.query(query, this.transactionHistoryClient)) as Date)[0][0];
