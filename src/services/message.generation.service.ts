@@ -25,12 +25,14 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
                 CityOfBirth: 'Unknown',
                 CtryOfBirth: 'ZZ',
               },
-              Othr: {
-                Id: columns[Fields.SENDER_ACCOUNT],
-                SchmeNm: {
-                  Prtry: 'ACCOUNT NUMBER',
+              Othr: [
+                {
+                  Id: columns[Fields.SENDER_ACCOUNT],
+                  SchmeNm: {
+                    Prtry: 'ACCOUNT NUMBER',
+                  },
                 },
-              },
+              ],
             },
           },
           CtctDtls: {
@@ -64,27 +66,31 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
                 CityOfBirth: 'Unknown',
                 CtryOfBirth: 'ZZ',
               },
-              Othr: {
-                Id: columns[Fields.SENDER_ACCOUNT],
-                SchmeNm: {
-                  Prtry: 'ACCOUNT NUMBER',
+              Othr: [
+                {
+                  Id: columns[Fields.SENDER_ACCOUNT],
+                  SchmeNm: {
+                    Prtry: 'ACCOUNT NUMBER',
+                  },
                 },
-              },
+              ],
             },
           },
         },
 
         DbtrAcct: {
           Id: {
-            Othr: {
-              Id:
-                columns[Fields.RECEIVER_NAME] === 'Y'
-                  ? `${columns[Fields.SENDER_ACCOUNT]}${columns[Fields.SENDER_NAME]}`
-                  : `${columns[Fields.SENDER_ACCOUNT]}`,
-              SchmeNm: {
-                Prtry: columns[Fields.RECEIVER_NAME] === 'Y' ? 'SUSPENSE_ACCOUNT' : 'USER_ACCOUNT',
+            Othr: [
+              {
+                Id:
+                  columns[Fields.RECEIVER_NAME] === 'Y'
+                    ? `${columns[Fields.SENDER_ACCOUNT]}${columns[Fields.SENDER_NAME]}`
+                    : `${columns[Fields.SENDER_ACCOUNT]}`,
+                SchmeNm: {
+                  Prtry: columns[Fields.RECEIVER_NAME] === 'Y' ? 'SUSPENSE_ACCOUNT' : 'USER_ACCOUNT',
+                },
               },
-            },
+            ],
           },
           Nm: columns[Fields.SENDER_NAME],
         },
@@ -136,12 +142,14 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
                   CityOfBirth: 'Unknown',
                   CtryOfBirth: 'ZZ',
                 },
-                Othr: {
-                  Id: columns[Fields.RECEIVER_ACCOUNT],
-                  SchmeNm: {
-                    Prtry: 'ACCOUNT NUMBER',
+                Othr: [
+                  {
+                    Id: columns[Fields.RECEIVER_ACCOUNT],
+                    SchmeNm: {
+                      Prtry: 'ACCOUNT NUMBER',
+                    },
                   },
-                },
+                ],
               },
             },
             CtctDtls: {
@@ -150,15 +158,17 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
           },
           CdtrAcct: {
             Id: {
-              Othr: {
-                Id:
-                  columns[Fields.RECEIVER_NAME] === 'Y'
-                    ? `${columns[Fields.RECEIVER_ACCOUNT]}${columns[Fields.RECEIVER_NAME]}`
-                    : `${columns[Fields.RECEIVER_ACCOUNT]}`,
-                SchmeNm: {
-                  Prtry: columns[Fields.RECEIVER_NAME] === 'Y' ? 'SUSPENSE_ACCOUNT' : 'USER_ACCOUNT',
+              Othr: [
+                {
+                  Id:
+                    columns[Fields.RECEIVER_NAME] === 'Y'
+                      ? `${columns[Fields.RECEIVER_ACCOUNT]}${columns[Fields.RECEIVER_NAME]}`
+                      : `${columns[Fields.RECEIVER_ACCOUNT]}`,
+                  SchmeNm: {
+                    Prtry: columns[Fields.RECEIVER_NAME] === 'Y' ? 'SUSPENSE_ACCOUNT' : 'USER_ACCOUNT',
+                  },
                 },
-              },
+              ],
             },
             Nm: columns[Fields.RECEIVER_NAME],
           },
@@ -263,13 +273,15 @@ export const GetPain013 = (pain01: Pain001): Pain013 => {
         },
         DbtrAcct: {
           Id: {
-            Othr: {
-              Id: pain01.CstmrCdtTrfInitn.PmtInf.DbtrAcct.Id.Othr.Id,
-              SchmeNm: {
-                Prtry: pain01.CstmrCdtTrfInitn.PmtInf.DbtrAcct.Id.Othr.SchmeNm.Prtry,
+            Othr: [
+              {
+                Id: pain01.CstmrCdtTrfInitn.PmtInf.DbtrAcct.Id.Othr[0].Id,
+                SchmeNm: {
+                  Prtry: pain01.CstmrCdtTrfInitn.PmtInf.DbtrAcct.Id.Othr[0].SchmeNm.Prtry,
+                },
+                Nm: pain01.CstmrCdtTrfInitn.PmtInf.DbtrAcct.Nm,
               },
-              Nm: pain01.CstmrCdtTrfInitn.PmtInf.DbtrAcct.Nm,
-            },
+            ],
           },
         },
         DbtrAgt: {
@@ -317,12 +329,14 @@ export const GetPain013 = (pain01: Pain001): Pain013 => {
           },
           CdtrAcct: {
             Id: {
-              Othr: {
-                Id: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAcct.Id.Othr.Id,
-                SchmeNm: {
-                  Prtry: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAcct.Id.Othr.SchmeNm.Prtry,
+              Othr: [
+                {
+                  Id: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAcct.Id.Othr[0].Id,
+                  SchmeNm: {
+                    Prtry: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAcct.Id.Othr[0].SchmeNm.Prtry,
+                  },
                 },
-              },
+              ],
             },
             Nm: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAcct.Nm,
           },
@@ -386,7 +400,7 @@ export const GetPacs008 = (pain01: Pain001): Pacs008 => {
   const pacs008: Pacs008 = {
     TxTp: 'pacs.008.001.10',
     EndToEndId: pain01.EndToEndId,
-    FIToFICstmrCdt: {
+    FIToFICstmrCdtTrf: {
       GrpHdr: {
         MsgId: uuidv4().replace('-', ''),
         CreDtTm: new Date(new Date(pain01.CstmrCdtTrfInitn.GrpHdr.CreDtTm).getTime() + 20).toISOString(),
@@ -438,12 +452,14 @@ export const GetPacs008 = (pain01: Pain001): Pacs008 => {
         },
         DbtrAcct: {
           Id: {
-            Othr: {
-              Id: pain01.CstmrCdtTrfInitn.PmtInf.DbtrAcct.Id.Othr.Id,
-              SchmeNm: {
-                Prtry: pain01.CstmrCdtTrfInitn.PmtInf.DbtrAcct.Id.Othr.SchmeNm.Prtry,
+            Othr: [
+              {
+                Id: pain01.CstmrCdtTrfInitn.PmtInf.DbtrAcct.Id.Othr[0].Id,
+                SchmeNm: {
+                  Prtry: pain01.CstmrCdtTrfInitn.PmtInf.DbtrAcct.Id.Othr[0].SchmeNm.Prtry,
+                },
               },
-            },
+            ],
           },
           Nm: pain01.CstmrCdtTrfInitn.PmtInf.DbtrAcct.Nm,
         },
@@ -468,12 +484,14 @@ export const GetPacs008 = (pain01: Pain001): Pacs008 => {
         },
         CdtrAcct: {
           Id: {
-            Othr: {
-              Id: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAcct.Id.Othr.Id,
-              SchmeNm: {
-                Prtry: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAcct.Id.Othr.SchmeNm.Prtry,
+            Othr: [
+              {
+                Id: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAcct.Id.Othr[0].Id,
+                SchmeNm: {
+                  Prtry: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAcct.Id.Othr[0].SchmeNm.Prtry,
+                },
               },
-            },
+            ],
           },
           Nm: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAcct.Nm,
         },

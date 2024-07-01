@@ -40,7 +40,7 @@ export interface InitgPtyID {
 
 export interface PrvtID {
   DtAndPlcOfBirth: DtAndPLCOfBirth;
-  Othr: Othr;
+  Othr: Othr[];
 }
 
 export interface DtAndPLCOfBirth {
@@ -108,7 +108,7 @@ export interface TrAcct {
 }
 
 export interface DbtrAcctID {
-  Othr: Othr;
+  Othr: Othr[];
 }
 
 export interface TrAgt {
