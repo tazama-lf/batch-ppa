@@ -1,7 +1,10 @@
-/* eslint-disable*/
+// SPDX-License-Identifier: Apache-2.0
+
+/* eslint @typescript-eslint/explicit-function-return-type: "warn" */
+/* eslint @typescript-eslint/naming-convention: "warn" */
+/* eslint @typescript-eslint/no-unused-vars: "warn" */
 import * as fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
-import { Pacs008 } from '../classes/pacs.008.001.10';
 
 const xml2js = require('xml2js');
 // const fs = require('fs');
@@ -21,7 +24,7 @@ export const GetPacs008FromXML = () => {
       // let pacs008: Pacs008 = {
       //     TxTp: 'pacs.008.001.10',
       //     EndToEndId: end2endID,
-      //     FIToFICstmrCdt: {
+      //     FIToFICstmrCdtTrf: {
       //       GrpHdr: {
       //         MsgId: uuidv4().replace('-',''),
       //         CreDtTm: result.RequestPayload.Document[0].FIToFICstmrCdtTrf[0].GrpHdr[0].CreDtTm[0],

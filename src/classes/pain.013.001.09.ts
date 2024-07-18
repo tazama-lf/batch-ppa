@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 export interface Pain013 {
   TxTp: string;
   EndToEndId: string;
@@ -34,7 +36,7 @@ export interface InitgPtyID {
 
 export interface PrvtID {
   DtAndPlcOfBirth: DtAndPLCOfBirth;
-  Othr: PrvtIDOthr;
+  Othr: PrvtIDOthr[];
 }
 
 export interface DtAndPLCOfBirth {
@@ -103,7 +105,7 @@ export interface CdtrAcct {
 }
 
 export interface CdtrAcctID {
-  Othr: PrvtIDOthr;
+  Othr: PrvtIDOthr[];
 }
 
 export interface TrAgt {
@@ -162,7 +164,7 @@ export interface DbtrAcct {
 }
 
 export interface DbtrAcctID {
-  Othr: PurpleOthr;
+  Othr: PurpleOthr[];
 }
 
 export interface PurpleOthr {

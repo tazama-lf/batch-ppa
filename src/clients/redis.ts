@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 import Redis from 'ioredis';
 import { configuration } from '../config';
 import { LoggerService } from '../logger.service';
@@ -25,11 +27,7 @@ export class RedisService {
     await new Promise((resolve) => {
       this.client.smembers(key, (err, res) => {
         if (err) {
-          LoggerService.error(
-            'Error while getting key from redis with message:',
-            err,
-            'RedisService',
-          );
+          LoggerService.error('Error while getting key from redis with message:', err, 'RedisService');
 
           resolve(['']);
         }
@@ -37,23 +35,15 @@ export class RedisService {
       });
     });
 
-  setJson = async (
-    key: string,
-    value: string,
-    expire: number,
-  ): Promise<number> =>
+  setJson = async (key: string, value: string, expire: number): Promise<number> =>
     await new Promise((resolve) => {
       this.client.sadd(key, value, (err, res) => {
         if (err) {
-          LoggerService.error(
-            'Error while adding key to redis with message:',
-            err,
-            'RedisService',
-          );
+          LoggerService.error('Error while adding key to redis with message:', err, 'RedisService');
 
           resolve(-1);
         }
-        resolve(res as number);
+        resolve(res!);
       });
     });
 
@@ -61,15 +51,11 @@ export class RedisService {
     await new Promise((resolve) => {
       this.client.del(key, (err, res) => {
         if (err) {
-          LoggerService.error(
-            'Error while deleting key from redis with message:',
-            err,
-            'RedisService',
-          );
+          LoggerService.error('Error while deleting key from redis with message:', err, 'RedisService');
 
           resolve(0);
         }
-        resolve(res as number);
+        resolve(res!);
       });
     });
 
@@ -86,11 +72,7 @@ export class RedisService {
           }
 
           if (err) {
-            LoggerService.error(
-              'Error while executing transaction on redis with message:',
-              err,
-              'RedisService',
-            );
+            LoggerService.error('Error while executing transaction on redis with message:', err, 'RedisService');
           }
 
           resolve(null);

@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 /* eslint-disable @typescript-eslint/no-non-null-assertion */
 // config settings, env variables
 import * as path from 'path';
@@ -53,47 +55,43 @@ export interface IConfig {
 
 export const configuration: IConfig = {
   apm: {
-    serviceName: process.env.APM_SERVICE_NAME as string,
-    url: process.env.APM_URL as string,
-    secretToken: process.env.APM_SECRET_TOKEN as string,
-    active: process.env.APM_ACTIVE as string,
+    serviceName: process.env.APM_SERVICE_NAME!,
+    url: process.env.APM_URL!,
+    secretToken: process.env.APM_SECRET_TOKEN!,
+    active: process.env.APM_ACTIVE!,
   },
   cacheTTL: parseInt(process.env.CACHE_TTL!, 10),
-  cert: process.env.CERT_PATH as string,
-  tmsEndpoint: process.env.TMS_ENDPOINT as string,
-  verifyReports: process.env.VERIFY_REPORTS as string,
+  cert: process.env.CERT_PATH!,
+  tmsEndpoint: process.env.TMS_ENDPOINT!,
+  verifyReports: process.env.VERIFY_REPORTS!,
   delay: parseInt(process.env.DELAY!, 0),
   retry: parseInt(process.env.RETRY!, 0) || 1,
   db: {
-    pseudonymsdb: process.env.PSEUDONYMS_DATABASE as string,
-    pseudonymscollection: process.env.PSEUDONYMS_COLLECTION as string,
-    transactionhistorydb: process.env.TRANSACTIONHISTORY_DATABASE as string,
-    transactionhistory_pain001_collection: process.env
-      .TRANSACTIONHISTORY_PAIN001_COLLECTION as string,
-    transactionhistory_pain013_collection: process.env
-      .TRANSACTIONHISTORY_PAIN013_COLLECTION as string,
-    transactionhistory_pacs008_collection: process.env
-      .TRANSACTIONHISTORY_PACS008_COLLECTION as string,
-    transactionhistory_pacs002_collection: process.env
-      .TRANSACTIONHISTORY_PACS002_COLLECTION as string,
-    password: process.env.DATABASE_PASSWORD as string,
-    url: process.env.DATABASE_URL as string,
-    user: process.env.DATABASE_USER as string,
+    pseudonymsdb: process.env.PSEUDONYMS_DATABASE!,
+    pseudonymscollection: process.env.PSEUDONYMS_COLLECTION!,
+    transactionhistorydb: process.env.TRANSACTIONHISTORY_DATABASE!,
+    transactionhistory_pain001_collection: process.env.TRANSACTIONHISTORY_PAIN001_COLLECTION!,
+    transactionhistory_pain013_collection: process.env.TRANSACTIONHISTORY_PAIN013_COLLECTION!,
+    transactionhistory_pacs008_collection: process.env.TRANSACTIONHISTORY_PACS008_COLLECTION!,
+    transactionhistory_pacs002_collection: process.env.TRANSACTIONHISTORY_PACS002_COLLECTION!,
+    password: process.env.DATABASE_PASSWORD!,
+    url: process.env.DATABASE_URL!,
+    user: process.env.DATABASE_USER!,
   },
-  env: process.env.NODE_ENV as string,
-  functionName: process.env.FUNCTION_NAME as string,
+  env: process.env.NODE_ENV!,
+  functionName: process.env.FUNCTION_NAME!,
   logstash: {
-    host: process.env.LOGSTASH_HOST as string,
+    host: process.env.LOGSTASH_HOST!,
     port: parseInt(process.env.LOGSTASH_PORT!, 10),
   },
   port: parseInt(process.env.PORT!, 10) || 3000,
   redis: {
-    auth: process.env.REDIS_AUTH as string,
+    auth: process.env.REDIS_AUTH!,
     db: parseInt(process.env.REDIS_DB!, 10) || 0,
-    host: process.env.REDIS_HOST as string,
+    host: process.env.REDIS_HOST!,
     port: parseInt(process.env.REDIS_PORT!, 10),
   },
   data: {
-    type: process.env.DATA_TYPE as string,
+    type: process.env.DATA_TYPE!,
   },
 };

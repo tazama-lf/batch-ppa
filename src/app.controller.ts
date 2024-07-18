@@ -1,17 +1,16 @@
+// SPDX-License-Identifier: Apache-2.0
+
 import { IncomingForm } from 'formidable';
 import { type Context, type Next } from 'koa';
 import { processLineByLine } from '.';
 import { LoggerService } from './logger.service';
 
-export const handleExecute = async (
-  ctx: Context,
-  next: Next,
-): Promise<Context> => {
+export const handleExecute = async (ctx: Context, next: Next): Promise<Context> => {
   LoggerService.log('Start - Handle execute request');
   try {
     await processLineByLine(ctx?.request?.body);
     await next();
-    ctx.body = `Transactions were submitted`;
+    ctx.body = 'Transactions were submitted';
     return ctx;
   } catch (err) {
     const failMessage = 'Failed to process execution request.';
@@ -25,10 +24,7 @@ export const handleExecute = async (
   }
 };
 
-export const handleFileUpload = async (
-  ctx: Context,
-  next: Next,
-): Promise<Context> => {
+export const handleFileUpload = async (ctx: Context, next: Next): Promise<Context> => {
   LoggerService.log('Start - Handle quote reply request');
   try {
     ctx.status = 200;
@@ -49,6 +45,7 @@ export const handleFileUpload = async (
         if (err) {
           // Handle any errors that occurred during parsing
           console.error(err);
+          // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
           reject(err);
         } else {
           ctx.body = 'File was uploaded successfully!';

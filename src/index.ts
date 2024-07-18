@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 import axios from 'axios';
 import apm from 'elastic-apm-node';
 import { type Context } from 'koa';
@@ -7,10 +9,7 @@ import { configuration } from './config';
 import { LoggerService } from './logger.service';
 import { SendLineMessages } from './services/file.service';
 import { GetPacs008FromXML } from './services/xml.service';
-import {
-  ServicesContainer,
-  initCacheDatabase,
-} from './services/services-container';
+import { ServicesContainer, initCacheDatabase } from './services/services-container';
 
 /*
  * Initialize the APM Logging
@@ -55,14 +54,9 @@ function terminate(signal: NodeJS.Signals): void {
 /*
  * Start server
  **/
-if (
-  Object.values(require.cache).filter(async (m) => m?.children.includes(module))
-) {
+if (Object.values(require.cache).filter(async (m) => m?.children.includes(module))) {
   const server = app.listen(configuration.port, async () => {
-    LoggerService.log(
-      `API server listening on PORT ${configuration.port}`,
-      'execute',
-    );
+    LoggerService.log(`API server listening on PORT ${configuration.port}`, 'execute');
     await initCacheDatabase(configuration.cacheTTL, cacheClient);
   });
   server.on('error', handleError);
@@ -82,9 +76,7 @@ if (
 }
 
 // read batch file line-by-line
-export const processLineByLine = async (
-  requestBody: unknown,
-): Promise<void> => {
+export const processLineByLine = async (requestBody: unknown): Promise<void> => {
   switch (configuration.data.type) {
     case 'textfile':
       await SendLineMessages(requestBody);
@@ -100,34 +92,20 @@ export const processLineByLine = async (
   }
 };
 
-const executePost = async (
-  endpoint: string,
-  request: unknown,
-): Promise<void> => {
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+const executePost = async (endpoint: string, request: unknown): Promise<void> => {
   const span = apm.startSpan(`POST ${endpoint}`);
   try {
-    const crspRes = await axios.post(endpoint, request);
+    const eventDirectorRes = await axios.post(endpoint, request);
 
-    if (crspRes.status !== 200) {
-      LoggerService.error(
-        `CRSP Response StatusCode != 200, request:\r\n${JSON.stringify(
-          request,
-        )}`,
-      );
+    if (eventDirectorRes.status !== 200) {
+      LoggerService.error(`Event-Director Response StatusCode != 200, request:\r\n${JSON.stringify(request)}`);
     }
-    LoggerService.log(
-      `CRSP Reponse - ${crspRes.status} with data\n ${JSON.stringify(
-        crspRes.data,
-      )}`,
-    );
+    LoggerService.log(`Event-Director Reponse - ${eventDirectorRes.status} with data\n ${JSON.stringify(eventDirectorRes.data)}`);
     span?.end();
   } catch (error) {
-    LoggerService.error(
-      `Error while sending request to CRSP at ${
-        endpoint ?? ''
-      } with message: ${JSON.stringify(error)}`,
-    );
-    LoggerService.trace(`CRSP Error Request:\r\n${JSON.stringify(request)}`);
+    LoggerService.error(`Error while sending request to Event-Director at ${endpoint ?? ''} with message: ${JSON.stringify(error)}`);
+    LoggerService.trace(`Event-Director Error Request:\r\n${JSON.stringify(request)}`);
   }
 };
 

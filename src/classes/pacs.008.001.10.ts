@@ -1,15 +1,17 @@
+// SPDX-License-Identifier: Apache-2.0
+
 import { type InitgPty, type InitgPtyID } from './pain.001.001.11';
 
 export interface Pacs008 {
   TxTp: string;
-  FIToFICstmrCdt: FIToFICstmrCdt;
+  FIToFICstmrCdtTrf: FIToFICstmrCdtTrf;
   EndToEndId: string;
   DebtorAcctId: string;
   CreditorAcctId: string;
   CreDtTm: string;
 }
 
-export interface FIToFICstmrCdt {
+export interface FIToFICstmrCdtTrf {
   GrpHdr: GrpHdr;
   CdtTrfTxInf: CdtTrfTxInf;
   RgltryRptg: RgltryRptg;
@@ -50,7 +52,7 @@ export interface CdtrID {
 
 export interface PrvtID {
   DtAndPlcOfBirth: DtAndPLCOfBirth;
-  Othr: Othr;
+  Othr: Othr[];
 }
 
 export interface DtAndPLCOfBirth {
@@ -75,7 +77,7 @@ export interface TrAcct {
 }
 
 export interface CdtrAcctID {
-  Othr: Othr;
+  Othr: Othr[];
 }
 
 export interface Agt {

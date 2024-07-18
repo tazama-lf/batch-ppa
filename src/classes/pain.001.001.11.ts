@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 import { type CdtrID } from './pacs.008.001.10';
 
 export interface Pain001 {
@@ -38,7 +40,7 @@ export interface InitgPtyID {
 
 export interface PrvtID {
   DtAndPlcOfBirth: DtAndPLCOfBirth;
-  Othr: Othr;
+  Othr: Othr[];
 }
 
 export interface DtAndPLCOfBirth {
@@ -106,7 +108,7 @@ export interface TrAcct {
 }
 
 export interface DbtrAcctID {
-  Othr: Othr;
+  Othr: Othr[];
 }
 
 export interface TrAgt {
