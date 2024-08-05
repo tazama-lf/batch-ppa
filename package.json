@@ -51,7 +51,7 @@
     "xml2js": "^0.6.2"
   },
   "devDependencies": {
-    "@stylistic/eslint-plugin": "^2.1.0",
+    "@stylistic/eslint-plugin": "^2.6.1",
     "@types/axios": "^0.14.0",
     "@types/elastic-apm-node": "^2.7.0",
     "@types/jest": "^29.5.12",
