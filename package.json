@@ -37,7 +37,7 @@
     "arangojs": "^8.8.1",
     "axios": "^1.7.2",
     "dotenv": "^16.4.5",
-    "elastic-apm-node": "^4.6.0",
+    "elastic-apm-node": "^4.8.0",
     "formidable": "^3.5.1",
     "ioredis": "^5.4.1",
     "koa": "^2.15.3",
