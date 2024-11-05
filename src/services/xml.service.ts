@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 // SPDX-License-Identifier: Apache-2.0
 
 /* eslint @typescript-eslint/explicit-function-return-type: "warn" */
@@ -7,20 +8,14 @@ import * as fs from 'fs';
 import { v4 as uuidv4 } from 'uuid';
 
 const xml2js = require('xml2js');
-// const fs = require('fs');
 const parser = new xml2js.Parser({ attrkey: 'ATTR' });
 
-export const GetPacs008FromXML = () => {
-  const xml_string = fs.readFileSync('input.xml', 'utf8');
-  console.log('Testing');
+export const getPacs008FromXML = () => {
+  const xmlString = fs.readFileSync('input.xml', 'utf8');
+  const endToEndID = uuidv4().replace('-', '');
 
-  const end2endID = uuidv4().replace('-', '');
-  const testID = uuidv4().replace('-', '');
-
-  parser.parseString(xml_string, function (error, result) {
+  parser.parseString(xmlString, function (error: null, result: any) {
     if (error === null) {
-      console.log(result);
-
       // let pacs008: Pacs008 = {
       //     TxTp: 'pacs.008.001.10',
       //     EndToEndId: end2endID,

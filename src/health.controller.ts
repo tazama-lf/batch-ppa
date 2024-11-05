@@ -1,19 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import { type Context } from 'koa';
+import { type FastifyRequest, type FastifyReply } from 'fastify';
 
-const handleMonitorTransaction = (ctx: Context): Context => {
-  ctx.body = { result: 'Transaction is valid' };
-  return ctx;
-};
-
-const handleHealthCheck = (ctx: Context): Context => {
+const handleHealthCheck = async (req: FastifyRequest, reply: FastifyReply): Promise<void> => {
   const data = {
     status: 'UP',
   };
-  ctx.body = data;
-
-  return ctx;
+  reply.send(data);
 };
 
-export { handleMonitorTransaction, handleHealthCheck };
+export { handleHealthCheck };

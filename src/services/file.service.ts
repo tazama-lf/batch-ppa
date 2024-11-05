@@ -1,17 +1,14 @@
 // SPDX-License-Identifier: Apache-2.0
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
-import { type Pain001 } from '../classes/pain.001.001.11';
+
 import * as fs from 'fs';
 import * as readline from 'readline';
-import { databaseClient, dbService } from '..';
-import { configuration } from '../config';
-import { LoggerService } from '../logger.service';
+import { cacheDatabaseManager, configuration, loggerService } from '..';
 import { GetPacs002, GetPacs008, GetPain013, GetPain001FromLine } from './message.generation.service';
 import { executePost, Fields } from './utilities.service';
 import { handleTransaction } from './save.transactions.service';
-import { type Pain013 } from '../classes/pain.013.001.09';
-import { type Pacs008 } from '../classes/pacs.008.001.10';
+import { type Pain013, type Pacs008, type Pain001 } from '@tazama-lf/frms-coe-lib/lib/interfaces';
 
 const getMissingTransaction = async (batchSourceFileLine: readline.Interface): Promise<string[]> => {
   let endToEndIds: string[] = [];
@@ -21,17 +18,15 @@ const getMissingTransaction = async (batchSourceFileLine: readline.Interface): P
 
     endToEndIds.push(columns[Fields.END_TO_END_TRANSACTION_ID]);
   }
-
-  endToEndIds = (await dbService.getUnExistingTransactions(endToEndIds))[0];
-
+  endToEndIds = (await cacheDatabaseManager.getUnExistingTransactions(endToEndIds))[0];
   return endToEndIds;
 };
 
 const sendPacs002Transaction = async (columns: string[], delta: number): Promise<boolean> => {
-  LoggerService.log('Sending Pacs002 message...');
+  loggerService.log('Sending Pacs002 message...');
   const currentPacs002 = GetPacs002(columns, new Date(delta + Date.now()));
-  LoggerService.log(`${JSON.stringify(currentPacs002.FIToFIPmtSts.GrpHdr.MsgId)} - Submitted`);
-  return await executePost(`${configuration.tmsEndpoint}/v1/evaluate/iso20022/pacs.002.001.12`, currentPacs002);
+  loggerService.log(`${JSON.stringify(currentPacs002.FIToFIPmtSts.GrpHdr.MsgId)} - Submitted`);
+  return await executePost(`${configuration.TMS_ENDPOINT}/v1/evaluate/iso20022/pacs.002.001.12`, currentPacs002);
 };
 
 const sendPrepareTransaction = async (
@@ -43,13 +38,13 @@ const sendPrepareTransaction = async (
   pain013Result: Pain013;
   pacs008Result: Pacs008;
 }> => {
-  LoggerService.log('Sending Pain001 message...');
+  loggerService.log('Sending Pain001 message...');
   const pain001Result = (await handleTransaction(currentPain001)) as Pain001;
 
-  LoggerService.log('Sending Pain013 message...');
+  loggerService.log('Sending Pain013 message...');
   const pain013Result = (await handleTransaction(currentPain013)) as Pain013;
 
-  LoggerService.log('Sending Pacs008 message...');
+  loggerService.log('Sending Pacs008 message...');
   const pacs008Result = (await handleTransaction(currentPacs008)) as Pacs008;
   return { pain001Result, pain013Result, pacs008Result };
 };
@@ -63,11 +58,11 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
 
   if (requestBody.update) {
     if (requestBody.update.seedPacs002) {
-      await dbService.RemovePacs002Pseudonym();
+      await cacheDatabaseManager.removePacs002Pseudonym();
     }
-    await dbService.UpdateHistoryTransactionsTimestamp();
-    await dbService.UpdatePseudonymEdgesTimestamp();
-    LoggerService.log("Updating preparation data transaction's created time date");
+    await cacheDatabaseManager.updateHistoryTransactionsTimestamp();
+    await cacheDatabaseManager.updatePseudonymEdgesTimestamp();
+    loggerService.log("Updating preparation data transaction's created time date");
     return 'Updated the timestamp of the prepare data';
   }
 
@@ -75,11 +70,11 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
   let delta = 0;
 
   if (requestBody.pacs002) {
-    oldestTimestamp = await dbService.getOldestTimestampPacs008();
+    oldestTimestamp = await cacheDatabaseManager.getOldestTimestampPacs008();
     delta = Date.now() - new Date(oldestTimestamp).getTime();
   }
 
-  const retry = requestBody.pacs002.overwrite ? configuration.retry : 1;
+  const retry = requestBody.pacs002.overwrite ? configuration.RETRY : 1;
   for (let index = 0; index < retry; index++) {
     let missedEndToEndIds: string[] = [];
     if (requestBody.pacs002 && requestBody.pacs002.overwrite) {
@@ -90,7 +85,7 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
         }),
       );
       if (!missedEndToEndIds?.length) break;
-      LoggerService.log(`Batch had ${missedEndToEndIds.length} transactions missed`);
+      loggerService.log(`Batch had ${missedEndToEndIds.length} transactions missed`);
     }
 
     const rl = readline.createInterface({
@@ -114,7 +109,7 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
         if (requestBody.pacs002.overwrite) {
           if (missedEndToEndIds.filter((missedEndToEndId) => missedEndToEndId === EndToEndId).length) {
             pacs002Result = await sendPacs002Transaction(columns, delta);
-            await delay(configuration.delay);
+            await delay(configuration.DELAY);
             continue;
           } else {
             continue;
@@ -130,34 +125,34 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
       }
 
       if (pacs002Result) {
-        await delay(configuration.delay);
+        await delay(configuration.DELAY);
 
-        if (configuration.verifyReports) {
-          let value;
+        if (configuration.VERIFY_REPORTS) {
+          let value: any;
           try {
-            value = await dbService.getTransactionReport(EndToEndId);
+            value = await cacheDatabaseManager.getTransactionReport(EndToEndId);
           } catch (ex) {
-            LoggerService.error(`Failed to communicate with Arango to check report. ${JSON.stringify(ex)}`);
+            loggerService.error(`Failed to communicate with Arango to check report. ${JSON.stringify(ex)}`);
           }
 
           if (value && value.length > 0) {
-            LoggerService.log(`Report generated for: ${EndToEndId}`);
+            loggerService.log(`Report generated for: ${EndToEndId}`);
 
             if (
               (columns[Fields.RECEIVER_SUSPENSE_ACCOUNT_FLAG].toString().trim() === 'N' && value[0][0].report.status === 'NALT') ||
               (columns[Fields.RECEIVER_SUSPENSE_ACCOUNT_FLAG].toString().trim() === 'Y' && value[0][0].report.status === 'ALT')
             ) {
-              LoggerService.log('Report Matches Test Data');
+              loggerService.log('Report Matches Test Data');
             } else {
-              LoggerService.log('Report does not match Test Data');
+              loggerService.log('Report does not match Test Data');
             }
           } else {
-            LoggerService.log(`Failed to generate report for: ${EndToEndId}`);
+            loggerService.log(`Failed to generate report for: ${EndToEndId}`);
           }
         }
       }
     }
-    databaseClient.SyncPacs002AndTransaction();
+    await cacheDatabaseManager.syncPacs002AndTransaction();
   }
   return 'Submitted Transactions';
   async function delay(time: number | undefined): Promise<unknown> {

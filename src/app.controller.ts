@@ -1,69 +1,65 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import { IncomingForm } from 'formidable';
-import { type Context, type Next } from 'koa';
-import { processLineByLine } from '.';
-import { LoggerService } from './logger.service';
+import { type FastifyRequest, type FastifyReply } from 'fastify';
+import { configuration } from '.';
+import { loggerService } from './';
+import { SendLineMessages } from './services/file.service';
+import { getPacs008FromXML } from './services/xml.service';
+// import { promises as fs } from 'fs';
+// import path from 'path';
 
-export const handleExecute = async (ctx: Context, next: Next): Promise<Context> => {
-  LoggerService.log('Start - Handle execute request');
+export const handleExecute = async (req: FastifyRequest, reply: FastifyReply): Promise<void> => {
+  loggerService.log('Start - Handle execute request');
   try {
-    await processLineByLine(ctx?.request?.body);
-    await next();
-    ctx.body = 'Transactions were submitted';
-    return ctx;
+    switch (configuration.DATA_TYPE) {
+      case 'textfile':
+        await SendLineMessages(req?.body);
+        break;
+
+      case 'xml':
+        getPacs008FromXML();
+        break;
+      default:
+        loggerService.log('No Data Method Set.');
+        throw new Error('No Data Method Set in environment.');
+    }
+    reply.send('Transactions were submitted');
   } catch (err) {
     const failMessage = 'Failed to process execution request.';
-    LoggerService.error(failMessage, err as Error, 'ApplicationService');
-
-    ctx.status = 500;
-    ctx.body = failMessage;
-    return ctx;
+    loggerService.error(failMessage, err as Error, 'ApplicationService');
+    reply.code(500);
+    reply.send(failMessage);
   } finally {
-    LoggerService.log('End - Handle execute request');
+    loggerService.log('End - Handle execute request');
   }
 };
 
-export const handleFileUpload = async (ctx: Context, next: Next): Promise<Context> => {
-  LoggerService.log('Start - Handle quote reply request');
+export const handleFileUpload = async (req: FastifyRequest, reply: FastifyReply): Promise<void> => {
+  loggerService.log('Start - Handle quote reply request');
   try {
-    ctx.status = 200;
+    // Access the uploaded file(s) from req.files
+    const files = req.files;
+    if (!files || Object.keys(files).length === 0) {
+      throw new Error('No files uploaded');
+    }
 
-    const form = new IncomingForm({
-      uploadDir: './uploads/',
-      keepExtensions: true,
-      filename: () => {
-        return 'input.txt';
-      },
-      maxFileSize: 300 * 1024 * 1024,
-      maxFieldsSize: 300 * 1024 * 1024,
-    });
+    for (const [fieldname, file] of Object.entries(files)) {
+      loggerService.log(`Processing file: ${fieldname}, name: `);
+      loggerService.log(JSON.stringify(file));
+      //const uploadPath = path.join(__dirname, '..', 'uploads', 'unknown-file');
 
-    await new Promise<void>((resolve, reject) => {
-      form.parse(ctx.req, (err, fields, files) => {
-        // Handle form parsing completion here
-        if (err) {
-          // Handle any errors that occurred during parsing
-          console.error(err);
-          // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-          reject(err);
-        } else {
-          ctx.body = 'File was uploaded successfully!';
-          resolve();
-        }
-      });
-    });
+      // Move the file from its temporary path to the upload directory
+      //await fs.rename(file.filepath, uploadPath);
+    }
 
-    await next();
-    return ctx;
+    // Send a success response
+    reply.code(200).send({ message: 'File(s) processed successfully' });
   } catch (err) {
     const failMessage = 'Failed to process execution request.';
-    LoggerService.error(failMessage, err as Error, 'ApplicationService');
-
-    ctx.status = 500;
-    ctx.body = failMessage;
-    return ctx;
+    loggerService.error(failMessage, err as Error, 'ApplicationService');
+    reply.code(500);
+    reply.send(err);
   } finally {
-    LoggerService.log('End - Handle quote reply request');
+    loggerService.log('End - Handle quote reply request');
   }
 };
