@@ -11,7 +11,7 @@ import {
 import { cacheDatabaseManager, configuration, loggerService } from '..';
 import apm from '../apm';
 
-export const handleTransaction = async (transaction: Pain001 | Pain013 | Pacs008): Promise<Pain001 | Pain013 | Pacs008> => {
+export const handleTransaction = async (transaction: Pain001 | Pain013 | Pacs008): Promise<Pain001 | Pain013 | Pacs008 | boolean> => {
   switch (transaction.TxTp) {
     case 'pain.001.001.11':
       return await handlePain001(transaction as Pain001, transaction.TxTp);
@@ -27,7 +27,7 @@ export const handleTransaction = async (transaction: Pain001 | Pain013 | Pacs008
   }
 };
 
-export const handlePain001 = async (transaction: Pain001, transactionType: string): Promise<Pain001> => {
+export const handlePain001 = async (transaction: Pain001, transactionType: string): Promise<Pain001 | boolean> => {
   const id = transaction.CstmrCdtTrfInitn.GrpHdr.MsgId;
   loggerService.log('Start - Handle transaction data', 'handlePain001()', id);
   const span = apm.startSpan('transaction.pain001');
@@ -89,10 +89,10 @@ export const handlePain001 = async (transaction: Pain001, transactionType: strin
         configuration.TRANSACTION_HISTORY_PAIN001_COLLECTION,
         `pain001_${EndToEndId}`,
       ),
-      cacheDatabaseManager.addAccount(debtorAcctId),
-      cacheDatabaseManager.addAccount(creditorAcctId),
-      cacheDatabaseManager.addEntity(creditorId, CreDtTm),
-      cacheDatabaseManager.addEntity(debtorId, CreDtTm),
+      cacheDatabaseManager.addAccount(debtorAcctId.replaceAll(' ', '_')),
+      cacheDatabaseManager.addAccount(creditorAcctId.replaceAll(' ', '_')),
+      cacheDatabaseManager.addEntity(creditorId.replaceAll(' ', '_'), CreDtTm),
+      cacheDatabaseManager.addEntity(debtorId.replaceAll(' ', '_'), CreDtTm),
     ]);
 
     await Promise.all([
@@ -102,22 +102,19 @@ export const handlePain001 = async (transaction: Pain001, transactionType: strin
     ]);
     return transaction;
   } catch (err) {
-    let error: Error;
     if (err instanceof Error) {
       loggerService.error(err.message);
-      error = err;
     } else {
       const strErr = JSON.stringify(err);
       loggerService.error(strErr);
-      error = new Error(strErr);
     }
     spanInsert?.end();
     span?.end();
-    throw error;
+    return false;
   }
 };
 
-export const handlePain013 = async (transaction: Pain013, transactionType: string): Promise<Pain013> => {
+export const handlePain013 = async (transaction: Pain013, transactionType: string): Promise<Pain013 | boolean> => {
   const logContext = 'handlePain013()';
   const id = transaction.CdtrPmtActvtnReq.GrpHdr.MsgId;
   loggerService.log('Start - Handle transaction data', logContext, id);
@@ -183,22 +180,19 @@ export const handlePain013 = async (transaction: Pain013, transactionType: strin
     await cacheDatabaseManager.saveTransactionRelationship(transactionRelationship);
     return transaction;
   } catch (err) {
-    let error: Error;
     if (err instanceof Error) {
       loggerService.error(err.message, logContext, id);
-      error = err;
     } else {
       const strErr = JSON.stringify(err);
-      error = new Error(strErr);
       loggerService.error(strErr, logContext, id);
     }
     spanInsert?.end();
     span?.end();
-    throw error;
+    return false;
   }
 };
 
-export const handlePacs008 = async (transaction: Pacs008, transactionType: string): Promise<Pacs008> => {
+export const handlePacs008 = async (transaction: Pacs008, transactionType: string): Promise<Pacs008 | boolean> => {
   const logContext = 'handlePacs008()';
   const id = transaction.FIToFICstmrCdtTrf.GrpHdr.MsgId;
   loggerService.log('Start - Handle transaction data', logContext, id);
@@ -297,18 +291,15 @@ export const handlePacs008 = async (transaction: Pacs008, transactionType: strin
     ]);
     return transaction;
   } catch (err) {
-    let error: Error;
     if (err instanceof Error) {
       loggerService.error(err.message, logContext, id);
-      error = err;
     } else {
       const strErr = JSON.stringify(err);
       loggerService.error(strErr, logContext, id);
-      error = new Error(strErr);
     }
     spanInsert?.end();
     span?.end();
-    throw error;
+    return false;
   } finally {
     spanInsert?.end();
   }

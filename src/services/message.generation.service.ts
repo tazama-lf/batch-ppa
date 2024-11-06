@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import { type Pain013, type Pacs008, type Pain001, type Pacs002 } from '@tazama-lf/frms-coe-lib/lib/interfaces';
+import { type Pacs002, type Pacs008, type Pain001, type Pain013 } from '@tazama-lf/frms-coe-lib/lib/interfaces';
 import { v4 as uuidv4 } from 'uuid';
-import { Fields } from './utilities.service';
+import { Fields } from '../utils/transaction.enum';
 
 export const GetPain001FromLine = (columns: string[]): Pain001 => {
   const end2endID = columns[Fields.MESSAGE_ID];
@@ -26,7 +26,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
                 {
                   Id: columns[Fields.SENDER_ACCOUNT],
                   SchmeNm: {
-                    Prtry: 'ACCOUNT NUMBER',
+                    Prtry: 'ACCOUNT_NUMBER',
                   },
                 },
               ],
@@ -67,7 +67,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
                 {
                   Id: columns[Fields.SENDER_ACCOUNT],
                   SchmeNm: {
-                    Prtry: 'ACCOUNT NUMBER',
+                    Prtry: 'ACCOUNT_NUMBER',
                   },
                 },
               ],
@@ -143,7 +143,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
                   {
                     Id: columns[Fields.RECEIVER_ACCOUNT],
                     SchmeNm: {
-                      Prtry: 'ACCOUNT NUMBER',
+                      Prtry: 'ACCOUNT_NUMBER',
                     },
                   },
                 ],
@@ -240,10 +240,10 @@ export const GetPain013 = (pain01: Pain001): Pain013 => {
             PrvtId: {
               DtAndPlcOfBirth: {
                 BirthDt: new Date(),
-                CityOfBirth: '',
-                CtryOfBirth: '',
+                CityOfBirth: 'JHB',
+                CtryOfBirth: 'ZA',
               },
-              Othr: [],
+              Othr: [pain01.CstmrCdtTrfInitn.GrpHdr.InitgPty.Id.PrvtId.Othr[0]],
             },
           },
           CtctDtls: {
@@ -276,7 +276,7 @@ export const GetPain013 = (pain01: Pain001): Pain013 => {
                 CityOfBirth: 'JHB',
                 CtryOfBirth: 'ZA',
               },
-              Othr: [],
+              Othr: [pain01.CstmrCdtTrfInitn.GrpHdr.InitgPty.Id.PrvtId.Othr[0]],
             },
           },
         },
@@ -342,7 +342,7 @@ export const GetPain013 = (pain01: Pain001): Pain013 => {
                   CityOfBirth: 'JHB',
                   CtryOfBirth: 'ZA',
                 },
-                Othr: [],
+                Othr: [pain01.CstmrCdtTrfInitn.GrpHdr.InitgPty.Id.PrvtId.Othr[0]],
               },
             },
           },

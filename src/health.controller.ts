@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import { type FastifyRequest, type FastifyReply } from 'fastify';
+import { type FastifyReply, type FastifyRequest } from 'fastify';
 
 const handleHealthCheck = async (req: FastifyRequest, reply: FastifyReply): Promise<void> => {
   const data = {

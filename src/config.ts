@@ -30,10 +30,6 @@ export const additionalEnvironmentVariables: AdditionalConfig[] = [
     type: 'number',
   },
   {
-    name: 'DATA_TYPE',
-    type: 'string',
-  },
-  {
     name: 'TRANSACTION_HISTORY_PAIN001_COLLECTION',
     type: 'string',
   },
@@ -58,7 +54,6 @@ export interface ExtendedConfig {
   VERIFY_REPORTS: boolean;
   TMS_ENDPOINT: string;
   RETRY: number;
-  DATA_TYPE: string;
   TRANSACTION_HISTORY_PAIN001_COLLECTION: string;
   TRANSACTION_HISTORY_PAIN013_COLLECTION: string;
   TRANSACTION_HISTORY_PACS008_COLLECTION: string;

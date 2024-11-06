@@ -1,27 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import axios from 'axios';
-import apm from 'elastic-apm-node';
-import { loggerService } from '..';
-
-export const executePost = async (endpoint: string, request: unknown): Promise<boolean> => {
-  const span = apm.startSpan(`POST ${endpoint}`);
-  try {
-    const eventDirectorRes = await axios.post(endpoint, request);
-
-    if (eventDirectorRes.status !== 200) {
-      loggerService.error(`Event-Director Response StatusCode != 200, request:\r\n${JSON.stringify(request)}`);
-      return false;
-    }
-    span?.end();
-    return true;
-  } catch (error) {
-    loggerService.error(`Error while sending request to Event-Director at ${endpoint ?? ''} with message: ${JSON.stringify(error)}`);
-    loggerService.trace(`Event-Director Error Request:\r\n${JSON.stringify(request)}`);
-    return false;
-  }
-};
-
 export enum Fields {
   PROCESSING_DATE_TIME = 0,
   PROCESSING_WINDOW = 1,

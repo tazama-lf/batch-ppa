@@ -9,8 +9,9 @@ const fastify = Fastify();
 export default async function initializeFastifyClient(): Promise<FastifyInstance> {
   await fastify.register(FastifyFormidable, {
     formidable: {
-      maxFileSize: 1000,
+      maxFileSize: 10 * 1024 * 1024,
       uploadDir: './uploads/',
+      keepExtensions: true,
     },
   });
   await fastify.register(fastifyCors, {

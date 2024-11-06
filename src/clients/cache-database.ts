@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
+import { aql } from '@tazama-lf/frms-coe-lib';
 import { Database } from '@tazama-lf/frms-coe-lib/lib/config/database.config';
 import { Cache } from '@tazama-lf/frms-coe-lib/lib/config/redis.config';
 import { createMessageBuffer } from '@tazama-lf/frms-coe-lib/lib/helpers/protobuf';
@@ -10,9 +11,8 @@ import {
   type TransactionRelationship,
 } from '@tazama-lf/frms-coe-lib/lib/interfaces';
 import { CreateStorageManager, type DatabaseManagerInstance, type ManagerConfig } from '@tazama-lf/frms-coe-lib/lib/services/dbManager';
-import { type Configuration } from '../config';
 import { configuration } from '..';
-import { aql } from '@tazama-lf/frms-coe-lib';
+import { type Configuration } from '../config';
 
 export class CacheDatabaseService<T extends ManagerConfig> {
   private readonly dbManager: DatabaseManagerInstance<T>;

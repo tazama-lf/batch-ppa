@@ -5,49 +5,8 @@
 import * as fs from 'fs';
 import * as readline from 'readline';
 import { cacheDatabaseManager, configuration, loggerService } from '..';
-import { GetPacs002, GetPacs008, GetPain013, GetPain001FromLine } from './message.generation.service';
-import { executePost, Fields } from './utilities.service';
-import { handleTransaction } from './save.transactions.service';
-import { type Pain013, type Pacs008, type Pain001 } from '@tazama-lf/frms-coe-lib/lib/interfaces';
-
-const getMissingTransaction = async (batchSourceFileLine: readline.Interface): Promise<string[]> => {
-  let endToEndIds: string[] = [];
-  for await (const line of batchSourceFileLine) {
-    const columns = line.split('|');
-    if (!new Date(columns[Fields.PROCESSING_DATE_TIME]).getTime()) continue;
-
-    endToEndIds.push(columns[Fields.END_TO_END_TRANSACTION_ID]);
-  }
-  endToEndIds = (await cacheDatabaseManager.getUnExistingTransactions(endToEndIds))[0];
-  return endToEndIds;
-};
-
-const sendPacs002Transaction = async (columns: string[], delta: number): Promise<boolean> => {
-  loggerService.log('Sending Pacs002 message...');
-  const currentPacs002 = GetPacs002(columns, new Date(delta + Date.now()));
-  loggerService.log(`${JSON.stringify(currentPacs002.FIToFIPmtSts.GrpHdr.MsgId)} - Submitted`);
-  return await executePost(`${configuration.TMS_ENDPOINT}/v1/evaluate/iso20022/pacs.002.001.12`, currentPacs002);
-};
-
-const sendPrepareTransaction = async (
-  currentPain001: Pain001,
-  currentPain013: Pain013,
-  currentPacs008: Pacs008,
-): Promise<{
-  pain001Result: Pain001;
-  pain013Result: Pain013;
-  pacs008Result: Pacs008;
-}> => {
-  loggerService.log('Sending Pain001 message...');
-  const pain001Result = (await handleTransaction(currentPain001)) as Pain001;
-
-  loggerService.log('Sending Pain013 message...');
-  const pain013Result = (await handleTransaction(currentPain013)) as Pain013;
-
-  loggerService.log('Sending Pacs008 message...');
-  const pacs008Result = (await handleTransaction(currentPacs008)) as Pacs008;
-  return { pain001Result, pain013Result, pacs008Result };
-};
+import { Fields } from '../utils/transaction.enum';
+import { getMissingTransaction, sendPacs002Transaction, sendPrepareTransaction } from '../utils/helper.functions';
 
 export const SendLineMessages = async (requestBody: any): Promise<string> => {
   // Note: we use the crlfDelay option to recognize all instances of CR LF
@@ -75,12 +34,13 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
   }
 
   const retry = requestBody.pacs002.overwrite ? configuration.RETRY : 1;
+  let missed = 0;
   for (let index = 0; index < retry; index++) {
     let missedEndToEndIds: string[] = [];
     if (requestBody.pacs002 && requestBody.pacs002.overwrite) {
       missedEndToEndIds = await getMissingTransaction(
         readline.createInterface({
-          input: fs.createReadStream('./uploads/input.txt'),
+          input: fs.createReadStream('./uploads/batch.txt'),
           crlfDelay: Infinity,
         }),
       );
@@ -89,20 +49,16 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
     }
 
     const rl = readline.createInterface({
-      input: fs.createReadStream('./uploads/input.txt'),
+      input: fs.createReadStream('./uploads/batch.txt'),
       crlfDelay: Infinity,
     });
-
+    missed = 0;
     for await (const line of rl) {
       // Each line in input.txt will be successively available here as `line`.
       const columns = line.split('|');
       if (!new Date(columns[Fields.PROCESSING_DATE_TIME]).getTime()) continue;
 
       const EndToEndId = columns[Fields.END_TO_END_TRANSACTION_ID];
-
-      let currentPain001: Pain001;
-      let currentPain013: Pain013;
-      let currentPacs008: Pacs008;
 
       let pacs002Result = false;
       if (requestBody.pacs002) {
@@ -117,11 +73,17 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
         }
         pacs002Result = await sendPacs002Transaction(columns, delta);
       } else {
-        currentPain001 = GetPain001FromLine(columns);
-        currentPacs008 = GetPacs008(currentPain001);
-        currentPain013 = GetPain013(currentPain001);
+        const { pacs008Result, pain001Result, pain013Result } = await sendPrepareTransaction(columns);
 
-        await sendPrepareTransaction(currentPain001, currentPain013, currentPacs008);
+        if (!pacs008Result || !pain001Result || !pain013Result) {
+          ++missed;
+          loggerService.log(
+            JSON.stringify({
+              transaction: line,
+              message: `Transaction failed to save history of ${pacs008Result ? '' : 'pacs002'}${pain001Result ? '' : ', pain001'}${pain013Result ? '' : ' pain013'} `,
+            }),
+          );
+        }
       }
 
       if (pacs002Result) {
@@ -152,9 +114,9 @@ export const SendLineMessages = async (requestBody: any): Promise<string> => {
         }
       }
     }
-    await cacheDatabaseManager.syncPacs002AndTransaction();
   }
-  return 'Submitted Transactions';
+  return `Submitted Transactions while submitting ${requestBody.pacs002 ? 'pacs.002.001.12' : `preparation (${configuration.QUOTING ? 'pain.001.001.11, pain.013.001.09 and pacs.008.001.10' : 'pacs.008.001.10'})`} transactions, missed transactions ${missed}`;
+
   async function delay(time: number | undefined): Promise<unknown> {
     return await new Promise((resolve) => setTimeout(resolve, time));
   }

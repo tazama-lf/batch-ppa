@@ -1,29 +1,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { type FastifyRequest, type FastifyReply } from 'fastify';
-import { configuration } from '.';
 import { loggerService } from './';
 import { SendLineMessages } from './services/file.service';
-import { getPacs008FromXML } from './services/xml.service';
-// import { promises as fs } from 'fs';
-// import path from 'path';
+import { promises as fs, type PathLike } from 'fs';
+import path from 'path';
 
 export const handleExecute = async (req: FastifyRequest, reply: FastifyReply): Promise<void> => {
   loggerService.log('Start - Handle execute request');
   try {
-    switch (configuration.DATA_TYPE) {
-      case 'textfile':
-        await SendLineMessages(req?.body);
-        break;
-
-      case 'xml':
-        getPacs008FromXML();
-        break;
-      default:
-        loggerService.log('No Data Method Set.');
-        throw new Error('No Data Method Set in environment.');
-    }
-    reply.send('Transactions were submitted');
+    reply.send(await SendLineMessages(req?.body));
   } catch (err) {
     const failMessage = 'Failed to process execution request.';
     loggerService.error(failMessage, err as Error, 'ApplicationService');
@@ -35,21 +21,22 @@ export const handleExecute = async (req: FastifyRequest, reply: FastifyReply): P
 };
 
 export const handleFileUpload = async (req: FastifyRequest, reply: FastifyReply): Promise<void> => {
-  loggerService.log('Start - Handle quote reply request');
+  loggerService.log('Start - Handle file upload request');
   try {
+    await req.parseMultipart();
     // Access the uploaded file(s) from req.files
     const files = req.files;
+
     if (!files || Object.keys(files).length === 0) {
-      throw new Error('No files uploaded');
+      return await reply.code(400).send({ message: 'No files uploaded' });
     }
 
-    for (const [fieldname, file] of Object.entries(files)) {
-      loggerService.log(`Processing file: ${fieldname}, name: `);
-      loggerService.log(JSON.stringify(file));
-      //const uploadPath = path.join(__dirname, '..', 'uploads', 'unknown-file');
-
-      // Move the file from its temporary path to the upload directory
-      //await fs.rename(file.filepath, uploadPath);
+    for (const [, file] of Object.entries(files)) {
+      const fileProperties = file as { filepath: PathLike; size: number; originalFilename: string };
+      loggerService.log(`Processing file: ${fileProperties.originalFilename}, size: ${fileProperties.size}`);
+      const uploadPath = path.join(__dirname, '..', 'uploads', 'batch.txt');
+      //Move the file from its temporary path to the upload directory
+      await fs.rename(fileProperties.filepath, uploadPath);
     }
 
     // Send a success response
@@ -60,6 +47,6 @@ export const handleFileUpload = async (req: FastifyRequest, reply: FastifyReply)
     reply.code(500);
     reply.send(err);
   } finally {
-    loggerService.log('End - Handle quote reply request');
+    loggerService.log('End - Handle file upload request');
   }
 };
