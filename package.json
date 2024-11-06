@@ -1,7 +1,7 @@
 {
   "name": "batch-ppa-service",
   "version": "1.2.0",
-  "description": "transaction monitoring service",
+  "description": "batch payment platform adapter",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "scripts": {
@@ -35,11 +35,9 @@
     "axios": "^1.7.7",
     "fastify": "^4.27.0",
     "fastify-formidable": "^3.0.2",
-    "formidable": "^3.5.1",
     "fs": "^0.0.1-security",
     "path": "^0.12.7",
-    "tslib": "^2.6.3",
-    "xml2js": "^0.6.2"
+    "tslib": "^2.6.3"
   },
   "devDependencies": {
     "@stylistic/eslint-plugin": "^2.1.0",
@@ -47,7 +45,6 @@
     "@types/jest": "^29.5.3",
     "@typescript-eslint/eslint-plugin": "^7.12.0",
     "@typescript-eslint/parser": "^7.12.0",
-    "copyfiles": "^2.4.1",
     "eslint": "^8.57.0",
     "eslint-config-love": "^52.0.0",
     "eslint-plugin-eslint-comments": "^3.2.0",
