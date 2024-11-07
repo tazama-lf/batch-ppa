@@ -31,8 +31,12 @@ export const SendLineMessages = async (requestBody: ExecuteReqBody): Promise<str
   let delta = 0;
 
   if (requestBody.evaluate) {
-    oldestTimestamp = await cacheDatabaseManager.getOldestTimestampPacs008();
-    delta = Date.now() - new Date(oldestTimestamp).getTime();
+    try {
+      oldestTimestamp = await cacheDatabaseManager.getOldestTimestampPacs008();
+      delta = Date.now() - new Date(oldestTimestamp).getTime();
+    } catch (err) {
+      throw Error(`Error occurred while trying to get oldest pacs008 timestamp. ${JSON.stringify(err)}`);
+    }
   }
 
   const retry = requestBody.evaluate.overwrite ? configuration.RETRY : 1;

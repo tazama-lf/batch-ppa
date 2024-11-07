@@ -15,7 +15,7 @@ export const handleExecute = async (req: FastifyRequest, reply: FastifyReply): P
     const failMessage = 'Failed to process execution request.';
     loggerService.error(failMessage, err as Error, 'ApplicationService');
     reply.code(500);
-    reply.send(failMessage);
+    reply.send(err);
   } finally {
     loggerService.log('End - Handle execute request');
   }
