@@ -1,6 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
 import { createMessageBuffer } from '@tazama-lf/frms-coe-lib/lib/helpers/protobuf';
-import { unwrap } from '@tazama-lf/frms-coe-lib/lib/helpers/unwrap';
 import {
   type DataCache,
   type Pacs008,
@@ -262,7 +261,7 @@ export const handlePacs008 = async (transaction: Pacs008, transactionType: strin
     pendingPromises.push(cacheDatabaseManager.set(EndToEndId, cacheBuffer, redisTTL ? Number(redisTTL) : 0));
   } else {
     // this is fatal
-    throw new Error('[pacs008] data cache could not be serialised');
+    throw new Error('[pacs008] data cache could not be serialized');
   }
 
   if (!configuration.QUOTING) {
@@ -303,57 +302,4 @@ export const handlePacs008 = async (transaction: Pacs008, transactionType: strin
   } finally {
     spanInsert?.end();
   }
-};
-
-/**
- * Rebuilds the DataCache object using the given endToEndId to fetch a stored Pacs008 message
- *
- * @param {string} endToEndId
- * @return {*}  {(Promise<DataCache | undefined>)}
- */
-export const rebuildCache = async (endToEndId: string, writeToRedis: boolean, id?: string): Promise<DataCache | undefined> => {
-  const span = apm.startSpan('db.cache.rebuild');
-  const context = 'rebuildCache()';
-  const currentPacs008 = (await cacheDatabaseManager.getTransactionPacs008(endToEndId)) as [Pacs008[]];
-
-  const pacs008 = unwrap(currentPacs008);
-
-  if (!pacs008) {
-    loggerService.error('Could not find pacs008 transaction to rebuild dataCache with', context, id);
-    span?.end();
-    return undefined;
-  }
-
-  const cdtTrfTxInf = pacs008.FIToFICstmrCdtTrf.CdtTrfTxInf;
-
-  const dataCache: DataCache = {
-    cdtrId: cdtTrfTxInf.Cdtr.Id.PrvtId.Othr[0].Id,
-    dbtrId: cdtTrfTxInf.Dbtr.Id.PrvtId.Othr[0].Id,
-    cdtrAcctId: cdtTrfTxInf.CdtrAcct.Id.Othr[0].Id,
-    dbtrAcctId: cdtTrfTxInf.DbtrAcct.Id.Othr[0].Id,
-    creDtTm: pacs008.FIToFICstmrCdtTrf.GrpHdr.CreDtTm,
-    instdAmt: {
-      amt: parseFloat(cdtTrfTxInf.InstdAmt.Amt.Amt),
-      ccy: cdtTrfTxInf.InstdAmt.Amt.Ccy,
-    },
-    intrBkSttlmAmt: {
-      amt: parseFloat(cdtTrfTxInf.IntrBkSttlmAmt.Amt.Amt),
-      ccy: cdtTrfTxInf.IntrBkSttlmAmt.Amt.Ccy,
-    },
-    xchgRate: cdtTrfTxInf.XchgRate,
-  };
-
-  if (writeToRedis) {
-    const buffer = createMessageBuffer({ DataCache: { ...dataCache } });
-
-    if (buffer) {
-      const redisTTL = configuration.redisConfig.distributedCacheTTL;
-      await cacheDatabaseManager.set(endToEndId, buffer, redisTTL ? Number(redisTTL) : 0);
-    } else {
-      loggerService.error('[pacs008] could not rebuild redis cache');
-    }
-  }
-
-  span?.end();
-  return dataCache;
 };

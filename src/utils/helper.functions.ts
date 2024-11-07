@@ -1,3 +1,5 @@
+// SPDX-License-Identifier: Apache-2.0
+
 import { type Pacs008, type Pain001, type Pain013 } from '@tazama-lf/frms-coe-lib/lib/interfaces';
 import type * as readline from 'readline';
 import { cacheDatabaseManager, configuration, loggerService } from '..';

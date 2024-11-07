@@ -68,18 +68,15 @@ export class CacheDatabaseService<T extends ManagerConfig> {
   }
 
   async getOldestTimestampPacs008(): Promise<Date> {
-    const colPacs008 = configuration.TRANSACTION_HISTORY_PACS008_COLLECTION;
-    const query = aql`
-        FOR pacs008 IN ${colPacs008}
+    const query = aql`FOR pacs008 IN transactionHistoryPacs008
         SORT pacs008.FIToFICstmrCdtTrf.GrpHdr.CreDtTm ASC
         LIMIT 1
         RETURN pacs008.FIToFICstmrCdtTrf.GrpHdr.CreDtTm`;
-
     try {
-      const date = await this.dbManager._transactionHistory.query(query);
-      return date;
-    } catch {
-      throw new Error('Error while trying to retrieve oldest timestamp pacs008');
+      const date = await (await this.dbManager._transactionHistory.query(query)).batches.all();
+      return date[0][0];
+    } catch (err) {
+      throw new Error(JSON.stringify(err));
     }
   }
 
@@ -250,46 +247,6 @@ export class CacheDatabaseService<T extends ManagerConfig> {
       RETURN doc`;
 
     return this.dbManager._transaction.query(query);
-  }
-
-  async syncPacs002AndTransaction(): Promise<void> {
-    const removeNoReportPacs002 = `
-    LET pacs002List = (
-      FOR report IN transactions
-       RETURN report.transaction.FIToFIPmtSts.TxInfAndSts.OrgnlEndToEndId
-      )
-
-      LET pacs002NoReport = (
-      FOR pacs002 IN  transactionHistoryPacs002
-          FILTER pacs002.EndToEndId NOT IN pacs002List
-          RETURN pacs002.EndToEndId
-      )
-
-      FOR pacs002D IN transactionHistoryPacs002
-          FILTER pacs002D.EndToEndId IN pacs002NoReport
-          REMOVE pacs002D IN transactionHistoryPacs002
-      `;
-    const removeReportNoPacs002 = `
-      LET pacs002List = (
-        FOR doc IN transactionHistoryPacs002
-         RETURN doc.EndToEndId
-        )
-
-        LET reportNoPacs002 = (
-        FOR report IN transactions
-            FILTER report.transaction.FIToFIPmtSts.TxInfAndSts.OrgnlEndToEndId NOT IN pacs002List
-            RETURN report.transaction.FIToFIPmtSts.TxInfAndSts.OrgnlEndToEndId
-        )
-
-        FOR transaction IN transactions
-            FILTER transaction.transaction.FIToFIPmtSts.TxInfAndSts.OrgnlEndToEndId IN reportNoPacs002
-            REMOVE transaction IN transactions
-        `;
-
-    await Promise.all([
-      await this.dbManager._transactionHistory.query(removeNoReportPacs002),
-      await this.dbManager._transaction.query(removeReportNoPacs002),
-    ]);
   }
 
   /**

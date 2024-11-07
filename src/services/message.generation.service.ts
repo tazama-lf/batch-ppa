@@ -6,12 +6,11 @@ import { Fields } from '../utils/transaction.enum';
 
 export const GetPain001FromLine = (columns: string[]): Pain001 => {
   const end2endID = columns[Fields.MESSAGE_ID];
-  const testID = uuidv4().replace('-', '');
 
   const pain001: Pain001 = {
     CstmrCdtTrfInitn: {
       GrpHdr: {
-        MsgId: testID,
+        MsgId: end2endID,
         CreDtTm: new Date().toISOString(),
         InitgPty: {
           Nm: columns[Fields.SENDER_NAME],

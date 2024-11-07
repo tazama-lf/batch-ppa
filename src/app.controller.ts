@@ -5,11 +5,12 @@ import { loggerService } from './';
 import { SendLineMessages } from './services/file.service';
 import { promises as fs, type PathLike } from 'fs';
 import path from 'path';
+import { type ExecuteReqBody } from './utils/interface.request';
 
 export const handleExecute = async (req: FastifyRequest, reply: FastifyReply): Promise<void> => {
   loggerService.log('Start - Handle execute request');
   try {
-    reply.send(await SendLineMessages(req?.body));
+    reply.send(await SendLineMessages(req?.body as ExecuteReqBody));
   } catch (err) {
     const failMessage = 'Failed to process execution request.';
     loggerService.error(failMessage, err as Error, 'ApplicationService');
