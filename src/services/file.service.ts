@@ -59,10 +59,19 @@ export const SendLineMessages = async (requestBody: ExecuteReqBody): Promise<str
       crlfDelay: Infinity,
     });
     missed = 0;
+    let index = 0;
     for await (const line of rl) {
+      index++;
       // Each line in input.txt will be successively available here as `line`.
       const columns = line.split('|');
-      if (!new Date(columns[Fields.PROCESSING_DATE_TIME]).getTime()) continue;
+      if (!new Date(columns[Fields.PROCESSING_DATE_TIME]).getTime()) {
+        if (index === 1) {
+          continue;
+        } else {
+          loggerService.error(`Error occurred while parsing line '${line}':${index}`);
+          continue;
+        }
+      }
 
       const EndToEndId = columns[Fields.END_TO_END_TRANSACTION_ID];
 
