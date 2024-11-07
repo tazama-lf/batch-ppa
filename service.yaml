@@ -3,7 +3,7 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: ppa-batch-to-tms-rel-1-0-0
+  name: batch-ppa-rel-1-0-0
   namespace: processor
 spec:
   ports:
@@ -12,7 +12,7 @@ spec:
       port: 3000
       targetPort: 3000
   selector:
-    app: ppa-batch-to-tms
+    app: batch-ppa
   type: ClusterIP
   sessionAffinity: None
   ipFamilies:

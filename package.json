@@ -1,5 +1,5 @@
 {
-  "name": "batch-ppa-service",
+  "name": "batch-ppa",
   "version": "1.2.0",
   "description": "batch payment platform adapter",
   "main": "build/index.js",
@@ -31,10 +31,12 @@
   "license": "Apache-2.0",
   "dependencies": {
     "@fastify/cors": "^9.0.1",
-    "@tazama-lf/frms-coe-lib": "^5.0.0-rc.4",
-    "axios": "^1.7.7",
     "fastify": "^4.27.0",
     "fastify-formidable": "^3.0.2",
+    "@fastify/swagger-ui": "^3.0.0",
+    "@fastify/swagger": "^8.8.0",
+    "@tazama-lf/frms-coe-lib": "^5.0.0-rc.4",
+    "axios": "^1.7.7",
     "fs": "^0.0.1-security",
     "path": "^0.12.7",
     "tslib": "^2.6.3"

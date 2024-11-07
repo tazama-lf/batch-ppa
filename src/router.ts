@@ -8,8 +8,8 @@ import SetOptions from './utils/routes.options';
 async function Routes(fastify: FastifyInstance): Promise<void> {
   fastify.get('/', handleHealthCheck);
   fastify.get('/health', handleHealthCheck);
-  fastify.post('/v1/executeBatch', SetOptions(handleExecute, 'executeBatchSchema'));
-  fastify.post('/v1/uploadFile', handleFileUpload);
+  fastify.post('/v1/executebatch', SetOptions(handleExecute, 'executeBatchSchema'));
+  fastify.post('/v1/uploadfile', handleFileUpload);
 }
 
 export default Routes;

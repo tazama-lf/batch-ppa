@@ -30,6 +30,11 @@ export const additionalEnvironmentVariables: AdditionalConfig[] = [
     type: 'number',
   },
   {
+    name: 'MAX_FILE_SIZE',
+    type: 'number',
+    optional: true,
+  },
+  {
     name: 'TRANSACTION_HISTORY_PAIN001_COLLECTION',
     type: 'string',
   },
@@ -54,6 +59,7 @@ export interface ExtendedConfig {
   VERIFY_REPORTS: boolean;
   TMS_ENDPOINT: string;
   RETRY: number;
+  MAX_FILE_SIZE: number;
   TRANSACTION_HISTORY_PAIN001_COLLECTION: string;
   TRANSACTION_HISTORY_PAIN013_COLLECTION: string;
   TRANSACTION_HISTORY_PACS008_COLLECTION: string;

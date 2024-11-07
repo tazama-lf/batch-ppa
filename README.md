@@ -8,7 +8,7 @@
   - [2. Configuration](#2-configuration)
   - [3. Sending Batch Messages](#3-sending-batch-messages)
     - [Step 1 /v1/uploadfile](#step-1-uploadfile)
-    - [Step 2 /v1/execute](#step-2-execute)
+    - [Step 2 /v1/executebatch](#step-2-execute)
   - [3.1 Sending Preparation messages](#31-sending-preparation-messages)
   - [3.2. Sending PACS002 Messages](#32-sending-pacs002-messages)
   - [3.3 Resending of Pacs002 Messages](#33-resending-of-pacs002-messages)
@@ -38,13 +38,18 @@ Before using the application, you need to configure it by editing the .env.templ
 
 ## 3. Sending Batch Messages
 
-### Step 1 /v1/uploadfile
+### Step 1 /v1/uploadfile 
 
-Sending source file with transitions into the server-side host, the file is expected to have a delimiter of ‘|’ and have different fields of transitions which are mentioned in 4.1 this will get the execution of the batch ready. Now let’s get to how you do it, with a request tool like Postman that can send requests and the body of form data, which can attach to file, the file is limited to 100 MB now which should be 100 000 transactions in the batch. Make sure that you are pointing to your endpoint {yourhost}/uploadfile with Method of POST, then attach the file with the “batch” key name and then send the batch wait until finishes for step 2.
+To initiate the batch execution, the source file containing transaction records should be sent to the server-side host. The file must be delimited by ‘|’ and include the specific transaction fields outlined in section 4.1. 
 
-Example:
+For uploading, use a request tool like Postman, which supports sending requests with form-data in the body and allows file attachments. Ensure that the file does not exceed 100 MB, which typically accommodates 100,000 transactions by default. This limit can be adjusted by setting the `MAX_FILE_SIZE` in your environment variable file.
 
-### Step 2 /v1/execute
+Configure the request as follows:
+1. Set the endpoint to `{yourhost}/v1/uploadfile` with the HTTP method as `POST`.
+2. Attach the file using the key name "batch."
+3. Send the batch and await completion before proceeding to the next step.
+
+### Step 2 /v1/executebatch
 
 As mentioned before batch ppa executes the batch in two steps, The first step is the execution of preparation messages which are pain001, pain013, and pacs008, and then the last step is the sending of pacs002 which will generate the report of FRMS.
 
@@ -54,7 +59,7 @@ Example:
 
 The Batch PPA application can send a batch of preparation messages. By using any request tool like Postman and set the body
 
-Set the Method to POST and point the address to your host {yourhost}/execute
+Set the Method to POST and point the address to your host {yourhost}/v1/executebatch
 
 Setup the body “pacs002: false” inside the object of the body this should do your basic preparation, Press send.
 
