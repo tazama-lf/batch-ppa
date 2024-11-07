@@ -16,13 +16,13 @@
 
 ## Introduction
 
-Welcome to the Batch PPA Node.js application documentation. This application enables batch sending of various payment messages to the FRMS system, including preparation messages like PAIN001, PACS008, and PAIN013. Additionally, the application supports resending missing PACS002 messages, comparing reports, and managing the messages.
+Welcome to the Batch PPA Node.js application documentation. This application enables batch sending of various payment messages to the Tazama system, including preparation messages like PAIN001, PACS008, and PAIN013. Additionally, the application supports resending missing PACS002 messages, comparing reports, and managing the messages.
 
 ## 1. Installation
 
 To install the Batch PPA application, follow these steps:
 
-1. Clone the repository: ```git clone https://github.com/frmscoe/batch-ppa.git```
+1. Clone the repository: ```git clone https://github.com/tazama-lf/batch-ppa.git```
 2. Navigate to the application folder: ```cd batch-ppa```
 3. Install dependencies: ```npm install```
 
@@ -30,7 +30,7 @@ To install the Batch PPA application, follow these steps:
 
 Before using the application, configure it by editing the `.env.template` file. This file contains essential settings, such as environment variables for required services like Arango, APM, and others. After editing, rename the file to `.env`.
 
-[batch-ppa/.env.template at main · frmscoe/batch-ppa (github.com)](https://github.com/frmscoe/batch-ppa/blob/main/.env.template)
+[batch-ppa/.env.template at main · Tazama-lf/batch-ppa (github.com)](https://github.com/tazama-lf/batch-ppa/blob/dev/.env.template)
 
 ## 3. Sending Batch Messages
 
@@ -47,9 +47,7 @@ Configuration steps:
 
 ### Step 2: /v1/executebatch
 
-Batch PPA executes the batch in two stages. The first stage sends preparation messages, including PAIN001, PAIN013, and PACS008. The second stage sends PACS002 messages to generate FRMS reports.
-
-Example:
+Batch PPA executes the batch in two stages. The first stage sends preparation messages, including PAIN001, PAIN013, and PACS008. The second stage sends PACS002 messages to generate Tazama reports.
 
 ## 3.1 Sending Preparation Messages
 
@@ -62,7 +60,7 @@ The application will iterate through the list of preparation messages and send t
 
 ## 3.2 Sending PACS002 Messages
 
-Sending PACS002 messages requires a fully operational FRMS system, as this step generates the report. To trigger the sending of PACS002, set `"pacs002": true` in the request body. This will propagate data for reports and PACS002 messages in the database, allowing you to retrieve batch reports.
+Sending PACS002 messages requires a fully operational Tazama system, as this step generates the report. To trigger the sending of PACS002, set `"pacs002": true` in the request body. This will propagate data for reports and PACS002 messages in the database, allowing you to retrieve batch reports.
 
 ## 3.3 Resending PACS002 Messages
 
@@ -72,20 +70,21 @@ Retries will occur only if the number of transactions in the final report does n
 
 ## 4. Error Handling
 
-The application includes error-handling mechanisms to capture and report errors during message sending and conversion. Be sure to review error logs for troubleshooting.
+The application includes error-handling mechanisms to capture and report errors during message sending and conversion. Be sure to review error logs for troubleshooting. In a non-production environment, errors will be logged to the console. However, if you have integrated with the Tazama logging system, use the appropriate guard to access your logs [link](https://github.com/tazama-lf/docs/blob/dev/Technical/Logging/Logging-Data-View.md). 
 
-## 4.1 Expected File Fields
+## 5 Input File
 
+### 5.1 File formate
+
+The supported input batch file should contain a list of transactions, with each field structured as outlined in Section 5.2 and separated by `|`. The first line will be included only if the `PROCESSING_DATE` is valid.
+
+### 5.2 Expected File Fields
 The file should contain the following fields, delimited by `|`:
 
 ```
 PROCESSING_DATE_TIME|PROCESSING_WINDOW|MESSAGE_ID|TRANSACTION_TYPE|TCIBTXID|TRANSACTION_ID|END_TO_END_TRANSACTION_ID|RESPONSE_CODE|RESPONSE_MESSAGE|SOURCE_COUNTRY_CODE|PAYMENT_COUNTRY_CODE|PAYMENT_CURRENCY_CODE|TOTAL_PAYMENT_AMOUNT|SENDER_NAME|RECEIVER_NAME|SENDER_AGENT_SPID|RECEIVER_AGENT_SPID|SENDER_ACCOUNT|RECEIVER_ACCOUNT|REPORTING_CODE|RECEIVER_MESSAGE|CREATED_DATE|MIS_DATE|SENDER_SUSPENSE_ACCOUNT_FLAG|RECEIVER_SUSPENSE_ACCOUNT_FLAG|KNOWN_FRAUD_FLAG|FROM_FILENAME|MODIFIED_DATE|CREATED_BY|MODIFIED_BY|FILE_ID
 ```
 
-## 5. Conclusion
+## 6. Conclusion
 
 Congratulations! You have successfully set up and configured the Batch PPA application to handle the sending of preparation messages and resending missing PACS002 messages. For further assistance, refer to the documentation or contact our support team.
-
----
-
-Let me know if you'd like further refinement!
