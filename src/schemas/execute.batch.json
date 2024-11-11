@@ -1,42 +1,12 @@
 {
-    "type": "object",
-    "properties": {
-      "evaluate": {
-        "oneOf": [
-          {
-            "type": "boolean"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "overwrite": {
-                "type": "boolean"
-              }
-            },
-            "required": []
-          }
-        ]
-      },
-      "timestampShift": {
-        "oneOf": [
-          {
-            "type": "boolean"
-          },
-          {
-            "type": "object",
-            "properties": {
-              "removePacs002": {
-                "type": "boolean"
-              }
-            },
-            "required": []
-          }
-        ]
-      }
-    },
-    "oneOf": [
-      { "required": ["evaluate"] },
-      { "required": ["timestampShift"] }
-    ]
-  }
-  
+  "description": "",
+  "type": "object",
+  "properties": {
+    "evaluate": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "evaluate"
+  ]
+}

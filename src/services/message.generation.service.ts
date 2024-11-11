@@ -6,7 +6,6 @@ import { Fields } from '../utils/transaction.enum';
 
 export const GetPain001FromLine = (columns: string[]): Pain001 => {
   const end2endID = columns[Fields.MESSAGE_ID];
-
   const pain001: Pain001 = {
     CstmrCdtTrfInitn: {
       GrpHdr: {

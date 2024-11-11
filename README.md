@@ -9,14 +9,12 @@
     - [Step 2: /v1/executebatch](#step-2-executebatch)
   - [3.1 Sending Preparation Messages](#31-sending-preparation-messages)
   - [3.2 Sending PACS002 Messages](#32-sending-pacs002-messages)
-  - [3.3 Resending PACS002 Messages](#33-resending-pacs002-messages)
   - [4. Error Handling](#4-error-handling)
   - [5. Batch Input file](#5-batch-input-file)
-  - [6. Conclusion](#6-conclusion)
 
 ## Introduction
 
-Welcome to the Batch PPA Node.js application documentation. This application enables batch sending of various payment messages to the Tazama system, including preparation messages like PAIN001, PACS008, and PAIN013. Additionally, the application supports resending missing PACS002 messages, comparing reports, and managing the messages.
+Welcome to the Batch PPA Node.js application documentation. This application enables batch sending of various payment messages to the Tazama system, including preparation messages like PAIN001, PACS008, and PAIN013. Additionally, the application supports sending PACS002 messages into the Tazama platform for Fraud evaluation.
 
 ## 1. Installation
 
@@ -43,9 +41,9 @@ For uploading, use a tool like Postman, which supports requests with form-data i
 Configuration steps:
 1. Set the endpoint to `{yourhost}/v1/uploadfile` and use the HTTP method `POST`.
 2. Attach the file using the key name "batch"
-3. Send the request and wait for the batch process to complete before moving to Step 2.
+3. Send the request and wait for the file to upload completly before moving to Step 2.
 
-### Step 2: /v1/executebatch
+### Step 2: /v1/executebatch `POST`
 
 Batch PPA executes the batch in two stages. The first stage sends preparation messages, including PAIN001, PAIN013, and PACS008. The second stage sends PACS002 messages to generate Tazama reports.
 
@@ -58,15 +56,13 @@ The Batch PPA application can send a batch of preparation messages. Use a reques
 
 The application will iterate through the list of preparation messages and send them to the Arango database.
 
+
 ## 3.2 Sending PACS002 Messages
 
 Sending PACS002 messages requires a fully operational Tazama system, as this step generates the report. To trigger the sending of PACS002, set `"evaluate": true` in the request body. This will propagate data for reports and PACS002 messages in the database, allowing you to retrieve batch reports.
 
-## 3.3 Resending PACS002 Messages
-
-To retry missed transactions, set `"evaluate.overwrite": true` in the request body. The service will attempt resending based on the `RETRY` variable specified in the configuration. After retrying, there may still be missed transactions, which will require resending the execute request with the same options enabled.
-
-Retries will occur only if the number of transactions in the final report does not match the original source file count. Changing the source file may affect the missed transaction count evaluation.
+- Set the method to `POST` and point the address to `{yourhost}/v1/executebatch`.
+- In the body, set `"evaluate": true` to initiate basic preparation.
 
 ## 4. Error Handling
 
@@ -116,9 +112,4 @@ PROCESSING_DATE_TIME|PROCESSING_WINDOW|MESSAGE_ID|TRANSACTION_TYPE|TCIBTXID|TRAN
 | 27|MODIFIED_DATE|
 | 28|CREATED_BY|
 | 29|MODIFIED_BY|
-| 30|FILE_ID
-
-
-## 6. Conclusion
-
-Congratulations! You have successfully set up and configured the Batch PPA application to handle the sending of preparation messages and resending missing PACS002 messages. For further assistance, refer to the documentation or contact our support team.
+| 30|FILE_ID|

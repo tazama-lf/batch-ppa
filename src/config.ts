@@ -14,20 +14,8 @@ export const additionalEnvironmentVariables: AdditionalConfig[] = [
     type: 'boolean',
   },
   {
-    name: 'DELAY',
-    type: 'number',
-  },
-  {
-    name: 'VERIFY_REPORTS',
-    type: 'boolean',
-  },
-  {
     name: 'TMS_ENDPOINT',
     type: 'string',
-  },
-  {
-    name: 'RETRY',
-    type: 'number',
   },
   {
     name: 'MAX_FILE_SIZE',
@@ -55,10 +43,7 @@ export const additionalEnvironmentVariables: AdditionalConfig[] = [
 export interface ExtendedConfig {
   PORT: number;
   QUOTING: boolean;
-  DELAY: number;
-  VERIFY_REPORTS: boolean;
   TMS_ENDPOINT: string;
-  RETRY: number;
   MAX_FILE_SIZE: number;
   TRANSACTION_HISTORY_PAIN001_COLLECTION: string;
   TRANSACTION_HISTORY_PAIN013_COLLECTION: string;

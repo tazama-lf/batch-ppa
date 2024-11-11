@@ -1,24 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
 import { type Pacs008, type Pain001, type Pain013 } from '@tazama-lf/frms-coe-lib/lib/interfaces';
-import type * as readline from 'readline';
-import { cacheDatabaseManager, configuration, loggerService } from '..';
-import { executePost } from '../utils/execute.https';
-import { Fields } from '../utils/transaction.enum';
+import { configuration, loggerService } from '..';
 import { GetPacs002, GetPacs008, GetPain001FromLine, GetPain013 } from '../services/message.generation.service';
 import { handleTransaction } from '../services/save.transactions.service';
-
-export const getMissingTransaction = async (batchSourceFileLine: readline.Interface): Promise<string[]> => {
-  let endToEndIds: string[] = [];
-  for await (const line of batchSourceFileLine) {
-    const columns = line.split('|');
-    if (!new Date(columns[Fields.PROCESSING_DATE_TIME]).getTime()) continue;
-
-    endToEndIds.push(columns[Fields.END_TO_END_TRANSACTION_ID]);
-  }
-  endToEndIds = (await cacheDatabaseManager.getUnExistingTransactions(endToEndIds))[0];
-  return endToEndIds;
-};
+import { executePost } from '../utils/execute.https';
 
 export const sendPacs002Transaction = async (columns: string[], delta: number): Promise<boolean> => {
   loggerService.log('Sending Pacs002 message...');

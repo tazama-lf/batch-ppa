@@ -38,10 +38,7 @@ export class CacheDatabaseService<T extends ManagerConfig> {
     configuration: Configuration,
   ): Promise<{ db: CacheDatabaseService<T>; config: ManagerConfig }> {
     const auth = configuration.nodeEnv === 'production';
-    const { db, config } = await CreateStorageManager(
-      [Database.EVALUATION, Database.TRANSACTION_HISTORY, Database.PSEUDONYMS, Cache.DISTRIBUTED],
-      auth,
-    );
+    const { db, config } = await CreateStorageManager([Database.TRANSACTION_HISTORY, Database.PSEUDONYMS, Cache.DISTRIBUTED], auth);
     const databaseManager = db as DatabaseManagerInstance<T>;
     return { db: new CacheDatabaseService<T>(databaseManager, config.redisConfig?.distributedCacheTTL ?? 0), config };
   }
