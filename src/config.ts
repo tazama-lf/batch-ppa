@@ -14,6 +14,11 @@ export const additionalEnvironmentVariables: AdditionalConfig[] = [
     type: 'boolean',
   },
   {
+    name: 'DELIMITER',
+    type: 'string',
+    optional: true,
+  },
+  {
     name: 'TMS_ENDPOINT',
     type: 'string',
   },
@@ -45,6 +50,7 @@ export interface ExtendedConfig {
   QUOTING: boolean;
   TMS_ENDPOINT: string;
   MAX_FILE_SIZE: number;
+  DELIMITER: string;
   TRANSACTION_HISTORY_PAIN001_COLLECTION: string;
   TRANSACTION_HISTORY_PAIN013_COLLECTION: string;
   TRANSACTION_HISTORY_PACS008_COLLECTION: string;

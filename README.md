@@ -78,38 +78,20 @@ The supported input batch file should contain a list of transactions, with each 
 The file should contain the following fields, delimited by `|`:
 
 ```
-PROCESSING_DATE_TIME|PROCESSING_WINDOW|MESSAGE_ID|TRANSACTION_TYPE|TCIBTXID|TRANSACTION_ID|END_TO_END_TRANSACTION_ID|RESPONSE_CODE|RESPONSE_MESSAGE|SOURCE_COUNTRY_CODE|PAYMENT_COUNTRY_CODE|PAYMENT_CURRENCY_CODE|TOTAL_PAYMENT_AMOUNT|SENDER_NAME|RECEIVER_NAME|SENDER_AGENT_SPID|RECEIVER_AGENT_SPID|SENDER_ACCOUNT|RECEIVER_ACCOUNT|REPORTING_CODE|RECEIVER_MESSAGE|CREATED_DATE|MIS_DATE|SENDER_SUSPENSE_ACCOUNT_FLAG|RECEIVER_SUSPENSE_ACCOUNT_FLAG|KNOWN_FRAUD_FLAG|FROM_FILENAME|MODIFIED_DATE|CREATED_BY|MODIFIED_BY|FILE_ID
+PROCESSING_DATE_TIME|MESSAGE_ID|TRANSACTION_TYPE|PAYMENT_CURRENCY_CODE|TOTAL_PAYMENT_AMOUNT|SENDER_NAME|RECEIVER_NAME|SENDER_AGENT_SPID|RECEIVER_AGENT_SPID|SENDER_ACCOUNT|RECEIVER_ACCOUNT|REPORTING_CODE
 ```
 
-| No. | Fields |
-| ------ | -------|
-| 1|PROCESSING_DATE_TIME|
-| 2|PROCESSING_WINDOW|
-| 3|MESSAGE_ID|
-| 4|TRANSACTION_TYPE|
-| 5|TCIBTXID|
-| 6|TRANSACTION_ID|
-| 7|END_TO_END_TRANSACTION_ID|
-| 8|RESPONSE_CODE|RESPONSE_MESSAGE|
-| 9|SOURCE_COUNTRY_CODE|
-| 10|PAYMENT_COUNTRY_CODE|
-| 11|PAYMENT_CURRENCY_CODE|
-| 12|TOTAL_PAYMENT_AMOUNT|
-| 13|SENDER_NAME|
-| 14|RECEIVER_NAME|
-| 15|SENDER_AGENT_SPID|
-| 16|RECEIVER_AGENT_SPID|
-| 17|SENDER_ACCOUNT|
-| 18|RECEIVER_ACCOUNT|
-| 19|REPORTING_CODE|
-| 20|RECEIVER_MESSAGE|
-| 21|CREATED_DATE|
-| 22|MIS_DATE|
-| 23|SENDER_SUSPENSE_ACCOUNT_FLAG|
-| 24|RECEIVER_SUSPENSE_ACCOUNT_FLAG|
-| 25|KNOWN_FRAUD_FLAG|
-| 26|FROM_FILENAME|
-| 27|MODIFIED_DATE|
-| 28|CREATED_BY|
-| 29|MODIFIED_BY|
-| 30|FILE_ID|
+| Source field |	Target Field |	Description |
+| ------------ | ------------ | ------------ |
+| PROCESSING_DATE_TIME |	CreDtTm	| Date and time at which the message was created.
+| MESSAGE_ID |	EndToEndId | The end-to-end identification can be used for reconciliation or to link tasks relating to the transaction. It can be included in several messages related to the transaction.
+| TRANSACTION_TYPE |	PmtTpInf.CtgyPurp.Prtry | Underlying reason for the payment transaction.
+| PAYMENT_CURRENCY_CODE |	InstdAmt.Amt.Ccy | The currency of the instructed amount as ordered by the initiating party.
+| TOTAL_PAYMENT_AMOUNT |	InstdAmt.Amt.Amt | Amount of money to be moved between the debtor and creditor, before deduction of charges, expressed in the currency as ordered by the initiating party.
+| SENDER_NAME |	Dbtr.Nm | Name by which the debtor is known and which is usually used to identify that party.
+| RECEIVER_NAME |	Cdtr.Nm |	Name by which the creditor is known and which is usually used to identify that party.
+| SENDER_AGENT_SPID |	DbtrAgt.FinInstnId.ClrSysMmbId.MmbId | Unique and unambiguous identification of the financial institution servicing an account for the debtor, as assigned under an internationally recognised or proprietary identification scheme.
+| RECEIVER_AGENT_SPID |	DbtrAgt.FinInstnId.ClrSysMmbId.MmbId |	Unique and unambiguous identification of the financial institution servicing an account for the creditor, as assigned under an internationally recognised or proprietary identification scheme.
+| SENDER_ACCOUNT |	DbtrAcct.Id.Othr.Id| Unambiguous identification of the account of the debtor to which a debit entry will be made as a result of the transaction.
+| RECEIVER_ACCOUNT |	CdtrAcct.Id.Othr.Id | Unambiguous identification of the account of the creditor to which a credit entry will be made as a result of the transaction.
+| REPORTING_CODE |	RgltryRptg.Dtls.Cd |Specifies the nature, purpose, and reason for the transaction to be reported for regulatory and statutory requirements in a coded form.

@@ -29,7 +29,7 @@ export const SendLineMessages = async (requestBody: ExecuteReqBody): Promise<str
   for await (const line of rl) {
     index++;
     // Each line in input.txt will be successively available here as `line`.
-    const columns = line.split('|');
+    const columns = line.split(configuration.DELIMITER ?? '|');
     if (!new Date(columns[Fields.PROCESSING_DATE_TIME]).getTime()) {
       if (index === 1) {
         continue;
@@ -44,11 +44,18 @@ export const SendLineMessages = async (requestBody: ExecuteReqBody): Promise<str
     } else {
       const { pacs008Result, pain001Result, pain013Result } = await sendPrepareTransaction(columns);
 
-      if (!pacs008Result || !pain001Result || !pain013Result) {
+      if ((!requestBody.evaluate && configuration.QUOTING && !pacs008Result) || !pain001Result || !pain013Result) {
         loggerService.error(
           JSON.stringify({
             transaction: line,
-            message: `Transaction failed to save history of ${pacs008Result ? '' : 'pacs002'}${pain001Result ? '' : ', pain001'}${pain013Result ? '' : ' pain013'} `,
+            message: `Transaction failed to save history of ${!pacs008Result ? '' : 'pacs008'}${!pain001Result ? '' : ', pain001'}${!pain013Result ? '' : ' pain013'} `,
+          }),
+        );
+      } else if (!requestBody.evaluate && !configuration.QUOTING && !pacs008Result) {
+        loggerService.error(
+          JSON.stringify({
+            transaction: line,
+            message: 'Transaction failed to save history of pacs008',
           }),
         );
       }

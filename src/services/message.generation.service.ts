@@ -92,7 +92,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
         DbtrAgt: {
           FinInstnId: {
             ClrSysMmbId: {
-              MmbId: `${columns[Fields.PAYMENT_COUNTRY_CODE]}${columns[Fields.SENDER_AGENT_SPID]}`,
+              MmbId: `${columns[Fields.SENDER_AGENT_SPID]}`,
             },
           },
         },
@@ -124,7 +124,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
           CdtrAgt: {
             FinInstnId: {
               ClrSysMmbId: {
-                MmbId: `${columns[Fields.PAYMENT_COUNTRY_CODE]}${columns[Fields.RECEIVER_AGENT_SPID]}`,
+                MmbId: `${columns[Fields.RECEIVER_AGENT_SPID]}`,
               },
             },
           },
@@ -558,7 +558,7 @@ export const GetPacs002 = (columns: string[], date: Date): Pacs002 => {
             Agt: {
               FinInstnId: {
                 ClrSysMmbId: {
-                  MmbId: `${columns[Fields.PAYMENT_COUNTRY_CODE]}${columns[Fields.SENDER_AGENT_SPID]}`,
+                  MmbId: `${columns[Fields.SENDER_AGENT_SPID]}`,
                 },
               },
             },
@@ -571,7 +571,7 @@ export const GetPacs002 = (columns: string[], date: Date): Pacs002 => {
             Agt: {
               FinInstnId: {
                 ClrSysMmbId: {
-                  MmbId: `${columns[Fields.PAYMENT_COUNTRY_CODE]}${columns[Fields.SENDER_AGENT_SPID]}`,
+                  MmbId: `${columns[Fields.SENDER_AGENT_SPID]}`,
                 },
               },
             },
@@ -584,7 +584,7 @@ export const GetPacs002 = (columns: string[], date: Date): Pacs002 => {
             Agt: {
               FinInstnId: {
                 ClrSysMmbId: {
-                  MmbId: `${columns[Fields.PAYMENT_COUNTRY_CODE]}${columns[Fields.RECEIVER_AGENT_SPID]}`,
+                  MmbId: `${columns[Fields.RECEIVER_AGENT_SPID]}`,
                 },
               },
             },
@@ -594,14 +594,14 @@ export const GetPacs002 = (columns: string[], date: Date): Pacs002 => {
         InstgAgt: {
           FinInstnId: {
             ClrSysMmbId: {
-              MmbId: `${columns[Fields.PAYMENT_COUNTRY_CODE]}${columns[Fields.SENDER_AGENT_SPID]}`,
+              MmbId: `${columns[Fields.SENDER_AGENT_SPID]}`,
             },
           },
         },
         InstdAgt: {
           FinInstnId: {
             ClrSysMmbId: {
-              MmbId: `${columns[Fields.PAYMENT_COUNTRY_CODE]}${columns[Fields.RECEIVER_AGENT_SPID]}`,
+              MmbId: `${columns[Fields.RECEIVER_AGENT_SPID]}`,
             },
           },
         },
