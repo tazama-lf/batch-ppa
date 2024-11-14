@@ -1,0 +1,12 @@
+{
+  "description": "",
+  "type": "object",
+  "properties": {
+    "evaluate": {
+      "type": "boolean"
+    }
+  },
+  "required": [
+    "evaluate"
+  ]
+}

@@ -3,26 +3,26 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: ppa-batch-to-tms-rel-1-0-0
+  name: batch-ppa
   namespace: processor
   labels:
-    app: ppa-batch-to-tms
+    app: batch-ppa
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: ppa-batch-to-tms
+      app: batch-ppa
   template:
     metadata:
-      name: ppa-batch-to-tms-rel-1-0-0
+      name: batch-ppa-rel-1-0-0
       labels:
-        app: ppa-batch-to-tms
+        app: batch-ppa
       annotations:
         prometheus.io.scrape: 'false'
     spec:
       containers:
-        - name: ppa-batch-to-tms-rel-1-0-0
-          image: actio.azurecr.io/ppa-batch-to-tms-rel-1-0-0:1.0.0
+        - name: batch-ppa-rel-1-0-0
+          image: actio.azurecr.io/batch-ppa-rel-1-0-0:1.0.0
           ports:
             - name: http
               containerPort: 3000

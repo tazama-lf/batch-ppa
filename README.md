@@ -1,5 +1,3 @@
-<!-- SPDX-License-Identifier: Apache-2.0 -->
-
 # Batch PPA Documentation
 
 - [Batch PPA Documentation](#batch-ppa-documentation)
@@ -7,79 +5,93 @@
   - [1. Installation](#1-installation)
   - [2. Configuration](#2-configuration)
   - [3. Sending Batch Messages](#3-sending-batch-messages)
-    - [Step 1 /v1/uploadfile](#step-1-uploadfile)
-    - [Step 2 /v1/execute](#step-2-execute)
-  - [3.1 Sending Preparation messages](#31-sending-preparation-messages)
-  - [3.2. Sending PACS002 Messages](#32-sending-pacs002-messages)
-  - [3.3 Resending of Pacs002 Messages](#33-resending-of-pacs002-messages)
+    - [Step 1: /v1/uploadfile](#step-1-uploadfile)
+    - [Step 2: /v1/executebatch](#step-2-executebatch)
+  - [3.1 Sending Preparation Messages](#31-sending-preparation-messages)
+  - [3.2 Sending PACS002 Messages](#32-sending-pacs002-messages)
   - [4. Error Handling](#4-error-handling)
-  - [4.1. Fields expected in the file are as follows](#41-fields-expected-in-the-file-are-as-follows)
-  - [5. Conclusion](#5-conclusion)
+  - [5. Batch Input file](#5-batch-input-file)
 
 ## Introduction
 
-Welcome to the documentation for the Batch PPA Node.js application. This application is designed to facilitate the sending of various payment messages in a batch to the FRMS system, including preparation messages like PAIN001, PACS008, and PAIN013. Additionally, the application supports the resending of missing PACS002 messages, comparing reports and the messages themselves.
+Welcome to the Batch PPA Node.js application documentation. This application enables batch sending of various payment messages to the Tazama system, including preparation messages like PAIN001, PACS008, and PAIN013. Additionally, the application supports sending PACS002 messages into the Tazama platform for Fraud evaluation.
 
 ## 1. Installation
 
-To install the Batch PAA application, follow these steps:
+To install the Batch PPA application, follow these steps:
 
-1.1. Clone the repository: ```git clone https://github.com/frmscoe/batch-ppa.git```
-
-1.2. Navigate to the application folder: ```cd batch-ppa```.
-
-1.3. Install dependencies: npm install.
+1. Clone the repository: ```git clone https://github.com/tazama-lf/batch-ppa.git```
+2. Navigate to the application folder: ```cd batch-ppa```
+3. Install dependencies: ```npm install```
 
 ## 2. Configuration
 
-Before using the application, you need to configure it by editing the .env.template file. This file contains settings such as environment variables for tools or services needed by the service itself such as arango, apm, and more, after editing this file please rename the file to .env
+Before using the application, configure it by editing the `.env.template` file. This file contains essential settings, such as environment variables for required services like Arango, APM, and others. After editing, rename the file to `.env`.
 
-[batch-ppa/.env.template at main · frmscoe/batch-ppa (github.com)](https://github.com/frmscoe/batch-ppa/blob/main/.env.template)
+[batch-ppa/.env.template at main · Tazama-lf/batch-ppa (github.com)](https://github.com/tazama-lf/batch-ppa/blob/dev/.env.template)
 
 ## 3. Sending Batch Messages
 
-### Step 1 /v1/uploadfile
+### Step 1: /v1/uploadfile
 
-Sending source file with transitions into the server-side host, the file is expected to have a delimiter of ‘|’ and have different fields of transitions which are mentioned in 4.1 this will get the execution of the batch ready. Now let’s get to how you do it, with a request tool like Postman that can send requests and the body of form data, which can attach to file, the file is limited to 100 MB now which should be 100 000 transactions in the batch. Make sure that you are pointing to your endpoint {yourhost}/uploadfile with Method of POST, then attach the file with the “batch” key name and then send the batch wait until finishes for step 2.
+To initiate batch execution, upload the source file containing transaction records to the server-side host. The file should be delimited by ‘|’ and include the transaction fields specified in section 5.2.
 
-Example:
+For uploading, use a tool like Postman, which supports requests with form-data in the body and allows file attachments. Ensure that the file does not exceed 100 MB, which typically accommodates 100,000 transactions by default. This limit can be adjusted by setting the `MAX_FILE_SIZE` in your environment variables.
 
-### Step 2 /v1/execute
+Configuration steps:
+1. Set the endpoint to `{yourhost}/v1/uploadfile` and use the HTTP method `POST`.
+2. Attach the file using the key name "batch"
+3. Send the request and wait for the file to upload completly before moving to Step 2.
 
-As mentioned before batch ppa executes the batch in two steps, The first step is the execution of preparation messages which are pain001, pain013, and pacs008, and then the last step is the sending of pacs002 which will generate the report of FRMS.
+### Step 2: /v1/executebatch `POST`
 
-Example:
+Batch PPA executes the batch in two stages. The first stage sends preparation messages, including PAIN001, PAIN013, and PACS008. The second stage sends PACS002 messages to generate Tazama reports.
 
-## 3.1 Sending Preparation messages
+## 3.1 Sending Preparation Messages
 
-The Batch PPA application can send a batch of preparation messages. By using any request tool like Postman and set the body
+The Batch PPA application can send a batch of preparation messages. Use a request tool like Postman and configure the request as follows:
 
-Set the Method to POST and point the address to your host {yourhost}/execute
-
-Setup the body “pacs002: false” inside the object of the body this should do your basic preparation, Press send.
+- Set the method to `POST` and point the address to `{yourhost}/v1/executebatch`.
+- In the body, set `"evaluate": false` to initiate basic preparation.
 
 The application will iterate through the list of preparation messages and send them to the Arango database.
 
-## 3.2. Sending PACS002 Messages
 
-Sending of Pac002 messages, triggering this request will require the fully ready FRMS system because the generation of report is expected on this step.
+## 3.2 Sending PACS002 Messages
 
-pacs002:true Request body, This should trigger the sending of pacs002 expected data propagation is reports and pacs002 on the database allowing you to get batch reports.
+Sending PACS002 messages requires a fully operational Tazama system, as this step generates the report. To trigger the sending of PACS002, set `"evaluate": true` in the request body. This will propagate data for reports and PACS002 messages in the database, allowing you to retrieve batch reports.
 
-## 3.3 Resending of Pacs002 Messages
-
-pacs002.overwrite: true With this setting set to true on the request body the service will retry the missed transactions in relation to the number that has been specified in config for the RETRY variable, note that after retry u might still have missed transactions that would require the resending of execute request with same options enabled.
-
-The retry will only happen if in comparison to final reports not exactly the matching number of transactions from the source file. If you change the source file you might be risking the evaluation of the missed transactions
+- Set the method to `POST` and point the address to `{yourhost}/v1/executebatch`.
+- In the body, set `"evaluate": true` to initiate basic preparation.
 
 ## 4. Error Handling
 
-The application includes error-handling mechanisms to capture and report errors during message sending and conversion. Make sure to review error logs for troubleshooting.
+The application includes error-handling mechanisms to capture and report errors during message sending and conversion. Be sure to review error logs for troubleshooting. In a non-production environment, errors will be logged to the console. However, if you have integrated with the Tazama logging system, use the appropriate guard to access your logs [link](https://github.com/tazama-lf/docs/blob/dev/Technical/Logging/Logging-Data-View.md). 
 
-## 4.1. Fields expected in the file are as follows
+## 5 Batch Input File
 
-PROCESSING_DATE_TIME|PROCESSING_WINDOW|MESSAGE_ID|TRANSACTION_TYPE|TCIBTXID|TRANSACTION_ID|END_TO_END_TRANSACTION_ID|RESPONSE_CODE|RESPONSE_MESSAGE|SOURCE_COUNTRY_CODE|PAYMENT_COUNTRY_CODE|PAYMENT_CURRENCY_CODE|TOTAL_PAYMENT_AMOUNT|SENDER_NAME|RECEIVER_NAME|SENDER_AGENT_SPID|RECEIVER_AGENT_SPID|SENDER_ACCOUNT|RECEIVER_ACCOUNT|REPORTING_CODE|RECEIVER_MESSAGE|CREATED_DATE|MIS_DATE|SENDER_SUSPENSE_ACCOUNT_FLAG|RECEIVER_SUSPENSE_ACCOUNT_FLAG|KNOWN_FRAUD_FLAG|FROM_FILENAME|MODIFIED_DATE|CREATED_BY|MODIFIED_BY|FILE_ID
+### 5.1 File formate
 
-## 5. Conclusion
+The supported input batch file should contain a list of transactions, with each field structured as outlined in Section 5.2 and separated by `|`. The first line will be included only if the `PROCESSING_DATE` is valid.
 
-Congratulations! You have successfully set up and configured the Batch PPA application to handle the sending of preparation messages and resending missing PACS002 messages. For further assistance, refer to the documentation or contact our support team.
+### 5.2 Expected File Fields
+The file should contain the following fields, delimited by `|`:
+
+```
+PROCESSING_DATE_TIME|MESSAGE_ID|TRANSACTION_TYPE|PAYMENT_CURRENCY_CODE|TOTAL_PAYMENT_AMOUNT|SENDER_NAME|RECEIVER_NAME|SENDER_AGENT_SPID|RECEIVER_AGENT_SPID|SENDER_ACCOUNT|RECEIVER_ACCOUNT|REPORTING_CODE
+```
+
+| Source field |	Target Field |	Description |
+| ------------ | ------------ | ------------ |
+| PROCESSING_DATE_TIME |	CreDtTm	| Date and time at which the message was created.
+| MESSAGE_ID |	EndToEndId | The end-to-end identification can be used for reconciliation or to link tasks relating to the transaction. It can be included in several messages related to the transaction.
+| TRANSACTION_TYPE |	PmtTpInf.CtgyPurp.Prtry | Underlying reason for the payment transaction.
+| PAYMENT_CURRENCY_CODE |	InstdAmt.Amt.Ccy | The currency of the instructed amount as ordered by the initiating party.
+| TOTAL_PAYMENT_AMOUNT |	InstdAmt.Amt.Amt | Amount of money to be moved between the debtor and creditor, before deduction of charges, expressed in the currency as ordered by the initiating party.
+| SENDER_NAME |	Dbtr.Nm | Name by which the debtor is known and which is usually used to identify that party.
+| RECEIVER_NAME |	Cdtr.Nm |	Name by which the creditor is known and which is usually used to identify that party.
+| SENDER_AGENT_SPID |	DbtrAgt.FinInstnId.ClrSysMmbId.MmbId | Unique and unambiguous identification of the financial institution servicing an account for the debtor, as assigned under an internationally recognised or proprietary identification scheme.
+| RECEIVER_AGENT_SPID |	DbtrAgt.FinInstnId.ClrSysMmbId.MmbId |	Unique and unambiguous identification of the financial institution servicing an account for the creditor, as assigned under an internationally recognised or proprietary identification scheme.
+| SENDER_ACCOUNT |	DbtrAcct.Id.Othr.Id| Unambiguous identification of the account of the debtor to which a debit entry will be made as a result of the transaction.
+| RECEIVER_ACCOUNT |	CdtrAcct.Id.Othr.Id | Unambiguous identification of the account of the creditor to which a credit entry will be made as a result of the transaction.
+| REPORTING_CODE |	RgltryRptg.Dtls.Cd |Specifies the nature, purpose, and reason for the transaction to be reported for regulatory and statutory requirements in a coded form.

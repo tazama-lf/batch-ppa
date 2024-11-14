@@ -1,20 +1,15 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import { type Pacs002 } from '../classes/pacs.002.001.12';
-import { type Pacs008 } from '../classes/pacs.008.001.10';
-import { type Pain001 } from '../classes/pain.001.001.11';
-import { type Pain013 } from '../classes/pain.013.001.09';
+import { type Pacs002, type Pacs008, type Pain001, type Pain013 } from '@tazama-lf/frms-coe-lib/lib/interfaces';
 import { v4 as uuidv4 } from 'uuid';
-import { Fields } from './utilities.service';
+import { Fields } from '../utils/transaction.enum';
 
 export const GetPain001FromLine = (columns: string[]): Pain001 => {
   const end2endID = columns[Fields.MESSAGE_ID];
-  const testID = uuidv4().replace('-', '');
-
   const pain001: Pain001 = {
     CstmrCdtTrfInitn: {
       GrpHdr: {
-        MsgId: testID,
+        MsgId: end2endID,
         CreDtTm: new Date().toISOString(),
         InitgPty: {
           Nm: columns[Fields.SENDER_NAME],
@@ -29,7 +24,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
                 {
                   Id: columns[Fields.SENDER_ACCOUNT],
                   SchmeNm: {
-                    Prtry: 'ACCOUNT NUMBER',
+                    Prtry: 'ACCOUNT_NUMBER',
                   },
                 },
               ],
@@ -51,8 +46,8 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
           },
         },
         ReqdExctnDt: {
-          Dt: new Date(columns[Fields.PROCESSING_DATE_TIME]).toISOString().substring(0, 10),
-          DtTm: new Date(columns[Fields.PROCESSING_DATE_TIME]).toISOString(),
+          Dt: new Date(columns[Fields.PROCESSING_DATE_TIME]),
+          DtTm: new Date(columns[Fields.PROCESSING_DATE_TIME]),
         },
         Dbtr: {
           Nm: columns[Fields.SENDER_NAME],
@@ -70,7 +65,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
                 {
                   Id: columns[Fields.SENDER_ACCOUNT],
                   SchmeNm: {
-                    Prtry: 'ACCOUNT NUMBER',
+                    Prtry: 'ACCOUNT_NUMBER',
                   },
                 },
               ],
@@ -97,7 +92,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
         DbtrAgt: {
           FinInstnId: {
             ClrSysMmbId: {
-              MmbId: `${columns[Fields.PAYMENT_COUNTRY_CODE]}${columns[Fields.SENDER_AGENT_SPID]}`,
+              MmbId: `${columns[Fields.SENDER_AGENT_SPID]}`,
             },
           },
         },
@@ -113,13 +108,13 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
           Amt: {
             InstdAmt: {
               Amt: {
-                Amt: Number(columns[Fields.TOTAL_PAYMENT_AMOUNT]),
+                Amt: columns[Fields.TOTAL_PAYMENT_AMOUNT],
                 Ccy: columns[Fields.PAYMENT_CURRENCY_CODE],
               },
             },
             EqvtAmt: {
               Amt: {
-                Amt: Number(columns[Fields.TOTAL_PAYMENT_AMOUNT]),
+                Amt: columns[Fields.TOTAL_PAYMENT_AMOUNT],
                 Ccy: columns[Fields.PAYMENT_CURRENCY_CODE],
               },
               CcyOfTrf: columns[Fields.PAYMENT_CURRENCY_CODE],
@@ -129,7 +124,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
           CdtrAgt: {
             FinInstnId: {
               ClrSysMmbId: {
-                MmbId: `${columns[Fields.PAYMENT_COUNTRY_CODE]}${columns[Fields.RECEIVER_AGENT_SPID]}`,
+                MmbId: `${columns[Fields.RECEIVER_AGENT_SPID]}`,
               },
             },
           },
@@ -146,7 +141,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
                   {
                     Id: columns[Fields.RECEIVER_ACCOUNT],
                     SchmeNm: {
-                      Prtry: 'ACCOUNT NUMBER',
+                      Prtry: 'ACCOUNT_NUMBER',
                     },
                   },
                 ],
@@ -200,10 +195,10 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
                   MrchntClssfctnCd: 'BLANK',
                 },
                 DbtrFinSvcsPrvdrFees: {
-                  Amt: 0,
+                  Amt: '0',
                   Ccy: columns[Fields.PAYMENT_CURRENCY_CODE],
                 },
-                Xprtn: new Date(new Date(columns[Fields.PROCESSING_DATE_TIME]).getTime() + 5 * 60000).toISOString(),
+                Xprtn: new Date(new Date(columns[Fields.PROCESSING_DATE_TIME]).getTime() + 5 * 60000),
               },
             },
           },
@@ -223,17 +218,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
         },
       },
     },
-    EndToEndId: end2endID,
     TxTp: 'pain.001.001.11',
-    DebtorAcctId:
-      columns[Fields.RECEIVER_NAME] === 'Y'
-        ? `${columns[Fields.SENDER_ACCOUNT]}${columns[Fields.SENDER_NAME]}`
-        : `${columns[Fields.SENDER_ACCOUNT]}`,
-    CreditorAcctId:
-      columns[Fields.RECEIVER_NAME] === 'Y'
-        ? `${columns[Fields.RECEIVER_ACCOUNT]}${columns[Fields.RECEIVER_NAME]}`
-        : `${columns[Fields.RECEIVER_ACCOUNT]}`,
-    CreDtTm: new Date().toISOString(),
   };
 
   return pain001;
@@ -242,7 +227,6 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
 export const GetPain013 = (pain01: Pain001): Pain013 => {
   const pain013: Pain013 = {
     TxTp: 'pain.013.001.09',
-    EndToEndId: pain01.EndToEndId,
     CdtrPmtActvtnReq: {
       GrpHdr: {
         MsgId: uuidv4().replace('-', ''),
@@ -250,6 +234,19 @@ export const GetPain013 = (pain01: Pain001): Pain013 => {
         NbOfTxs: 1,
         InitgPty: {
           Nm: pain01.CstmrCdtTrfInitn.GrpHdr.InitgPty.Nm,
+          Id: {
+            PrvtId: {
+              DtAndPlcOfBirth: {
+                BirthDt: new Date(),
+                CityOfBirth: 'JHB',
+                CtryOfBirth: 'ZA',
+              },
+              Othr: [pain01.CstmrCdtTrfInitn.GrpHdr.InitgPty.Id.PrvtId.Othr[0]],
+            },
+          },
+          CtctDtls: {
+            MobNb: '',
+          },
         },
       },
       PmtInf: {
@@ -270,6 +267,16 @@ export const GetPain013 = (pain01: Pain001): Pain013 => {
         Dbtr: {
           Nm: pain01.CstmrCdtTrfInitn.PmtInf.Dbtr.Nm,
           CtctDtls: pain01.CstmrCdtTrfInitn.PmtInf.Dbtr.CtctDtls,
+          Id: {
+            PrvtId: {
+              DtAndPlcOfBirth: {
+                BirthDt: new Date(),
+                CityOfBirth: 'JHB',
+                CtryOfBirth: 'ZA',
+              },
+              Othr: [pain01.CstmrCdtTrfInitn.GrpHdr.InitgPty.Id.PrvtId.Othr[0]],
+            },
+          },
         },
         DbtrAcct: {
           Id: {
@@ -326,6 +333,16 @@ export const GetPain013 = (pain01: Pain001): Pain013 => {
           Cdtr: {
             Nm: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Cdtr.Nm,
             CtctDtls: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Cdtr.CtctDtls,
+            Id: {
+              PrvtId: {
+                DtAndPlcOfBirth: {
+                  BirthDt: new Date(),
+                  CityOfBirth: 'JHB',
+                  CtryOfBirth: 'ZA',
+                },
+                Othr: [pain01.CstmrCdtTrfInitn.GrpHdr.InitgPty.Id.PrvtId.Othr[0]],
+              },
+            },
           },
           CdtrAcct: {
             Id: {
@@ -357,19 +374,19 @@ export const GetPain013 = (pain01: Pain001): Pain013 => {
               Doc: {
                 PyeeRcvAmt: {
                   Amt: {
-                    Amt: 0,
+                    Amt: '0',
                     Ccy: 'ZAR',
                   },
                 },
                 PyeeFinSvcsPrvdrFee: {
                   Amt: {
-                    Amt: 0,
+                    Amt: '0',
                     Ccy: 'ZAR',
                   },
                 },
                 PyeeFinSvcsPrvdrComssn: {
                   Amt: {
-                    Amt: 0,
+                    Amt: '0',
                     Ccy: 'ZAR',
                   },
                 },
@@ -399,7 +416,6 @@ export const GetPain013 = (pain01: Pain001): Pain013 => {
 export const GetPacs008 = (pain01: Pain001): Pacs008 => {
   const pacs008: Pacs008 = {
     TxTp: 'pacs.008.001.10',
-    EndToEndId: pain01.EndToEndId,
     FIToFICstmrCdtTrf: {
       GrpHdr: {
         MsgId: uuidv4().replace('-', ''),
@@ -412,7 +428,7 @@ export const GetPacs008 = (pain01: Pain001): Pacs008 => {
       CdtTrfTxInf: {
         PmtId: {
           InstrId: pain01.CstmrCdtTrfInitn.PmtInf.PmtInfId,
-          EndToEndId: pain01.EndToEndId,
+          EndToEndId: pain01.CstmrCdtTrfInitn.GrpHdr.MsgId,
         },
         IntrBkSttlmAmt: {
           Amt: {
@@ -429,7 +445,7 @@ export const GetPacs008 = (pain01: Pain001): Pacs008 => {
         ChrgBr: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.ChrgBr,
         ChrgsInf: {
           Amt: {
-            Amt: 0,
+            Amt: '0',
             Ccy: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt.Ccy,
           },
           Agt: {
@@ -516,9 +532,6 @@ export const GetPacs008 = (pain01: Pain001): Pacs008 => {
         },
       },
     },
-    DebtorAcctId: pain01.DebtorAcctId,
-    CreditorAcctId: pain01.CreditorAcctId,
-    CreDtTm: pain01.CreDtTm,
   };
 
   return pacs008;
@@ -527,7 +540,6 @@ export const GetPacs008 = (pain01: Pain001): Pacs008 => {
 export const GetPacs002 = (columns: string[], date: Date): Pacs002 => {
   const pacs002: Pacs002 = {
     TxTp: 'pacs.002.001.12',
-    EndToEndId: columns[Fields.MESSAGE_ID],
     FIToFIPmtSts: {
       GrpHdr: {
         MsgId: uuidv4().replace('-', ''),
@@ -546,7 +558,7 @@ export const GetPacs002 = (columns: string[], date: Date): Pacs002 => {
             Agt: {
               FinInstnId: {
                 ClrSysMmbId: {
-                  MmbId: `${columns[Fields.PAYMENT_COUNTRY_CODE]}${columns[Fields.SENDER_AGENT_SPID]}`,
+                  MmbId: `${columns[Fields.SENDER_AGENT_SPID]}`,
                 },
               },
             },
@@ -559,7 +571,7 @@ export const GetPacs002 = (columns: string[], date: Date): Pacs002 => {
             Agt: {
               FinInstnId: {
                 ClrSysMmbId: {
-                  MmbId: `${columns[Fields.PAYMENT_COUNTRY_CODE]}${columns[Fields.SENDER_AGENT_SPID]}`,
+                  MmbId: `${columns[Fields.SENDER_AGENT_SPID]}`,
                 },
               },
             },
@@ -572,7 +584,7 @@ export const GetPacs002 = (columns: string[], date: Date): Pacs002 => {
             Agt: {
               FinInstnId: {
                 ClrSysMmbId: {
-                  MmbId: `${columns[Fields.PAYMENT_COUNTRY_CODE]}${columns[Fields.RECEIVER_AGENT_SPID]}`,
+                  MmbId: `${columns[Fields.RECEIVER_AGENT_SPID]}`,
                 },
               },
             },
@@ -582,14 +594,14 @@ export const GetPacs002 = (columns: string[], date: Date): Pacs002 => {
         InstgAgt: {
           FinInstnId: {
             ClrSysMmbId: {
-              MmbId: `${columns[Fields.PAYMENT_COUNTRY_CODE]}${columns[Fields.SENDER_AGENT_SPID]}`,
+              MmbId: `${columns[Fields.SENDER_AGENT_SPID]}`,
             },
           },
         },
         InstdAgt: {
           FinInstnId: {
             ClrSysMmbId: {
-              MmbId: `${columns[Fields.PAYMENT_COUNTRY_CODE]}${columns[Fields.RECEIVER_AGENT_SPID]}`,
+              MmbId: `${columns[Fields.RECEIVER_AGENT_SPID]}`,
             },
           },
         },
