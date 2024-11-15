@@ -269,11 +269,13 @@ export const handlePacs008 = async (transaction: Pacs008, transactionType: strin
   } else {
     await Promise.all(pendingPromises);
   }
-  cacheDatabaseManager.saveTransactionRelationship(transactionRelationship);
 
   const spanInsert = apm.startSpan('db.insert.pacs008');
   try {
-    await Promise.all([cacheDatabaseManager.saveTransactionHistory(transaction, `pacs008_${EndToEndId}`)]);
+    await Promise.all([
+      cacheDatabaseManager.saveTransactionRelationship(transactionRelationship),
+      cacheDatabaseManager.saveTransactionHistory(transaction, `pacs008_${EndToEndId}`),
+    ]);
     return transaction;
   } catch (err) {
     if (err instanceof Error) {
