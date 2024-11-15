@@ -27,22 +27,6 @@ export const additionalEnvironmentVariables: AdditionalConfig[] = [
     type: 'number',
     optional: true,
   },
-  {
-    name: 'TRANSACTION_HISTORY_PAIN001_COLLECTION',
-    type: 'string',
-  },
-  {
-    name: 'TRANSACTION_HISTORY_PAIN013_COLLECTION',
-    type: 'string',
-  },
-  {
-    name: 'TRANSACTION_HISTORY_PACS008_COLLECTION',
-    type: 'string',
-  },
-  {
-    name: 'TRANSACTION_HISTORY_PACS002_COLLECTION',
-    type: 'string',
-  },
 ];
 
 export interface ExtendedConfig {
@@ -51,10 +35,6 @@ export interface ExtendedConfig {
   TMS_ENDPOINT: string;
   MAX_FILE_SIZE: number;
   DELIMITER: string;
-  TRANSACTION_HISTORY_PAIN001_COLLECTION: string;
-  TRANSACTION_HISTORY_PAIN013_COLLECTION: string;
-  TRANSACTION_HISTORY_PACS008_COLLECTION: string;
-  TRANSACTION_HISTORY_PACS002_COLLECTION: string;
 }
 
 type Databases = Required<Pick<ManagerConfig, 'transaction' | 'transactionHistory' | 'pseudonyms' | 'redisConfig'>>;
