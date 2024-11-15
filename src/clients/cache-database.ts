@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-import { aql } from '@tazama-lf/frms-coe-lib';
+import { aql, type GeneratedAqlQuery } from '@tazama-lf/frms-coe-lib';
 import { Database } from '@tazama-lf/frms-coe-lib/lib/config/database.config';
 import { Cache } from '@tazama-lf/frms-coe-lib/lib/config/redis.config';
 import { createMessageBuffer } from '@tazama-lf/frms-coe-lib/lib/helpers/protobuf';
@@ -65,7 +65,7 @@ export class CacheDatabaseService<T extends ManagerConfig> {
   }
 
   async getOldestTimestampPacs008(): Promise<Date> {
-    const collectionName = dbTransactionsHistory.pacs008;
+    const collectionName = this.dbManager._transactionHistory?.collection(dbTransactionsHistory.pacs008) as GeneratedAqlQuery;
     const query = aql`FOR pacs008 IN ${collectionName}
         SORT pacs008.FIToFICstmrCdtTrf.GrpHdr.CreDtTm ASC
         LIMIT 1
