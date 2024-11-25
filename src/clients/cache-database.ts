@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: Apache-2.0
-import { aql } from '@tazama-lf/frms-coe-lib';
+import { aql, type GeneratedAqlQuery } from '@tazama-lf/frms-coe-lib';
 import { Database } from '@tazama-lf/frms-coe-lib/lib/config/database.config';
 import { Cache } from '@tazama-lf/frms-coe-lib/lib/config/redis.config';
 import { createMessageBuffer } from '@tazama-lf/frms-coe-lib/lib/helpers/protobuf';
@@ -11,8 +11,8 @@ import {
   type TransactionRelationship,
 } from '@tazama-lf/frms-coe-lib/lib/interfaces';
 import { CreateStorageManager, type DatabaseManagerInstance, type ManagerConfig } from '@tazama-lf/frms-coe-lib/lib/services/dbManager';
-import { configuration } from '..';
 import { type Configuration } from '../config';
+import { dbTransactionsHistory } from '@tazama-lf/frms-coe-lib/lib/interfaces/ArangoCollections';
 
 export class CacheDatabaseService<T extends ManagerConfig> {
   private readonly dbManager: DatabaseManagerInstance<T>;
@@ -65,7 +65,8 @@ export class CacheDatabaseService<T extends ManagerConfig> {
   }
 
   async getOldestTimestampPacs008(): Promise<Date> {
-    const query = aql`FOR pacs008 IN transactionHistoryPacs008
+    const collectionName = this.dbManager._transactionHistory?.collection(dbTransactionsHistory.pacs008) as GeneratedAqlQuery;
+    const query = aql`FOR pacs008 IN ${collectionName}
         SORT pacs008.FIToFICstmrCdtTrf.GrpHdr.CreDtTm ASC
         LIMIT 1
         RETURN pacs008.FIToFICstmrCdtTrf.GrpHdr.CreDtTm`;
@@ -75,175 +76,6 @@ export class CacheDatabaseService<T extends ManagerConfig> {
     } catch (err) {
       throw new Error(JSON.stringify(err));
     }
-  }
-
-  async updateHistoryTransactionsTimestamp(): Promise<void> {
-    const colPacs008 = configuration.TRANSACTION_HISTORY_PACS008_COLLECTION;
-    const colPain013 = configuration.TRANSACTION_HISTORY_PAIN013_COLLECTION;
-    const colPain001 = configuration.TRANSACTION_HISTORY_PAIN001_COLLECTION;
-    const queryPacs008 = aql`LET newestPacs008 = (
-                                FOR pacs008 IN ${colPacs008}
-                                    SORT pacs008.FIToFICstmrCdtTrf.GrpHdr.CreDtTm DESC
-                                    LIMIT 1
-                                RETURN pacs008
-                            )
-                            LET timeDeltaToNow = DATE_DIFF(DATE_TIMESTAMP(newestPacs008[0].FIToFICstmrCdtTrf.GrpHdr.CreDtTm), DATE_NOW(), "millisecond", false)
-                            FOR doc IN ${colPacs008}
-                                LET newDoc = {"GrpHdr": {"CreDtTm": DATE_ADD(DATE_TIMESTAMP(doc.FIToFICstmrCdtTrf.GrpHdr.CreDtTm), timeDeltaToNow, "millisecond")}}
-                              UPDATE doc WITH { FIToFICstmrCdtTrfTrf: MERGE(doc.FIToFICstmrCdtTrf, newDoc) } IN ${colPacs008}`;
-
-    const queryPacs013 = aql`LET newestPain013 = (
-                          FOR pain013 IN ${colPain013}
-                              SORT pain013.CdtrPmtActvtnReq.GrpHdr.CreDtTm DESC
-                              LIMIT 1
-                          RETURN pain013
-                      )
-
-                      LET timeDeltaToNow = DATE_DIFF(DATE_TIMESTAMP(newestPain013[0].CdtrPmtActvtnReq.GrpHdr.CreDtTm), DATE_NOW(), "millisecond", false)
-
-                      FOR doc IN ${colPain013}
-                          LET newDoc = {"GrpHdr": {"CreDtTm": DATE_ADD(DATE_TIMESTAMP(doc.CdtrPmtActvtnReq.GrpHdr.CreDtTm), timeDeltaToNow, "millisecond")}}
-                      UPDATE doc WITH { CdtrPmtActvtnReq: MERGE(doc.CdtrPmtActvtnReq, newDoc) } IN ${colPain013}`;
-
-    const queryPacs001 = aql`LET newestPain001 = (
-                            FOR pain001 IN ${colPain001}
-                                SORT pain001.CstmrCdtTrfInitn.GrpHdr.CreDtTm DESC
-                                LIMIT 1
-                            RETURN pain001
-                        )
-
-                        LET timeDeltaToNow = DATE_DIFF(DATE_TIMESTAMP(newestPain001[0].CstmrCdtTrfInitn.GrpHdr.CreDtTm), DATE_NOW(), "millisecond", false)
-
-                        FOR doc IN ${colPain001}
-                            LET newDoc = {"GrpHdr": {"CreDtTm": DATE_ADD(DATE_TIMESTAMP(doc.CstmrCdtTrfInitn.GrpHdr.CreDtTm), timeDeltaToNow, "millisecond")}}
-                        UPDATE doc WITH { CstmrCdtTrfInitn: MERGE(doc.CstmrCdtTrfInitn, newDoc) } IN ${colPain001}`;
-
-    try {
-      await Promise.all([
-        this.dbManager._transactionHistory.query(queryPacs008),
-        this.dbManager._transactionHistory.query(queryPacs013),
-        this.dbManager._transactionHistory.query(queryPacs001),
-      ]);
-    } catch {
-      throw new Error('Error while trying to shift timestamp of transactions history');
-    }
-  }
-
-  async updatePseudonymEdgesTimestamp(): Promise<void> {
-    const queryPacs008 = aql`
-    LET newestPacs008 = (
-        FOR pacs008 IN transactionRelationship
-            FILTER pacs008.TxTp == "pacs.008.001.10"
-            SORT pacs008.CreDtTm DESC
-            LIMIT 1
-        RETURN pacs008
-    )
-
-    LET timeDeltaToNow = DATE_DIFF(DATE_TIMESTAMP(newestPacs008[0].CreDtTm), DATE_NOW(), "millisecond", false)
-
-    FOR doc IN transactionRelationship
-        FILTER doc.TxTp == "pacs.008.001.10"
-    UPDATE doc WITH { CreDtTm: DATE_ADD(DATE_TIMESTAMP(doc.CreDtTm), timeDeltaToNow, "millisecond") } IN transactionRelationship
-    `;
-
-    const queryPacs013 = aql`
-        LET newestPain013 = (
-            FOR pain013 IN transactionRelationship
-                FILTER pain013.TxTp == "pain.013.001.09"
-                SORT pain013.CreDtTm DESC
-                LIMIT 1
-            RETURN pain013
-        )
-
-        LET timeDeltaToNow = DATE_DIFF(DATE_TIMESTAMP(newestPain013[0].CreDtTm), DATE_NOW(), "millisecond", false)
-
-        FOR doc IN transactionRelationship
-            FILTER doc.TxTp == "pain.013.001.09"
-        UPDATE doc WITH { CreDtTm: DATE_ADD(DATE_TIMESTAMP(doc.CreDtTm), timeDeltaToNow, "millisecond") } IN transactionRelationship
-        `;
-
-    const queryPacs001 = aql`
-      LET newestPain001 = (
-          FOR pain001 IN transactionRelationship
-              FILTER pain001.TxTp == "pain.001.001.11"
-              SORT pain001.CreDtTm DESC
-              LIMIT 1
-          RETURN pain001
-      )
-
-      LET newestPain013 = (
-          FOR pain013 IN transactionRelationship
-              SORT pain013.CreDtTm DESC
-              LIMIT 1
-          RETURN pain013
-      )
-
-      LET newestPacs008 = (
-          FOR pacs008 IN transactionRelationship
-              SORT pacs008.CreDtTm DESC
-              LIMIT 1
-          RETURN pacs008
-      )
-
-      LET timeDeltaToNow = DATE_DIFF(DATE_TIMESTAMP(newestPain001[0].CreDtTm), DATE_NOW(), "millisecond", false)
-
-      FOR doc IN transactionRelationship
-          FILTER doc.TxTp == "pain.001.001.11"
-      UPDATE doc WITH { CreDtTm: DATE_ADD(DATE_TIMESTAMP(doc.CreDtTm), timeDeltaToNow, "millisecond") } IN transactionRelationship
-      `;
-
-    try {
-      await Promise.all([
-        this.dbManager._pseudonymsDb.query(queryPacs008),
-        this.dbManager._pseudonymsDb.query(queryPacs013),
-        this.dbManager._pseudonymsDb.query(queryPacs001),
-      ]);
-    } catch {
-      throw new Error('Error trying to shift timestamp of transaction relationships');
-    }
-  }
-
-  async removePacs002Pseudonym(): Promise<void> {
-    const colPacs002 = configuration.TRANSACTION_HISTORY_PACS002_COLLECTION;
-    const pacs002TransactionHistoryQuery = aql`
-                                  FOR pacs002 IN ${colPacs002}
-                                  REMOVE pacs002 IN ${colPacs002}`;
-
-    const pacs002PseudonymQuery = aql`FOR pacs002 IN transactionRelationship
-                                  FILTER pacs002.TxTp == "pacs.002.001.12"
-                                  REMOVE pacs002 IN transactionRelationship`;
-
-    const removeReportQuery = aql`FOR reports IN transactions
-                                  REMOVE reports IN transactions`;
-
-    await Promise.all([
-      await this.dbManager._transactionHistory.query(pacs002TransactionHistoryQuery),
-      await this.dbManager._pseudonymsDb.query(pacs002PseudonymQuery),
-      await this.dbManager._transaction.query(removeReportQuery),
-    ]);
-  }
-
-  async getUnExistingTransactions(endToEndIds: string[]): Promise<string[][]> {
-    const query = aql`LET refArr = (${endToEndIds})
-
-                                    LET postedArr = (
-                                        FOR doc IN transactions
-                                        RETURN doc.transaction.FIToFIPmtSts.TxInfAndSts.OrgnlEndToEndId
-                                    )
-
-                                    FOR doc IN refArr
-                                        FILTER doc NOT IN postedArr
-                                    RETURN doc`;
-
-    return (await this.dbManager._transaction.query(query)) as string[][];
-  }
-
-  async getTransactionReport(EndToEndId: string): Promise<unknown> {
-    const query = aql`FOR doc IN transactions
-      FILTER doc.transaction.EndToEndId == ${EndToEndId}
-      RETURN doc`;
-
-    return this.dbManager._transaction.query(query);
   }
 
   /**
@@ -302,16 +134,25 @@ export class CacheDatabaseService<T extends ManagerConfig> {
    * @return {*}  {Promise<void>}
    * @memberof CacheDatabaseService
    */
-  async saveTransactionHistory(
-    transaction: Pain001 | Pain013 | Pacs008 | Pacs002,
-    transactionHistoryCollection: string,
-    redisKey = '',
-  ): Promise<void> {
+  async saveTransactionHistory(transaction: Pain001 | Pain013 | Pacs008 | Pacs002, redisKey = ''): Promise<void> {
+    switch (transaction.TxTp) {
+      case 'pain.001.001.11': {
+        await this.dbManager.saveTransactionHistoryPain001(transaction as Pain001);
+        break;
+      }
+      case 'pain.013.001.09': {
+        await this.dbManager.saveTransactionHistoryPain013(transaction as Pain013);
+        break;
+      }
+      case 'pacs.008.001.10': {
+        await this.dbManager.saveTransactionHistoryPacs008(transaction as Pacs008);
+        break;
+      }
+      default:
+        throw Error('Error while selecting transaction type.');
+    }
     const buff = createMessageBuffer({ ...transaction });
-
     if (redisKey && buff) await this.dbManager.set(redisKey, buff, this.cacheExpireTime);
-
-    await this.dbManager.saveTransactionHistory(transaction, transactionHistoryCollection);
   }
 
   /**
