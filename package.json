@@ -34,7 +34,7 @@
     "@fastify/swagger": "^8.8.0",
     "@fastify/swagger-ui": "^3.0.0",
     "@tazama-lf/frms-coe-lib": "5.0.0",
-    "axios": "^1.7.7",
+    "axios": "^1.7.8",
     "fastify": "^4.27.0",
     "fastify-formidable": "^3.0.2",
     "fs": "^0.0.1-security",
