@@ -279,6 +279,7 @@ export const GetPain013 = (pain01: Pain001): Pain013 => {
           },
         },
         DbtrAcct: {
+          Nm: pain01.CstmrCdtTrfInitn.PmtInf.DbtrAcct.Nm,
           Id: {
             Othr: [
               {
@@ -528,6 +529,12 @@ export const GetPacs008 = (pain01: Pain001): Pacs008 => {
         Envlp: {
           Doc: {
             Xprtn: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.SplmtryData.Envlp.Doc.Xprtn,
+            InitgPty: {
+              Glctn: {
+                Lat: '',
+                Long: '',
+              },
+            },
           },
         },
       },
