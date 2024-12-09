@@ -1,69 +1,53 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import { IncomingForm } from 'formidable';
-import { type Context, type Next } from 'koa';
-import { processLineByLine } from '.';
-import { LoggerService } from './logger.service';
+import { type FastifyRequest, type FastifyReply } from 'fastify';
+import { loggerService } from './';
+import { SendLineMessages } from './services/file.service';
+import { promises as fs, type PathLike } from 'fs';
+import path from 'path';
+import { type ExecuteReqBody } from './utils/interface.request';
 
-export const handleExecute = async (ctx: Context, next: Next): Promise<Context> => {
-  LoggerService.log('Start - Handle execute request');
+export const handleExecute = async (req: FastifyRequest, reply: FastifyReply): Promise<void> => {
+  loggerService.log('Start - Handle execute request');
   try {
-    await processLineByLine(ctx?.request?.body);
-    await next();
-    ctx.body = 'Transactions were submitted';
-    return ctx;
+    reply.send(await SendLineMessages(req?.body as ExecuteReqBody));
   } catch (err) {
     const failMessage = 'Failed to process execution request.';
-    LoggerService.error(failMessage, err as Error, 'ApplicationService');
-
-    ctx.status = 500;
-    ctx.body = failMessage;
-    return ctx;
+    loggerService.error(failMessage, err as Error, 'ApplicationService');
+    reply.code(500);
+    reply.send(err);
   } finally {
-    LoggerService.log('End - Handle execute request');
+    loggerService.log('End - Handle execute request');
   }
 };
 
-export const handleFileUpload = async (ctx: Context, next: Next): Promise<Context> => {
-  LoggerService.log('Start - Handle quote reply request');
+export const handleFileUpload = async (req: FastifyRequest, reply: FastifyReply): Promise<void> => {
+  loggerService.log('Start - Handle file upload request');
   try {
-    ctx.status = 200;
+    await req.parseMultipart();
+    // Access the uploaded file(s) from req.files
+    const files = req.files;
 
-    const form = new IncomingForm({
-      uploadDir: './uploads/',
-      keepExtensions: true,
-      filename: () => {
-        return 'input.txt';
-      },
-      maxFileSize: 300 * 1024 * 1024,
-      maxFieldsSize: 300 * 1024 * 1024,
-    });
+    if (!files || Object.keys(files).length === 0) {
+      return await reply.code(400).send({ message: 'No files uploaded' });
+    }
 
-    await new Promise<void>((resolve, reject) => {
-      form.parse(ctx.req, (err, fields, files) => {
-        // Handle form parsing completion here
-        if (err) {
-          // Handle any errors that occurred during parsing
-          console.error(err);
-          // eslint-disable-next-line @typescript-eslint/prefer-promise-reject-errors
-          reject(err);
-        } else {
-          ctx.body = 'File was uploaded successfully!';
-          resolve();
-        }
-      });
-    });
+    for (const [, file] of Object.entries(files)) {
+      const fileProperties = file as { filepath: PathLike; size: number; originalFilename: string };
+      loggerService.log(`Processing file: ${fileProperties.originalFilename}, size: ${fileProperties.size}`);
+      const uploadPath = path.join(__dirname, '..', 'uploads', 'batch.txt');
+      //Move the file from its temporary path to the upload directory
+      await fs.rename(fileProperties.filepath, uploadPath);
+    }
 
-    await next();
-    return ctx;
+    // Send a success response
+    reply.code(200).send({ message: 'File(s) processed successfully' });
   } catch (err) {
     const failMessage = 'Failed to process execution request.';
-    LoggerService.error(failMessage, err as Error, 'ApplicationService');
-
-    ctx.status = 500;
-    ctx.body = failMessage;
-    return ctx;
+    loggerService.error(failMessage, err as Error, 'ApplicationService');
+    reply.code(500);
+    reply.send(err);
   } finally {
-    LoggerService.log('End - Handle quote reply request');
+    loggerService.log('End - Handle file upload request');
   }
 };
