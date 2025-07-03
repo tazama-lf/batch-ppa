@@ -38,9 +38,7 @@ export default async function initializeFastifyClient(): Promise<FastifyInstance
     },
     staticCSP: true,
     transformStaticCSP: (header) => header,
-    transformSpecification: (swaggerObject, request, reply) => {
-      return swaggerObject;
-    },
+    transformSpecification: (swaggerObject, request, reply) => swaggerObject,
     transformSpecificationClone: true,
   });
   await fastify.register(fastifyMultipart);

@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import * as fs from 'fs';
-import * as readline from 'readline';
+import * as fs from 'node:fs';
+import * as readline from 'node:readline';
 import { cacheDatabaseManager, configuration, loggerService } from '..';
 import { Fields } from '../utils/transaction.enum';
 import { sendPacs002Transaction, sendPrepareTransaction } from '../utils/helper.functions';
-import { type ExecuteReqBody } from '../utils/interface.request';
+import type { ExecuteReqBody } from '../utils/interface.request';
 
 export const SendLineMessages = async (requestBody: ExecuteReqBody): Promise<string> => {
   let oldestTimestamp: Date;

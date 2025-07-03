@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import { type Pacs008, type Pain001, type Pain013 } from '@tazama-lf/frms-coe-lib/lib/interfaces';
+import type { Pacs008, Pain001, Pain013 } from '@tazama-lf/frms-coe-lib/lib/interfaces';
 import { configuration, loggerService } from '..';
 import { GetPacs002, GetPacs008, GetPain001FromLine, GetPain013 } from '../services/message.generation.service';
 import { handleTransaction } from '../services/save.transactions.service';

@@ -24,7 +24,7 @@ const connect = async (): Promise<void> => {
   fastify.listen({ port: configuration.PORT, host: '0.0.0.0' }, (err, address) => {
     if (err) {
       loggerService.error(err);
-      throw Error(`${err.message}`);
+      throw Error(err.message);
     }
 
     loggerService.log(`Fastify listening on ${address}`);

@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import { type FastifyReply, type FastifyRequest } from 'fastify';
-import fs from 'fs';
-import path from 'path';
+import type { FastifyReply, FastifyRequest } from 'fastify';
+import fs from 'node:fs';
+import path from 'node:path';
 import { loggerService } from './';
 import { SendLineMessages } from './services/file.service';
-import { type ExecuteReqBody } from './utils/interface.request';
+import type { ExecuteReqBody } from './utils/interface.request';
+import { finished } from 'node:stream/promises';
 
 export const handleExecute = async (req: FastifyRequest, reply: FastifyReply): Promise<void> => {
   loggerService.log('Start - Handle execute request');
@@ -40,13 +41,9 @@ export const handleFileUpload = async (req: FastifyRequest, reply: FastifyReply)
     // Pipe the incoming file stream into a local file
     file.pipe(writeStream);
 
-    // Handle stream completion
-    await new Promise((resolve, reject) => {
-      writeStream.on('finish', () => {
-        resolve('File uploaded successfully');
-      });
-      writeStream.on('error', reject);
-    });
+    // Handle stream completion using stream/promises.finished
+    await finished(writeStream);
+
     return await reply.status(200).send({
       message: 'File uploading was handled successfully',
     });

@@ -3,15 +3,9 @@ import { aql, type GeneratedAqlQuery } from '@tazama-lf/frms-coe-lib';
 import { Database } from '@tazama-lf/frms-coe-lib/lib/config/database.config';
 import { Cache } from '@tazama-lf/frms-coe-lib/lib/config/redis.config';
 import { createMessageBuffer } from '@tazama-lf/frms-coe-lib/lib/helpers/protobuf';
-import {
-  type Pacs002,
-  type Pacs008,
-  type Pain001,
-  type Pain013,
-  type TransactionRelationship,
-} from '@tazama-lf/frms-coe-lib/lib/interfaces';
+import type { Pacs002, Pacs008, Pain001, Pain013, TransactionRelationship } from '@tazama-lf/frms-coe-lib/lib/interfaces';
 import { CreateStorageManager, type DatabaseManagerInstance, type ManagerConfig } from '@tazama-lf/frms-coe-lib/lib/services/dbManager';
-import { type Configuration } from '../config';
+import type { Configuration } from '../config';
 import { dbTransactionsHistory } from '@tazama-lf/frms-coe-lib/lib/interfaces/ArangoCollections';
 
 export class CacheDatabaseService<T extends ManagerConfig> {
@@ -42,14 +36,14 @@ export class CacheDatabaseService<T extends ManagerConfig> {
     const databaseManager = db as DatabaseManagerInstance<T>;
     return { db: new CacheDatabaseService<T>(databaseManager, config.redisConfig?.distributedCacheTTL ?? 0), config };
   }
-
+  /* eslint-disable @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access -- Should be addressed upstream */
   /**
    * Wrapper method for dbManager.quit;
    *
    * @memberof CacheDatabaseService
    */
   quit = (): void => {
-    this.dbManager.quit?.();
+    this.dbManager.quit();
   };
 
   /**
@@ -60,8 +54,7 @@ export class CacheDatabaseService<T extends ManagerConfig> {
    * @memberof CacheDatabaseService
    */
   async getTransactionPacs008(EndToEndId: string): Promise<unknown> {
-    const pacs008 = await this.dbManager.getTransactionPacs008(EndToEndId);
-    return pacs008;
+    return await this.dbManager.getTransactionPacs008(EndToEndId);
   }
 
   async getOldestTimestampPacs008(): Promise<Date> {
@@ -71,7 +64,7 @@ export class CacheDatabaseService<T extends ManagerConfig> {
         LIMIT 1
         RETURN pacs008.FIToFICstmrCdtTrf.GrpHdr.CreDtTm`;
     try {
-      const date = await (await this.dbManager._transactionHistory.query(query)).batches.all();
+      const date = (await (await this.dbManager._transactionHistory.query(query)).batches.all()) as Date[][];
       return date[0][0];
     } catch (err) {
       throw new Error(JSON.stringify(err));
@@ -176,8 +169,11 @@ export class CacheDatabaseService<T extends ManagerConfig> {
    * @memberof CacheDatabaseService
    */
   async getBuffer(key: string): Promise<Record<string, unknown>> {
-    const buf = await this.dbManager.getBuffer(key);
-    return buf;
+    const buf = await (this.dbManager.getBuffer as (key: string) => Promise<unknown>)(key);
+    if (buf !== null) {
+      return buf as Record<string, unknown>;
+    }
+    throw new Error('Buffer is not an object');
   }
 
   /**
@@ -187,7 +183,8 @@ export class CacheDatabaseService<T extends ManagerConfig> {
    * @memberof CacheDatabaseService
    */
   async isReadyCheck(): Promise<Record<string, unknown>> {
-    const ready = await this.dbManager.isReadyCheck();
+    const ready = (await this.dbManager.isReadyCheck()) as Record<string, unknown>;
     return ready;
   }
+  /* eslint-enable */
 }
