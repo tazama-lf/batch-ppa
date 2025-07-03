@@ -1,10 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import { type FastifyRequest, type FastifyReply } from 'fastify';
+import { type FastifyReply, type FastifyRequest } from 'fastify';
+import fs from 'fs';
+import path from 'path';
 import { loggerService } from './';
 import { SendLineMessages } from './services/file.service';
-import { promises as fs, type PathLike } from 'fs';
-import path from 'path';
 import { type ExecuteReqBody } from './utils/interface.request';
 
 export const handleExecute = async (req: FastifyRequest, reply: FastifyReply): Promise<void> => {
@@ -22,26 +22,34 @@ export const handleExecute = async (req: FastifyRequest, reply: FastifyReply): P
 };
 
 export const handleFileUpload = async (req: FastifyRequest, reply: FastifyReply): Promise<void> => {
-  loggerService.log('Start - Handle file upload request');
   try {
-    await req.parseMultipart();
-    // Access the uploaded file(s) from req.files
-    const files = req.files;
+    const data = await req.file(); // Handles only a single file
 
-    if (!files || Object.keys(files).length === 0) {
-      return await reply.code(400).send({ message: 'No files uploaded' });
+    if (!data) {
+      return await reply.status(400).send({ error: 'No file uploaded' });
     }
 
-    for (const [, file] of Object.entries(files)) {
-      const fileProperties = file as { filepath: PathLike; size: number; originalFilename: string };
-      loggerService.log(`Processing file: ${fileProperties.originalFilename}, size: ${fileProperties.size}`);
-      const uploadPath = path.join(__dirname, '..', 'uploads', 'batch.txt');
-      //Move the file from its temporary path to the upload directory
-      await fs.rename(fileProperties.filepath, uploadPath);
-    }
+    const { file } = data; // file is a readable stream
 
-    // Send a success response
-    reply.code(200).send({ message: 'File(s) processed successfully' });
+    const savePath = path.join(__dirname, 'uploads', 'batch.txt');
+    if (!fs.existsSync(path.dirname(savePath))) {
+      fs.mkdirSync(path.dirname(savePath), { recursive: true });
+    }
+    const writeStream = fs.createWriteStream(savePath);
+
+    // Pipe the incoming file stream into a local file
+    file.pipe(writeStream);
+
+    // Handle stream completion
+    await new Promise((resolve, reject) => {
+      writeStream.on('finish', () => {
+        resolve('File uploaded successfully');
+      });
+      writeStream.on('error', reject);
+    });
+    return await reply.status(200).send({
+      message: 'File uploading was handled successfully',
+    });
   } catch (err) {
     const failMessage = 'Failed to process execution request.';
     loggerService.error(failMessage, err as Error, 'ApplicationService');

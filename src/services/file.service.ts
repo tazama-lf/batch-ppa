@@ -21,7 +21,7 @@ export const SendLineMessages = async (requestBody: ExecuteReqBody): Promise<str
   }
 
   const rl = readline.createInterface({
-    input: fs.createReadStream('./uploads/batch.txt'),
+    input: fs.createReadStream('./build/uploads/batch.txt'),
     crlfDelay: Infinity,
   });
 

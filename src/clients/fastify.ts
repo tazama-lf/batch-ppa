@@ -1,10 +1,9 @@
 // SPDX-License-Identifier: Apache-2.0
 import { fastifyCors } from '@fastify/cors';
-import Fastify, { type FastifyInstance } from 'fastify';
-import FastifyFormidable from 'fastify-formidable';
-import { fastifySwaggerUi } from '@fastify/swagger-ui';
+import { fastifyMultipart } from '@fastify/multipart';
 import { fastifySwagger } from '@fastify/swagger';
-import { configuration } from '..';
+import { fastifySwaggerUi } from '@fastify/swagger-ui';
+import Fastify, { type FastifyInstance } from 'fastify';
 import Routes from '../router';
 import executeBatchSchema from '../schemas/execute.batch.json';
 
@@ -44,13 +43,7 @@ export default async function initializeFastifyClient(): Promise<FastifyInstance
     },
     transformSpecificationClone: true,
   });
-  await fastify.register(FastifyFormidable, {
-    formidable: {
-      maxFileSize: (configuration.MAX_FILE_SIZE ?? 100) * 1024 * 1024,
-      uploadDir: './uploads/',
-      keepExtensions: true,
-    },
-  });
+  await fastify.register(fastifyMultipart);
   await fastify.register(fastifyCors, {
     origin: '*',
     methods: ['POST'],
@@ -59,8 +52,4 @@ export default async function initializeFastifyClient(): Promise<FastifyInstance
   fastify.register(Routes);
   await fastify.ready();
   return await fastify;
-}
-
-export async function destroyFasityClient(): Promise<void> {
-  await fastify.close();
 }
