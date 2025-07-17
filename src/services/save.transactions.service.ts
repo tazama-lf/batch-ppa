@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
 import { createMessageBuffer } from '@tazama-lf/frms-coe-lib/lib/helpers/protobuf';
 import type { DataCache, Pacs008, Pain001, Pain013, TransactionRelationship } from '@tazama-lf/frms-coe-lib/lib/interfaces';
+import * as util from 'node:util';
 import { cacheDatabaseManager, configuration, loggerService } from '..';
 import apm from '../apm';
 
@@ -94,8 +95,7 @@ export const handlePain001 = async (transaction: Pain001, transactionType: strin
     if (err instanceof Error) {
       loggerService.error(err.message);
     } else {
-      const strErr = JSON.stringify(err);
-      loggerService.error(strErr);
+      loggerService.error(util.inspect(err));
     }
     spanInsert?.end();
     span?.end();
@@ -168,8 +168,7 @@ export const handlePain013 = async (transaction: Pain013, transactionType: strin
     if (err instanceof Error) {
       loggerService.error(err.message, logContext, id);
     } else {
-      const strErr = JSON.stringify(err);
-      loggerService.error(strErr, logContext, id);
+      loggerService.error(util.inspect(err), logContext, id);
     }
     spanInsert?.end();
     span?.end();
@@ -275,7 +274,7 @@ export const handlePacs008 = async (transaction: Pacs008, transactionType: strin
     if (err instanceof Error) {
       loggerService.error(err.message, logContext, id);
     } else {
-      const strErr = JSON.stringify(err);
+      const strErr = util.inspect(err);
       loggerService.error(strErr, logContext, id);
     }
     spanInsert?.end();

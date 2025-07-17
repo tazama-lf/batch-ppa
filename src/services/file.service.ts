@@ -1,11 +1,11 @@
 // SPDX-License-Identifier: Apache-2.0
-
 import * as fs from 'node:fs';
 import * as readline from 'node:readline';
+import * as util from 'node:util';
 import { cacheDatabaseManager, configuration, loggerService } from '..';
-import { Fields } from '../utils/transaction.enum';
 import { sendPacs002Transaction, sendPrepareTransaction } from '../utils/helper.functions';
 import type { ExecuteReqBody } from '../utils/interface.request';
+import { Fields } from '../utils/transaction.enum';
 
 export const SendLineMessages = async (requestBody: ExecuteReqBody): Promise<string> => {
   let oldestTimestamp: Date;
@@ -16,7 +16,7 @@ export const SendLineMessages = async (requestBody: ExecuteReqBody): Promise<str
       oldestTimestamp = await cacheDatabaseManager.getOldestTimestampPacs008();
       delta = Date.now() - new Date(oldestTimestamp).getTime();
     } catch (err) {
-      throw Error(`Error occurred while trying to get oldest pacs008 timestamp. ${JSON.stringify(err)}`);
+      throw Error(`Error occurred while trying to get oldest pacs008 timestamp. ${util.inspect(err)}`);
     }
   }
 
@@ -46,14 +46,14 @@ export const SendLineMessages = async (requestBody: ExecuteReqBody): Promise<str
 
       if ((!requestBody.evaluate && configuration.QUOTING && !pacs008Result) || !pain001Result || !pain013Result) {
         loggerService.error(
-          JSON.stringify({
+          util.inspect({
             transaction: line,
             message: `Transaction failed to save history of ${!pacs008Result ? '' : 'pacs008'}${!pain001Result ? '' : ', pain001'}${!pain013Result ? '' : ' pain013'} `,
           }),
         );
       } else if (!requestBody.evaluate && !configuration.QUOTING && !pacs008Result) {
         loggerService.error(
-          JSON.stringify({
+          util.inspect({
             transaction: line,
             message: 'Transaction failed to save history of pacs008',
           }),
