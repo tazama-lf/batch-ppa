@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: Apache-2.0
-
 import axios from 'axios';
 import apm from 'elastic-apm-node';
+import * as util from 'node:util';
 import { loggerService } from '..';
 
 export const executePost = async (endpoint: string, request: unknown): Promise<boolean> => {
@@ -10,16 +10,16 @@ export const executePost = async (endpoint: string, request: unknown): Promise<b
     const eventDirectorRes = await axios.post(endpoint, request);
 
     if (eventDirectorRes.status !== 200) {
-      loggerService.error(`Transaction-Monitoring-Service Response StatusCode != 200, request:\r\n${JSON.stringify(request)}`);
+      loggerService.error(`Transaction-Monitoring-Service Response StatusCode != 200, request:\r\n${util.inspect(request)}`);
       return false;
     }
     span?.end();
     return true;
   } catch (error) {
     loggerService.error(
-      `Error while sending request to Transaction-Monitoring-Service at ${endpoint ?? ''} with message: ${JSON.stringify(error)}`,
+      `Error while sending request to Transaction-Monitoring-Service at ${endpoint ?? ''} with message: ${util.inspect(error)}`,
     );
-    loggerService.trace(`Transaction-Monitoring-Service Error Request:\r\n${JSON.stringify(request)}`);
+    loggerService.trace(`Transaction-Monitoring-Service Error Request:\r\n${util.inspect(request)}`);
     return false;
   }
 };

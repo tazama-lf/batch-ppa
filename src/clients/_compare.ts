@@ -2,12 +2,9 @@
 import { createMessageBuffer } from '@tazama-lf/frms-coe-lib/lib/helpers/protobuf';
 import type { Pacs002, Pacs008, Pain001, Pain013 } from '@tazama-lf/frms-coe-lib/lib/interfaces';
 import { CreateStorageManager, type DatabaseManagerInstance, type ManagerConfig } from '@tazama-lf/frms-coe-lib/lib/services/dbManager';
-import type { TransactionRelationship } from '../interfaces/iTransactionRelationship';
 import { Database } from '@tazama-lf/frms-coe-lib/lib/config/database.config';
 import { Cache } from '@tazama-lf/frms-coe-lib/lib/config/redis.config';
 import type { Configuration } from '../config';
-import { aql, type GeneratedAqlQuery } from '@tazama-lf/frms-coe-lib';
-import { dbTransactionsHistory } from '@tazama-lf/frms-coe-lib/lib/interfaces/ArangoCollections';
 
 export class CacheDatabaseService {
   private readonly dbManager: DatabaseManagerInstance<Configuration>;
@@ -59,20 +56,6 @@ export class CacheDatabaseService {
     return pacs008;
   }
 
-  async getOldestTimestampPacs008(): Promise<Date> {
-    const collectionName = this.dbManager._transactionHistory.collection(dbTransactionsHistory.pacs008) as unknown as GeneratedAqlQuery;
-    const query = aql`FOR pacs008 IN ${collectionName}
-        SORT pacs008.FIToFICstmrCdtTrf.GrpHdr.CreDtTm ASC
-        LIMIT 1
-        RETURN pacs008.FIToFICstmrCdtTrf.GrpHdr.CreDtTm`;
-    try {
-      const date = (await (await this.dbManager._transactionHistory.query(query)).batches.all()) as Date[][];
-      return date[0][0];
-    } catch (err) {
-      throw new Error(JSON.stringify(err));
-    }
-  }
-
   /**
    * Wrapper method for dbManager.saveAccount
    *
@@ -107,17 +90,6 @@ export class CacheDatabaseService {
    */
   async addAccountHolder(entityId: string, accountId: string, CreDtTm: string): Promise<void> {
     await this.dbManager.saveAccountHolder(entityId, accountId, CreDtTm);
-  }
-
-  /**
-   * Wrapper method for dbManager.saveTransactionRelationship
-   *
-   * @param {TransactionRelationship} tR
-   * @return {*}  {Promise<void>}
-   * @memberof CacheDatabaseService
-   */
-  async saveTransactionRelationship(tR: TransactionRelationship): Promise<void> {
-    await this.dbManager.saveTransactionRelationship(tR);
   }
 
   /**

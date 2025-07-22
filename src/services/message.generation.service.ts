@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import { type Pacs002, type Pacs008, type Pain001, type Pain013 } from '@tazama-lf/frms-coe-lib/lib/interfaces';
+import type { Pacs002, Pacs008, Pain001, Pain013 } from '@tazama-lf/frms-coe-lib/lib/interfaces';
 import { v4 as uuidv4 } from 'uuid';
 import { Fields } from '../utils/transaction.enum';
 
@@ -80,7 +80,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
                 Id:
                   columns[Fields.RECEIVER_NAME] === 'Y'
                     ? `${columns[Fields.SENDER_ACCOUNT]}${columns[Fields.SENDER_NAME]}`
-                    : `${columns[Fields.SENDER_ACCOUNT]}`,
+                    : columns[Fields.SENDER_ACCOUNT],
                 SchmeNm: {
                   Prtry: columns[Fields.RECEIVER_NAME] === 'Y' ? 'SUSPENSE_ACCOUNT' : 'USER_ACCOUNT',
                 },
@@ -92,7 +92,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
         DbtrAgt: {
           FinInstnId: {
             ClrSysMmbId: {
-              MmbId: `${columns[Fields.SENDER_AGENT_SPID]}`,
+              MmbId: columns[Fields.SENDER_AGENT_SPID],
             },
           },
         },
@@ -124,7 +124,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
           CdtrAgt: {
             FinInstnId: {
               ClrSysMmbId: {
-                MmbId: `${columns[Fields.RECEIVER_AGENT_SPID]}`,
+                MmbId: columns[Fields.RECEIVER_AGENT_SPID],
               },
             },
           },
@@ -158,7 +158,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
                   Id:
                     columns[Fields.RECEIVER_NAME] === 'Y'
                       ? `${columns[Fields.RECEIVER_ACCOUNT]}${columns[Fields.RECEIVER_NAME]}`
-                      : `${columns[Fields.RECEIVER_ACCOUNT]}`,
+                      : columns[Fields.RECEIVER_ACCOUNT],
                   SchmeNm: {
                     Prtry: columns[Fields.RECEIVER_NAME] === 'Y' ? 'SUSPENSE_ACCOUNT' : 'USER_ACCOUNT',
                   },
@@ -565,7 +565,7 @@ export const GetPacs002 = (columns: string[], date: Date): Pacs002 => {
             Agt: {
               FinInstnId: {
                 ClrSysMmbId: {
-                  MmbId: `${columns[Fields.SENDER_AGENT_SPID]}`,
+                  MmbId: columns[Fields.SENDER_AGENT_SPID],
                 },
               },
             },
@@ -578,7 +578,7 @@ export const GetPacs002 = (columns: string[], date: Date): Pacs002 => {
             Agt: {
               FinInstnId: {
                 ClrSysMmbId: {
-                  MmbId: `${columns[Fields.SENDER_AGENT_SPID]}`,
+                  MmbId: columns[Fields.SENDER_AGENT_SPID],
                 },
               },
             },
@@ -591,7 +591,7 @@ export const GetPacs002 = (columns: string[], date: Date): Pacs002 => {
             Agt: {
               FinInstnId: {
                 ClrSysMmbId: {
-                  MmbId: `${columns[Fields.RECEIVER_AGENT_SPID]}`,
+                  MmbId: columns[Fields.RECEIVER_AGENT_SPID],
                 },
               },
             },
@@ -601,14 +601,14 @@ export const GetPacs002 = (columns: string[], date: Date): Pacs002 => {
         InstgAgt: {
           FinInstnId: {
             ClrSysMmbId: {
-              MmbId: `${columns[Fields.SENDER_AGENT_SPID]}`,
+              MmbId: columns[Fields.SENDER_AGENT_SPID],
             },
           },
         },
         InstdAgt: {
           FinInstnId: {
             ClrSysMmbId: {
-              MmbId: `${columns[Fields.RECEIVER_AGENT_SPID]}`,
+              MmbId: columns[Fields.RECEIVER_AGENT_SPID],
             },
           },
         },
