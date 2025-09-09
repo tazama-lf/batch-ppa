@@ -84,7 +84,7 @@ export const handlePain001 = async (transaction: Pain001, transactionType: strin
     ]);
 
     await Promise.all([
-      cacheDatabaseManager.saveTransactionRelationship(transactionRelationship),
+      cacheDatabaseManager.saveTransactionDetails(transactionRelationship),
       cacheDatabaseManager.addAccountHolder(creditorId, creditorAcctId, CreDtTm),
       cacheDatabaseManager.addAccountHolder(debtorId, debtorAcctId, CreDtTm),
     ]);
@@ -157,7 +157,7 @@ export const handlePain013 = async (transaction: Pain013, transactionType: strin
       cacheDatabaseManager.addAccount(creditorAcctId),
     ]);
 
-    await cacheDatabaseManager.saveTransactionRelationship(transactionRelationship);
+    await cacheDatabaseManager.saveTransactionDetails(transactionRelationship);
     return transaction;
   } catch (err) {
     if (err instanceof Error) {
@@ -259,7 +259,7 @@ export const handlePacs008 = async (transaction: Pacs008, transactionType: strin
   const spanInsert = apm.startSpan('db.insert.pacs008');
   try {
     await Promise.all([
-      cacheDatabaseManager.saveTransactionRelationship(transactionRelationship),
+      cacheDatabaseManager.saveTransactionDetails(transactionRelationship),
       cacheDatabaseManager.saveTransactionHistory(transaction, `pacs008_${EndToEndId}`),
     ]);
     return transaction;

@@ -125,7 +125,7 @@ export class CacheDatabaseService {
    * @return {*}  {Promise<void>}
    * @memberof CacheDatabaseService
    */
-  async saveTransactionRelationship(tR: TransactionDetails): Promise<void> {
+  async saveTransactionDetails(tR: TransactionDetails): Promise<void> {
     await this.dbManager.saveTransactionDetails(tR);
   }
 
