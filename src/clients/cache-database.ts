@@ -1,13 +1,10 @@
 // SPDX-License-Identifier: Apache-2.0
 import { createMessageBuffer } from '@tazama-lf/frms-coe-lib/lib/helpers/protobuf';
-import type { Pacs002, Pacs008, Pain001, Pain013 } from '@tazama-lf/frms-coe-lib/lib/interfaces';
+import type { Pacs002, Pacs008, Pain001, Pain013, TransactionDetails } from '@tazama-lf/frms-coe-lib/lib/interfaces';
 import { CreateStorageManager, type DatabaseManagerInstance, type ManagerConfig } from '@tazama-lf/frms-coe-lib/lib/services/dbManager';
-import type { TransactionRelationship } from '../interfaces/iTransactionRelationship';
 import { Database } from '@tazama-lf/frms-coe-lib/lib/config/database.config';
 import { Cache } from '@tazama-lf/frms-coe-lib/lib/config/redis.config';
 import type { Configuration } from '../config';
-import { aql, type GeneratedAqlQuery } from '@tazama-lf/frms-coe-lib';
-import { dbTransactionsHistory } from '@tazama-lf/frms-coe-lib/lib/interfaces/ArangoCollections';
 
 export class CacheDatabaseService {
   private readonly dbManager: DatabaseManagerInstance<Configuration>;
@@ -32,7 +29,7 @@ export class CacheDatabaseService {
   public static async create(configuration: Configuration): Promise<{ db: CacheDatabaseService; config: ManagerConfig }> {
     const auth = configuration.nodeEnv === 'production';
     const { db, config } = await CreateStorageManager<typeof configuration>(
-      [Database.TRANSACTION_HISTORY, Database.PSEUDONYMS, Cache.DISTRIBUTED],
+      [Database.RAW_HISTORY, Database.EVENT_HISTORY, Cache.DISTRIBUTED],
       auth,
     );
     return { config, db: new CacheDatabaseService(db, config.redisConfig?.distributedCacheTTL ?? 0) };
@@ -60,19 +57,31 @@ export class CacheDatabaseService {
   }
 
   async getOldestTimestampPacs008(): Promise<Date> {
-    const collectionName = this.dbManager._transactionHistory.collection(dbTransactionsHistory.pacs008) as unknown as GeneratedAqlQuery;
-    const query = aql`FOR pacs008 IN ${collectionName}
-        SORT pacs008.FIToFICstmrCdtTrf.GrpHdr.CreDtTm ASC
-        LIMIT 1
-        RETURN pacs008.FIToFICstmrCdtTrf.GrpHdr.CreDtTm`;
+    // const query = aql`FOR pacs008 IN pacs008
+    //     SORT pacs008.FIToFICstmrCdtTrf.GrpHdr.CreDtTm ASC
+    //     LIMIT 1
+    //     RETURN pacs008.FIToFICstmrCdtTrf.GrpHdr.CreDtTm`;
+
+    const query = `
+      SELECT 
+        pacs008->'FIToFICstmrCdtTrf'->'GrpHdr'->>'CreDtTm' 
+      AS 
+        CreditDateTime
+      FROM 
+        pacs008 
+      ORDER BY 
+        pacs008->'FIToFICstmrCdtTrf'->'GrpHdr'->>'CreDtTm' 
+      ASC 
+      LIMIT 1
+    `;
+
     try {
-      const date = (await (await this.dbManager._transactionHistory.query(query)).batches.all()) as Date[][];
-      return date[0][0];
+      const date = await this.dbManager._rawHistory.query<{ CreditDateTime: string }>(query);
+      return date.rows.length > 0 ? date.rows.map((value) => new Date(value.CreditDateTime))[0] : new Date();
     } catch (err) {
       throw new Error(JSON.stringify(err));
     }
   }
-
   /**
    * Wrapper method for dbManager.saveAccount
    *
@@ -116,8 +125,8 @@ export class CacheDatabaseService {
    * @return {*}  {Promise<void>}
    * @memberof CacheDatabaseService
    */
-  async saveTransactionRelationship(tR: TransactionRelationship): Promise<void> {
-    await this.dbManager.saveTransactionRelationship(tR);
+  async saveTransactionRelationship(tR: TransactionDetails): Promise<void> {
+    await this.dbManager.saveTransactionDetails(tR);
   }
 
   /**
