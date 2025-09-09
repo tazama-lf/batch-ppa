@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: Apache-2.0
 import { createMessageBuffer } from '@tazama-lf/frms-coe-lib/lib/helpers/protobuf';
-import type { DataCache, Pacs008, Pain001, Pain013, TransactionRelationship } from '@tazama-lf/frms-coe-lib/lib/interfaces';
+import type { DataCache, Pacs008, Pain001, Pain013, TransactionDetails } from '@tazama-lf/frms-coe-lib/lib/interfaces';
 import * as util from 'node:util';
 import { cacheDatabaseManager, configuration, loggerService } from '..';
 import apm from '../apm';
@@ -50,11 +50,10 @@ export const handlePain001 = async (transaction: Pain001, transactionType: strin
   const lat = transaction.CstmrCdtTrfInitn.SplmtryData.Envlp.Doc.InitgPty.Glctn.Lat;
   const long = transaction.CstmrCdtTrfInitn.SplmtryData.Envlp.Doc.InitgPty.Glctn.Long;
   const { MsgId } = transaction.CstmrCdtTrfInitn.GrpHdr;
-  const { PmtInfId } = transaction.CstmrCdtTrfInitn.PmtInf;
 
-  const transactionRelationship: TransactionRelationship = {
-    from: `accounts/${debtorAcctId}`,
-    to: `accounts/${creditorAcctId}`,
+  const transactionRelationship: TransactionDetails = {
+    source: debtorAcctId,
+    destination: creditorAcctId,
     Amt,
     Ccy,
     CreDtTm,
@@ -62,7 +61,6 @@ export const handlePain001 = async (transaction: Pain001, transactionType: strin
     lat,
     long,
     MsgId,
-    PmtInfId,
     TxTp,
   };
 
@@ -116,7 +114,6 @@ export const handlePain013 = async (transaction: Pain013, transactionType: strin
   const { CreDtTm } = transaction.CdtrPmtActvtnReq.GrpHdr;
   const { EndToEndId } = transaction.CdtrPmtActvtnReq.PmtInf.CdtTrfTxInf.PmtId;
   const { MsgId } = transaction.CdtrPmtActvtnReq.GrpHdr;
-  const { PmtInfId } = transaction.CdtrPmtActvtnReq.PmtInf;
 
   const creditorAcctOthr = transaction.CdtrPmtActvtnReq.PmtInf.CdtTrfTxInf.CdtrAcct.Id.Othr[0];
   const creditorMmbId = transaction.CdtrPmtActvtnReq.PmtInf.CdtTrfTxInf.CdtrAgt.FinInstnId.ClrSysMmbId.MmbId;
@@ -132,15 +129,14 @@ export const handlePain013 = async (transaction: Pain013, transactionType: strin
   const cdtrOthr = transaction.CdtrPmtActvtnReq.PmtInf.CdtTrfTxInf.Cdtr.Id.PrvtId.Othr[0];
   const cdtrId = `${cdtrOthr.Id}${cdtrOthr.SchmeNm.Prtry}`;
 
-  const transactionRelationship: TransactionRelationship = {
-    from: `accounts/${creditorAcctId}`,
-    to: `accounts/${debtorAcctId}`,
+  const transactionRelationship: TransactionDetails = {
+    source: creditorAcctId,
+    destination: debtorAcctId,
     Amt,
     Ccy,
     CreDtTm,
     EndToEndId,
     MsgId,
-    PmtInfId,
     TxTp,
   };
 
@@ -152,7 +148,6 @@ export const handlePain013 = async (transaction: Pain013, transactionType: strin
   };
 
   transaction.DataCache = dataCache;
-  transaction._key = MsgId;
 
   const spanInsert = apm.startSpan('db.insert.pain013');
   try {
@@ -193,7 +188,6 @@ export const handlePacs008 = async (transaction: Pacs008, transactionType: strin
   const creDtTm = transaction.FIToFICstmrCdtTrf.GrpHdr.CreDtTm;
   const { EndToEndId } = transaction.FIToFICstmrCdtTrf.CdtTrfTxInf.PmtId;
   const { MsgId } = transaction.FIToFICstmrCdtTrf.GrpHdr;
-  const PmtInfId = transaction.FIToFICstmrCdtTrf.CdtTrfTxInf.PmtId.InstrId;
   const debtorOthr = transaction.FIToFICstmrCdtTrf.CdtTrfTxInf.Dbtr.Id.PrvtId.Othr[0];
   const debtorId = `${debtorOthr.Id}${debtorOthr.SchmeNm.Prtry}`;
 
@@ -208,15 +202,14 @@ export const handlePacs008 = async (transaction: Pacs008, transactionType: strin
   const creditorMmbId = transaction.FIToFICstmrCdtTrf.CdtTrfTxInf.CdtrAgt.FinInstnId.ClrSysMmbId.MmbId;
   const creditorAcctId = `${creditorAcctOthr.Id}${creditorAcctOthr.SchmeNm.Prtry}${creditorMmbId}`;
 
-  const transactionRelationship: TransactionRelationship = {
-    from: `accounts/${debtorAcctId}`,
-    to: `accounts/${creditorAcctId}`,
+  const transactionRelationship: TransactionDetails = {
+    source: debtorAcctId,
+    destination: creditorAcctId,
     Amt: InstdAmt,
     Ccy,
     CreDtTm: creDtTm,
     EndToEndId,
     MsgId,
-    PmtInfId,
     TxTp,
   };
 

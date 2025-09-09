@@ -29,7 +29,7 @@ export class CacheDatabaseService {
   public static async create(configuration: Configuration): Promise<{ db: CacheDatabaseService; config: ManagerConfig }> {
     const auth = configuration.nodeEnv === 'production';
     const { db, config } = await CreateStorageManager<typeof configuration>(
-      [Database.TRANSACTION_HISTORY, Database.PSEUDONYMS, Cache.DISTRIBUTED],
+      [Database.RAW_HISTORY, Database.EVENT_HISTORY, Cache.DISTRIBUTED],
       auth,
     );
     return { config, db: new CacheDatabaseService(db, config.redisConfig?.distributedCacheTTL ?? 0) };
