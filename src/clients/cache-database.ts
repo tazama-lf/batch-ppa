@@ -57,22 +57,16 @@ export class CacheDatabaseService {
   }
 
   async getOldestTimestampPacs008(): Promise<Date> {
-    // const query = aql`FOR pacs008 IN pacs008
-    //     SORT pacs008.FIToFICstmrCdtTrf.GrpHdr.CreDtTm ASC
-    //     LIMIT 1
-    //     RETURN pacs008.FIToFICstmrCdtTrf.GrpHdr.CreDtTm`;
-
     const query = `
       SELECT 
-        pacs008->'FIToFICstmrCdtTrf'->'GrpHdr'->>'CreDtTm' 
+        document->'FIToFICstmrCdtTrf'->'GrpHdr'->>'CreDtTm' 
       AS 
         CreditDateTime
       FROM 
         pacs008 
       ORDER BY 
-        pacs008->'FIToFICstmrCdtTrf'->'GrpHdr'->>'CreDtTm' 
-      ASC 
-      LIMIT 1
+        document->'FIToFICstmrCdtTrf'->'GrpHdr'->>'CreDtTm' 
+      ASC LIMIT 1
     `;
 
     try {
