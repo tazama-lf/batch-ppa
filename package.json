@@ -46,7 +46,7 @@
     "@types/formidable": "^3.4.5",
     "@types/jest": "^30.0.0",
     "@typescript-eslint/eslint-plugin": "^8.37.0",
-    "@typescript-eslint/parser": "^8.37.0",
+    "@typescript-eslint/parser": "^8.46.0",
     "eslint": "^9.31.0",
     "eslint-config-love": "^121.0.0",
     "eslint-config-prettier": "^10.1.8",
