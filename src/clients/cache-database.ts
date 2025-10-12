@@ -80,8 +80,8 @@ export class CacheDatabaseService {
    * @return {*}  {Promise<void>}
    * @memberof CacheDatabaseService
    */
-  async addAccount(hash: string): Promise<void> {
-    await this.dbManager.saveAccount(hash);
+  async addAccount(tenantId: string, hash: string): Promise<void> {
+    await this.dbManager.saveAccount(hash, tenantId);
   }
 
   /**
@@ -92,8 +92,8 @@ export class CacheDatabaseService {
    * @return {*}  {Promise<void>}
    * @memberof CacheDatabaseService
    */
-  async addEntity(entityId: string, CreDtTm: string): Promise<void> {
-    await this.dbManager.saveEntity(entityId, CreDtTm);
+  async addEntity(tenantId: string, entityId: string, CreDtTm: string): Promise<void> {
+    await this.dbManager.saveEntity(entityId, tenantId, CreDtTm);
   }
 
   /**
@@ -105,8 +105,8 @@ export class CacheDatabaseService {
    * @return {*}  {Promise<void>}
    * @memberof CacheDatabaseService
    */
-  async addAccountHolder(entityId: string, accountId: string, CreDtTm: string): Promise<void> {
-    await this.dbManager.saveAccountHolder(entityId, accountId, CreDtTm);
+  async addAccountHolder(tenantId: string, entityId: string, accountId: string, CreDtTm: string): Promise<void> {
+    await this.dbManager.saveAccountHolder(entityId, accountId, CreDtTm, tenantId);
   }
 
   /**

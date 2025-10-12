@@ -11,4 +11,5 @@ export interface TransactionRelationship {
   lat?: string;
   long?: string;
   TxSts?: string;
+  TenantId: string;
 }
