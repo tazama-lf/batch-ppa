@@ -7,9 +7,9 @@ import { handleTransaction } from '../services/save.transactions.service';
 import { executePost } from '../utils/execute.https';
 
 export const sendPacs002Transaction = async (columns: string[], delta: number): Promise<boolean> => {
-  loggerService.log('Sending Pacs002 message...');
+  loggerService.trace('Sending Pacs002 message...');
   const currentPacs002 = GetPacs002(columns, new Date(delta + Date.now()));
-  loggerService.log(`${util.inspect(currentPacs002.FIToFIPmtSts.GrpHdr.MsgId)} - Submitted`);
+  loggerService.trace(`${util.inspect(currentPacs002.FIToFIPmtSts.GrpHdr.MsgId)} - Submitted`);
   return await executePost(`${configuration.TMS_ENDPOINT}/v1/evaluate/iso20022/pacs.002.001.12`, currentPacs002);
 };
 
@@ -29,14 +29,15 @@ export const sendPrepareTransaction = async (
   if (configuration.QUOTING) {
     const currentPain013 = GetPain013(currentPain001);
 
-    loggerService.log('Sending Pain001 message...');
+    // Reduced logging for high-volume processing - use trace level for per-transaction logs
+    loggerService.trace('Sending Pain001 message...');
     pain001Result = (await handleTransaction(currentPain001)) as Pain001 | boolean;
 
-    loggerService.log('Sending Pain013 message...');
+    loggerService.trace('Sending Pain013 message...');
     pain013Result = (await handleTransaction(currentPain013)) as Pain013 | boolean;
   }
 
-  loggerService.log('Sending Pacs008 message...');
+  loggerService.trace('Sending Pacs008 message...');
   const pacs008Result = (await handleTransaction(currentPacs008)) as Pacs008;
   return { pain001Result, pain013Result, pacs008Result };
 };

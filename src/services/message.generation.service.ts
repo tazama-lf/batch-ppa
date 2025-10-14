@@ -547,10 +547,9 @@ export const GetPacs008 = (pain01: Pain001): Pacs008 => {
   return pacs008;
 };
 
-export const GetPacs002 = (columns: string[], date: Date): Pacs002 => {
-  const pacs002: Pacs002 = {
+export const GetPacs002 = (columns: string[], date: Date): Omit<Pacs002, 'TenantId'> => {
+  const pacs002: Omit<Pacs002, 'TenantId'> = {
     TxTp: 'pacs.002.001.12',
-    TenantId: 'DEFAULT',
     FIToFIPmtSts: {
       GrpHdr: {
         MsgId: uuidv4().replace('-', ''),

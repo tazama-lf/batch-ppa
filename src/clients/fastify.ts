@@ -6,6 +6,7 @@ import { fastifySwaggerUi } from '@fastify/swagger-ui';
 import Fastify, { type FastifyInstance } from 'fastify';
 import Routes from '../router';
 import executeBatchSchema from '../schemas/execute.batch.json';
+import { configuration } from '../index';
 
 const fastify = Fastify();
 const schemaExecuteBatch = { ...executeBatchSchema, $id: 'executeBatchSchema' };
@@ -41,7 +42,11 @@ export default async function initializeFastifyClient(): Promise<FastifyInstance
     transformSpecification: (swaggerObject, request, reply) => swaggerObject,
     transformSpecificationClone: true,
   });
-  await fastify.register(fastifyMultipart);
+  await fastify.register(fastifyMultipart, {
+    limits: {
+      fileSize: (configuration.MAX_FILE_SIZE || 100) * 1024 * 1024, // Convert MB to bytes
+    },
+  });
   await fastify.register(fastifyCors, {
     origin: '*',
     methods: ['POST'],

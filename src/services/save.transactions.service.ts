@@ -23,7 +23,7 @@ export const handleTransaction = async (transaction: Pain001 | Pain013 | Pacs008
 
 export const handlePain001 = async (transaction: Pain001, transactionType: string): Promise<Pain001 | boolean> => {
   const id = transaction.CstmrCdtTrfInitn.GrpHdr.MsgId;
-  loggerService.log('Start - Handle transaction data', 'handlePain001()', id);
+  loggerService.trace('Start - Handle transaction data', 'handlePain001()', id);
   const span = apm.startSpan('transaction.pain001');
   const TxTp = transactionType;
   transaction.TxTp = TxTp;
@@ -108,7 +108,7 @@ export const handlePain001 = async (transaction: Pain001, transactionType: strin
 export const handlePain013 = async (transaction: Pain013, transactionType: string): Promise<Pain013 | boolean> => {
   const logContext = 'handlePain013()';
   const id = transaction.CdtrPmtActvtnReq.GrpHdr.MsgId;
-  loggerService.log('Start - Handle transaction data', logContext, id);
+  loggerService.trace('Start - Handle transaction data', logContext, id);
   const span = apm.startSpan('transaction.pain013');
 
   const TxTp = transactionType;
@@ -183,7 +183,7 @@ export const handlePain013 = async (transaction: Pain013, transactionType: strin
 export const handlePacs008 = async (transaction: Pacs008, transactionType: string): Promise<Pacs008 | boolean> => {
   const logContext = 'handlePacs008()';
   const id = transaction.FIToFICstmrCdtTrf.GrpHdr.MsgId;
-  loggerService.log('Start - Handle transaction data', logContext, id);
+  loggerService.trace('Start - Handle transaction data', logContext, id);
   const span = apm.startSpan('transaction.pacs008');
 
   const TxTp = transactionType;
