@@ -54,8 +54,8 @@ export const handlePain001 = async (transaction: Pain001, transactionType: strin
   const { PmtInfId } = transaction.CstmrCdtTrfInitn.PmtInf;
 
   const transactionRelationship: TransactionRelationship = {
-    from: `accounts/${debtorAcctId}`,
-    to: `accounts/${creditorAcctId}`,
+    from: `accounts/${TenantId}${debtorAcctId}`,
+    to: `accounts/${TenantId}${creditorAcctId}`,
     Amt,
     Ccy,
     CreDtTm,
@@ -69,10 +69,10 @@ export const handlePain001 = async (transaction: Pain001, transactionType: strin
   };
 
   const dataCache: DataCache = {
-    cdtrId: creditorId,
-    dbtrId: debtorId,
-    cdtrAcctId: creditorAcctId,
-    dbtrAcctId: debtorAcctId,
+    cdtrId: `${TenantId}${creditorId}`,
+    dbtrId: `${TenantId}${debtorId}`,
+    cdtrAcctId: `${TenantId}${creditorAcctId}`,
+    dbtrAcctId: `${TenantId}${debtorAcctId}`,
   };
 
   transaction.DataCache = dataCache;
@@ -130,14 +130,14 @@ export const handlePain013 = async (transaction: Pain013, transactionType: strin
   const debtorAcctId = `${debtorAcctOthr.Id}${debtorAcctOthr.SchmeNm.Prtry}${debtorMmbId}`;
 
   const dbtrOthr = transaction.CdtrPmtActvtnReq.PmtInf.Dbtr.Id.PrvtId.Othr[0];
-  const dbtrId = `${dbtrOthr.Id}${dbtrOthr.SchmeNm.Prtry}`;
+  const debtorId = `${dbtrOthr.Id}${dbtrOthr.SchmeNm.Prtry}`;
 
   const cdtrOthr = transaction.CdtrPmtActvtnReq.PmtInf.CdtTrfTxInf.Cdtr.Id.PrvtId.Othr[0];
-  const cdtrId = `${cdtrOthr.Id}${cdtrOthr.SchmeNm.Prtry}`;
+  const creditorId = `${cdtrOthr.Id}${cdtrOthr.SchmeNm.Prtry}`;
 
   const transactionRelationship: TransactionRelationship = {
-    from: `accounts/${creditorAcctId}`,
-    to: `accounts/${debtorAcctId}`,
+    from: `accounts/${TenantId}${creditorAcctId}`,
+    to: `accounts/${TenantId}${debtorAcctId}`,
     Amt,
     Ccy,
     CreDtTm,
@@ -149,10 +149,10 @@ export const handlePain013 = async (transaction: Pain013, transactionType: strin
   };
 
   const dataCache: DataCache = {
-    cdtrAcctId: creditorAcctId,
-    dbtrAcctId: debtorAcctId,
-    cdtrId,
-    dbtrId,
+    cdtrId: `${TenantId}${creditorId}`,
+    dbtrId: `${TenantId}${debtorId}`,
+    cdtrAcctId: `${TenantId}${creditorAcctId}`,
+    dbtrAcctId: `${TenantId}${debtorAcctId}`,
   };
 
   transaction.DataCache = dataCache;
@@ -214,8 +214,8 @@ export const handlePacs008 = async (transaction: Pacs008, transactionType: strin
   const creditorAcctId = `${creditorAcctOthr.Id}${creditorAcctOthr.SchmeNm.Prtry}${creditorMmbId}`;
 
   const transactionRelationship: TransactionRelationship = {
-    from: `accounts/${debtorAcctId}`,
-    to: `accounts/${creditorAcctId}`,
+    from: `accounts/${TenantId}${debtorAcctId}`,
+    to: `accounts/${TenantId}${creditorAcctId}`,
     Amt: InstdAmt,
     Ccy,
     CreDtTm: creDtTm,
@@ -232,10 +232,10 @@ export const handlePacs008 = async (transaction: Pacs008, transactionType: strin
   ];
 
   const dataCache: DataCache = {
-    cdtrId: creditorId,
-    dbtrId: debtorId,
-    cdtrAcctId: creditorAcctId,
-    dbtrAcctId: debtorAcctId,
+    cdtrId: `${TenantId}${creditorId}`,
+    dbtrId: `${TenantId}${debtorId}`,
+    cdtrAcctId: `${TenantId}${creditorAcctId}`,
+    dbtrAcctId: `${TenantId}${debtorAcctId}`,
     creDtTm,
     instdAmt: {
       amt: parseFloat(InstdAmt),
