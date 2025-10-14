@@ -2,24 +2,12 @@
 import * as fs from 'node:fs';
 import * as readline from 'node:readline';
 import * as util from 'node:util';
-import { cacheDatabaseManager, configuration, loggerService } from '..';
+import { configuration, loggerService } from '..';
 import { sendPacs002Transaction, sendPrepareTransaction } from '../utils/helper.functions';
 import type { ExecuteReqBody } from '../utils/interface.request';
 import { Fields } from '../utils/transaction.enum';
 
 export const SendLineMessages = async (requestBody: ExecuteReqBody): Promise<string> => {
-  let oldestTimestamp: Date;
-  let delta = 0;
-
-  if (requestBody.evaluate) {
-    try {
-      oldestTimestamp = await cacheDatabaseManager.getOldestTimestampPacs008();
-      delta = Date.now() - new Date(oldestTimestamp).getTime();
-    } catch (err) {
-      throw Error(`Error occurred while trying to get oldest pacs008 timestamp. ${util.inspect(err)}`);
-    }
-  }
-
   const rl = readline.createInterface({
     input: fs.createReadStream('./build/uploads/batch.txt'),
     crlfDelay: Infinity,
@@ -51,7 +39,7 @@ export const SendLineMessages = async (requestBody: ExecuteReqBody): Promise<str
     }
 
     if (requestBody.evaluate) {
-      await sendPacs002Transaction(columns, delta);
+      await sendPacs002Transaction(columns);
       processedCount++;
     } else {
       const { pacs008Result, pain001Result, pain013Result } = await sendPrepareTransaction(columns);
