@@ -45,7 +45,10 @@ export default async function initializeFastifyClient(): Promise<FastifyInstance
   await fastify.register(fastifyMultipart, {
     limits: {
       fileSize: (configuration.MAX_FILE_SIZE || 100) * 1024 * 1024, // Convert MB to bytes
+      files: 1, // Limit to 1 file
+      parts: 1, // File only, no other form fields
     },
+    throwFileSizeLimit: true, // Enable proper error throwing (v9 default)
   });
   await fastify.register(fastifyCors, {
     origin: '*',

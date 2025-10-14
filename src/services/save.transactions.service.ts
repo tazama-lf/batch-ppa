@@ -81,16 +81,16 @@ export const handlePain001 = async (transaction: Pain001, transactionType: strin
   try {
     await Promise.all([
       cacheDatabaseManager.saveTransactionHistory(transaction, `pain001_${EndToEndId}`),
-      cacheDatabaseManager.addAccount(transaction.TenantId, debtorAcctId.replaceAll(' ', '_')),
-      cacheDatabaseManager.addAccount(transaction.TenantId, creditorAcctId.replaceAll(' ', '_')),
-      cacheDatabaseManager.addEntity(transaction.TenantId, creditorId.replaceAll(' ', '_'), CreDtTm),
-      cacheDatabaseManager.addEntity(transaction.TenantId, debtorId.replaceAll(' ', '_'), CreDtTm),
+      cacheDatabaseManager.addAccount(TenantId, debtorAcctId.replaceAll(' ', '_')),
+      cacheDatabaseManager.addAccount(TenantId, creditorAcctId.replaceAll(' ', '_')),
+      cacheDatabaseManager.addEntity(TenantId, creditorId.replaceAll(' ', '_'), CreDtTm),
+      cacheDatabaseManager.addEntity(TenantId, debtorId.replaceAll(' ', '_'), CreDtTm),
     ]);
 
     await Promise.all([
       cacheDatabaseManager.saveTransactionRelationship(transactionRelationship),
-      cacheDatabaseManager.addAccountHolder(transaction.TenantId, creditorId, creditorAcctId, CreDtTm),
-      cacheDatabaseManager.addAccountHolder(transaction.TenantId, debtorId, debtorAcctId, CreDtTm),
+      cacheDatabaseManager.addAccountHolder(TenantId, creditorId, creditorAcctId, CreDtTm),
+      cacheDatabaseManager.addAccountHolder(TenantId, debtorId, debtorAcctId, CreDtTm),
     ]);
     return transaction;
   } catch (err) {
@@ -162,8 +162,8 @@ export const handlePain013 = async (transaction: Pain013, transactionType: strin
   try {
     await Promise.all([
       cacheDatabaseManager.saveTransactionHistory(transaction, `pain013_${EndToEndId}`),
-      cacheDatabaseManager.addAccount(transaction.TenantId, debtorAcctId),
-      cacheDatabaseManager.addAccount(transaction.TenantId, creditorAcctId),
+      cacheDatabaseManager.addAccount(TenantId, debtorAcctId),
+      cacheDatabaseManager.addAccount(TenantId, creditorAcctId),
     ]);
 
     await cacheDatabaseManager.saveTransactionRelationship(transactionRelationship);
@@ -227,8 +227,8 @@ export const handlePacs008 = async (transaction: Pacs008, transactionType: strin
   };
 
   const pendingPromises = [
-    cacheDatabaseManager.addAccount(transaction.TenantId, debtorAcctId),
-    cacheDatabaseManager.addAccount(transaction.TenantId, creditorAcctId),
+    cacheDatabaseManager.addAccount(TenantId, debtorAcctId),
+    cacheDatabaseManager.addAccount(TenantId, creditorAcctId),
   ];
 
   const dataCache: DataCache = {
@@ -259,14 +259,14 @@ export const handlePacs008 = async (transaction: Pacs008, transactionType: strin
   }
 
   if (!configuration.QUOTING) {
-    pendingPromises.push(cacheDatabaseManager.addEntity(transaction.TenantId, creditorId, creDtTm));
-    pendingPromises.push(cacheDatabaseManager.addEntity(transaction.TenantId, debtorId, creDtTm));
+    pendingPromises.push(cacheDatabaseManager.addEntity(TenantId, creditorId, creDtTm));
+    pendingPromises.push(cacheDatabaseManager.addEntity(TenantId, debtorId, creDtTm));
 
     await Promise.all(pendingPromises);
 
     await Promise.all([
-      cacheDatabaseManager.addAccountHolder(transaction.TenantId, creditorId, creditorAcctId, creDtTm),
-      cacheDatabaseManager.addAccountHolder(transaction.TenantId, debtorId, debtorAcctId, creDtTm),
+      cacheDatabaseManager.addAccountHolder(TenantId, creditorId, creditorAcctId, creDtTm),
+      cacheDatabaseManager.addAccountHolder(TenantId, debtorId, debtorAcctId, creDtTm),
     ]);
   } else {
     await Promise.all(pendingPromises);
