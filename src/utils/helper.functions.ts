@@ -6,9 +6,9 @@ import { GetPacs002, GetPacs008, GetPain001FromLine, GetPain013 } from '../servi
 import { handleTransaction } from '../services/save.transactions.service';
 import { executePost } from '../utils/execute.https';
 
-export const sendPacs002Transaction = async (columns: string[], delta: number): Promise<boolean> => {
+export const sendPacs002Transaction = async (columns: string[]): Promise<boolean> => {
   loggerService.trace('Sending Pacs002 message...');
-  const currentPacs002 = GetPacs002(columns, new Date(delta + Date.now()));
+  const currentPacs002 = GetPacs002(columns);
   loggerService.trace(`${util.inspect(currentPacs002.FIToFIPmtSts.GrpHdr.MsgId)} - Submitted`);
   return await executePost(`${configuration.TMS_ENDPOINT}/v1/evaluate/iso20022/pacs.002.001.12`, currentPacs002);
 };

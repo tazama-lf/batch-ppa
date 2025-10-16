@@ -27,7 +27,7 @@ export const handlePain001 = async (transaction: Pain001, transactionType: strin
   const span = apm.startSpan('transaction.pain001');
   const TxTp = transactionType;
   transaction.TxTp = TxTp;
-  const TenantId = transaction.TenantId ?? 'DEFAULT';
+  const { TenantId } = transaction;
   const { Amt } = transaction.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt;
   const { Ccy } = transaction.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt;
 
@@ -113,7 +113,7 @@ export const handlePain013 = async (transaction: Pain013, transactionType: strin
 
   const TxTp = transactionType;
   transaction.TxTp = TxTp;
-  const TenantId = transaction.TenantId ?? 'DEFAULT';
+  const { TenantId } = transaction;
   const { Amt } = transaction.CdtrPmtActvtnReq.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt;
   const { Ccy } = transaction.CdtrPmtActvtnReq.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt;
   const { CreDtTm } = transaction.CdtrPmtActvtnReq.GrpHdr;
@@ -188,7 +188,7 @@ export const handlePacs008 = async (transaction: Pacs008, transactionType: strin
 
   const TxTp = transactionType;
   transaction.TxTp = TxTp;
-  const TenantId = transaction.TenantId ?? 'DEFAULT';
+  const { TenantId } = transaction;
   const InstdAmt = transaction.FIToFICstmrCdtTrf.CdtTrfTxInf.InstdAmt.Amt.Amt;
   const InstdAmtCcy = transaction.FIToFICstmrCdtTrf.CdtTrfTxInf.InstdAmt.Amt.Ccy;
   const IntrBkSttlmAmt = transaction.FIToFICstmrCdtTrf.CdtTrfTxInf.IntrBkSttlmAmt.Amt.Amt;
@@ -238,11 +238,11 @@ export const handlePacs008 = async (transaction: Pacs008, transactionType: strin
     dbtrAcctId: `${TenantId}${debtorAcctId}`,
     creDtTm,
     instdAmt: {
-      amt: parseFloat(InstdAmt),
+      amt: InstdAmt,
       ccy: InstdAmtCcy,
     },
     intrBkSttlmAmt: {
-      amt: parseFloat(IntrBkSttlmAmt),
+      amt: IntrBkSttlmAmt,
       ccy: IntrBkSttlmAmtCcy,
     },
     xchgRate: XchgRate,
