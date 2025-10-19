@@ -3,10 +3,10 @@
 import type { FastifyReply, FastifyRequest } from 'fastify';
 import fs from 'node:fs';
 import path from 'node:path';
+import { pipeline } from 'node:stream/promises';
 import { loggerService } from './';
 import { SendLineMessages } from './services/file.service';
 import type { ExecuteReqBody } from './utils/interface.request';
-import { finished } from 'node:stream/promises';
 
 export const handleExecute = async (req: FastifyRequest, reply: FastifyReply): Promise<void> => {
   loggerService.log('Start - Handle execute request');
@@ -24,25 +24,27 @@ export const handleExecute = async (req: FastifyRequest, reply: FastifyReply): P
 
 export const handleFileUpload = async (req: FastifyRequest, reply: FastifyReply): Promise<void> => {
   try {
+    // Check if request is multipart first
+    if (!req.isMultipart()) {
+      return await reply.status(400).send({
+        error: 'Request must be multipart/form-data',
+        contentType: req.headers['content-type'],
+      });
+    }
+
     const data = await req.file(); // Handles only a single file
 
     if (!data) {
       return await reply.status(400).send({ error: 'No file uploaded' });
     }
 
-    const { file } = data; // file is a readable stream
-
     const savePath = path.join(__dirname, 'uploads', 'batch.txt');
     if (!fs.existsSync(path.dirname(savePath))) {
       fs.mkdirSync(path.dirname(savePath), { recursive: true });
     }
-    const writeStream = fs.createWriteStream(savePath);
 
-    // Pipe the incoming file stream into a local file
-    file.pipe(writeStream);
-
-    // Handle stream completion using stream/promises.finished
-    await finished(writeStream);
+    // Use pipeline instead of pipe for better error handling with v9
+    await pipeline(data.file, fs.createWriteStream(savePath));
 
     return await reply.status(200).send({
       message: 'File uploading was handled successfully',

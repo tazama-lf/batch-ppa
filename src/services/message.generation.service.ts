@@ -219,6 +219,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
       },
     },
     TxTp: 'pain.001.001.11',
+    TenantId: 'DEFAULT',
   };
 
   return pain001;
@@ -227,6 +228,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
 export const GetPain013 = (pain01: Pain001): Pain013 => {
   const pain013: Pain013 = {
     TxTp: 'pain.013.001.09',
+    TenantId: 'DEFAULT',
     CdtrPmtActvtnReq: {
       GrpHdr: {
         MsgId: uuidv4().replace('-', ''),
@@ -417,6 +419,7 @@ export const GetPain013 = (pain01: Pain001): Pain013 => {
 export const GetPacs008 = (pain01: Pain001): Pacs008 => {
   const pacs008: Pacs008 = {
     TxTp: 'pacs.008.001.10',
+    TenantId: 'DEFAULT',
     FIToFICstmrCdtTrf: {
       GrpHdr: {
         MsgId: uuidv4().replace('-', ''),
@@ -544,8 +547,8 @@ export const GetPacs008 = (pain01: Pain001): Pacs008 => {
   return pacs008;
 };
 
-export const GetPacs002 = (columns: string[], date: Date): Pacs002 => {
-  const pacs002: Pacs002 = {
+export const GetPacs002 = (columns: string[], date: Date): Omit<Pacs002, 'TenantId'> => {
+  const pacs002: Omit<Pacs002, 'TenantId'> = {
     TxTp: 'pacs.002.001.12',
     FIToFIPmtSts: {
       GrpHdr: {

@@ -51,8 +51,8 @@ export class CacheDatabaseService {
    * @return {*}  {Promise<unknown>}
    * @memberof CacheDatabaseService
    */
-  async getTransactionPacs008(EndToEndId: string): Promise<unknown> {
-    const pacs008 = await this.dbManager.getTransactionPacs008(EndToEndId);
+  async getTransactionPacs008(EndToEndId: string, tenantId: string): Promise<unknown> {
+    const pacs008 = await this.dbManager.getTransactionPacs008(EndToEndId, tenantId);
     return pacs008;
   }
 
@@ -70,8 +70,8 @@ export class CacheDatabaseService {
     `;
 
     try {
-      const date = await this.dbManager._rawHistory.query<{ CreditDateTime: string }>(query);
-      return date.rows.length > 0 ? date.rows.map((value) => new Date(value.CreditDateTime))[0] : new Date();
+      const date = await this.dbManager._rawHistory.query<{ creditdatetime: string }>(query);
+      return date.rows.length > 0 ? date.rows.map((value) => new Date(value.creditdatetime))[0] : new Date();
     } catch (err) {
       throw new Error(JSON.stringify(err));
     }
@@ -83,8 +83,8 @@ export class CacheDatabaseService {
    * @return {*}  {Promise<void>}
    * @memberof CacheDatabaseService
    */
-  async addAccount(hash: string): Promise<void> {
-    await this.dbManager.saveAccount(hash);
+  async addAccount(tenantId: string, hash: string): Promise<void> {
+    await this.dbManager.saveAccount(hash, tenantId);
   }
 
   /**
@@ -95,8 +95,8 @@ export class CacheDatabaseService {
    * @return {*}  {Promise<void>}
    * @memberof CacheDatabaseService
    */
-  async addEntity(entityId: string, CreDtTm: string): Promise<void> {
-    await this.dbManager.saveEntity(entityId, CreDtTm);
+  async addEntity(tenantId: string, entityId: string, CreDtTm: string): Promise<void> {
+    await this.dbManager.saveEntity(entityId, tenantId, CreDtTm);
   }
 
   /**
@@ -108,8 +108,8 @@ export class CacheDatabaseService {
    * @return {*}  {Promise<void>}
    * @memberof CacheDatabaseService
    */
-  async addAccountHolder(entityId: string, accountId: string, CreDtTm: string): Promise<void> {
-    await this.dbManager.saveAccountHolder(entityId, accountId, CreDtTm);
+  async addAccountHolder(tenantId: string, entityId: string, accountId: string, CreDtTm: string): Promise<void> {
+    await this.dbManager.saveAccountHolder(entityId, accountId, CreDtTm, tenantId);
   }
 
   /**
