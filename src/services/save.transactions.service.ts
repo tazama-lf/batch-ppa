@@ -67,10 +67,10 @@ export const handlePain001 = async (transaction: Pain001, transactionType: strin
   };
 
   const dataCache: DataCache = {
-    cdtrId: `${TenantId}${creditorId}`,
-    dbtrId: `${TenantId}${debtorId}`,
-    cdtrAcctId: `${TenantId}${creditorAcctId}`,
-    dbtrAcctId: `${TenantId}${debtorAcctId}`,
+    cdtrId: creditorId,
+    dbtrId: debtorId,
+    cdtrAcctId: creditorAcctId,
+    dbtrAcctId: debtorAcctId,
   };
 
   transaction.DataCache = dataCache;
@@ -78,7 +78,7 @@ export const handlePain001 = async (transaction: Pain001, transactionType: strin
   const spanInsert = apm.startSpan('db.insert.pain001');
   try {
     await Promise.all([
-      cacheDatabaseManager.saveTransactionHistory(transaction, `pain001_${EndToEndId}`),
+      cacheDatabaseManager.saveTransactionHistory(transaction, `${TenantId}:pain001_${EndToEndId}`),
       cacheDatabaseManager.addAccount(TenantId, debtorAcctId.replaceAll(' ', '_')),
       cacheDatabaseManager.addAccount(TenantId, creditorAcctId.replaceAll(' ', '_')),
       cacheDatabaseManager.addEntity(TenantId, creditorId.replaceAll(' ', '_'), CreDtTm),
@@ -145,10 +145,10 @@ export const handlePain013 = async (transaction: Pain013, transactionType: strin
   };
 
   const dataCache: DataCache = {
-    cdtrId: `${TenantId}${creditorId}`,
-    dbtrId: `${TenantId}${debtorId}`,
-    cdtrAcctId: `${TenantId}${creditorAcctId}`,
-    dbtrAcctId: `${TenantId}${debtorAcctId}`,
+    cdtrId: creditorId,
+    dbtrId: debtorId,
+    cdtrAcctId: creditorAcctId,
+    dbtrAcctId: debtorAcctId,
   };
 
   transaction.DataCache = dataCache;
@@ -156,7 +156,7 @@ export const handlePain013 = async (transaction: Pain013, transactionType: strin
   const spanInsert = apm.startSpan('db.insert.pain013');
   try {
     await Promise.all([
-      cacheDatabaseManager.saveTransactionHistory(transaction, `pain013_${EndToEndId}`),
+      cacheDatabaseManager.saveTransactionHistory(transaction, `${TenantId}:pain013_${EndToEndId}`),
       cacheDatabaseManager.addAccount(TenantId, debtorAcctId),
       cacheDatabaseManager.addAccount(TenantId, creditorAcctId),
     ]);
@@ -225,10 +225,10 @@ export const handlePacs008 = async (transaction: Pacs008, transactionType: strin
   ];
 
   const dataCache: DataCache = {
-    cdtrId: `${TenantId}${creditorId}`,
-    dbtrId: `${TenantId}${debtorId}`,
-    cdtrAcctId: `${TenantId}${creditorAcctId}`,
-    dbtrAcctId: `${TenantId}${debtorAcctId}`,
+    cdtrId: creditorId,
+    dbtrId: debtorId,
+    cdtrAcctId: creditorAcctId,
+    dbtrAcctId: debtorAcctId,
     creDtTm,
     instdAmt: {
       amt: parseFloat(InstdAmt),
@@ -245,7 +245,7 @@ export const handlePacs008 = async (transaction: Pacs008, transactionType: strin
   const cacheBuffer = createMessageBuffer({ DataCache: { ...dataCache } });
   if (cacheBuffer) {
     const redisTTL = configuration.redisConfig.distributedCacheTTL;
-    pendingPromises.push(cacheDatabaseManager.set(EndToEndId, cacheBuffer, redisTTL ?? 0));
+    pendingPromises.push(cacheDatabaseManager.set(`${TenantId}:${EndToEndId}`, cacheBuffer, redisTTL ?? 0));
   } else {
     // this is fatal
     throw new Error('[pacs008] data cache could not be serialized');
@@ -269,7 +269,7 @@ export const handlePacs008 = async (transaction: Pacs008, transactionType: strin
   try {
     await Promise.all([
       cacheDatabaseManager.saveTransactionDetails(transactionRelationship),
-      cacheDatabaseManager.saveTransactionHistory(transaction, `pacs008_${EndToEndId}`),
+      cacheDatabaseManager.saveTransactionHistory(transaction, `${TenantId}:pacs008_${EndToEndId}`),
     ]);
     return transaction;
   } catch (err) {
