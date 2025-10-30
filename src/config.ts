@@ -37,5 +37,5 @@ export interface ExtendedConfig {
   DELIMITER: string;
 }
 
-type Databases = Required<Pick<ManagerConfig, 'transaction' | 'transactionHistory' | 'pseudonyms' | 'redisConfig'>>;
+type Databases = Required<Pick<ManagerConfig, 'eventHistory' | 'redisConfig' | 'rawHistory'>>;
 export type Configuration = ProcessorConfig & Databases & ExtendedConfig;
