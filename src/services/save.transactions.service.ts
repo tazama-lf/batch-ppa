@@ -231,11 +231,11 @@ export const handlePacs008 = async (transaction: Pacs008, transactionType: strin
     dbtrAcctId: debtorAcctId,
     creDtTm,
     instdAmt: {
-      amt: parseFloat(InstdAmt),
+      amt: InstdAmt,
       ccy: InstdAmtCcy,
     },
     intrBkSttlmAmt: {
-      amt: parseFloat(IntrBkSttlmAmt),
+      amt: IntrBkSttlmAmt,
       ccy: IntrBkSttlmAmtCcy,
     },
     xchgRate: XchgRate,
