@@ -108,13 +108,13 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
           Amt: {
             InstdAmt: {
               Amt: {
-                Amt: columns[Fields.TOTAL_PAYMENT_AMOUNT],
+                Amt: Number(columns[Fields.TOTAL_PAYMENT_AMOUNT]),
                 Ccy: columns[Fields.PAYMENT_CURRENCY_CODE],
               },
             },
             EqvtAmt: {
               Amt: {
-                Amt: columns[Fields.TOTAL_PAYMENT_AMOUNT],
+                Amt: Number(columns[Fields.TOTAL_PAYMENT_AMOUNT]),
                 Ccy: columns[Fields.PAYMENT_CURRENCY_CODE],
               },
               CcyOfTrf: columns[Fields.PAYMENT_CURRENCY_CODE],
@@ -195,7 +195,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
                   MrchntClssfctnCd: 'BLANK',
                 },
                 DbtrFinSvcsPrvdrFees: {
-                  Amt: '0',
+                  Amt: 0,
                   Ccy: columns[Fields.PAYMENT_CURRENCY_CODE],
                 },
                 Xprtn: new Date(new Date(columns[Fields.PROCESSING_DATE_TIME]).getTime() + 5 * 60000),
@@ -377,19 +377,19 @@ export const GetPain013 = (pain01: Pain001): Pain013 => {
               Doc: {
                 PyeeRcvAmt: {
                   Amt: {
-                    Amt: '0',
+                    Amt: 0,
                     Ccy: 'ZAR',
                   },
                 },
                 PyeeFinSvcsPrvdrFee: {
                   Amt: {
-                    Amt: '0',
+                    Amt: 0,
                     Ccy: 'ZAR',
                   },
                 },
                 PyeeFinSvcsPrvdrComssn: {
                   Amt: {
-                    Amt: '0',
+                    Amt: 0,
                     Ccy: 'ZAR',
                   },
                 },
@@ -449,7 +449,7 @@ export const GetPacs008 = (pain01: Pain001): Pacs008 => {
         ChrgBr: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.ChrgBr,
         ChrgsInf: {
           Amt: {
-            Amt: '0',
+            Amt: 0,
             Ccy: pain01.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt.Ccy,
           },
           Agt: {
