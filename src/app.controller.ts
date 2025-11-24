@@ -1,11 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
 
-import { type FastifyRequest, type FastifyReply } from 'fastify';
+import type { FastifyReply, FastifyRequest } from 'fastify';
+import fs from 'node:fs';
+import path from 'node:path';
+import { pipeline } from 'node:stream/promises';
 import { loggerService } from './';
 import { SendLineMessages } from './services/file.service';
-import { promises as fs, type PathLike } from 'fs';
-import path from 'path';
-import { type ExecuteReqBody } from './utils/interface.request';
+import type { ExecuteReqBody } from './utils/interface.request';
 
 export const handleExecute = async (req: FastifyRequest, reply: FastifyReply): Promise<void> => {
   loggerService.log('Start - Handle execute request');
@@ -22,26 +23,32 @@ export const handleExecute = async (req: FastifyRequest, reply: FastifyReply): P
 };
 
 export const handleFileUpload = async (req: FastifyRequest, reply: FastifyReply): Promise<void> => {
-  loggerService.log('Start - Handle file upload request');
   try {
-    await req.parseMultipart();
-    // Access the uploaded file(s) from req.files
-    const files = req.files;
-
-    if (!files || Object.keys(files).length === 0) {
-      return await reply.code(400).send({ message: 'No files uploaded' });
+    // Check if request is multipart first
+    if (!req.isMultipart()) {
+      return await reply.status(400).send({
+        error: 'Request must be multipart/form-data',
+        contentType: req.headers['content-type'],
+      });
     }
 
-    for (const [, file] of Object.entries(files)) {
-      const fileProperties = file as { filepath: PathLike; size: number; originalFilename: string };
-      loggerService.log(`Processing file: ${fileProperties.originalFilename}, size: ${fileProperties.size}`);
-      const uploadPath = path.join(__dirname, '..', 'uploads', 'batch.txt');
-      //Move the file from its temporary path to the upload directory
-      await fs.rename(fileProperties.filepath, uploadPath);
+    const data = await req.file(); // Handles only a single file
+
+    if (!data) {
+      return await reply.status(400).send({ error: 'No file uploaded' });
     }
 
-    // Send a success response
-    reply.code(200).send({ message: 'File(s) processed successfully' });
+    const savePath = path.join(__dirname, 'uploads', 'batch.txt');
+    if (!fs.existsSync(path.dirname(savePath))) {
+      fs.mkdirSync(path.dirname(savePath), { recursive: true });
+    }
+
+    // Use pipeline instead of pipe for better error handling with v9
+    await pipeline(data.file, fs.createWriteStream(savePath));
+
+    return await reply.status(200).send({
+      message: 'File uploading was handled successfully',
+    });
   } catch (err) {
     const failMessage = 'Failed to process execution request.';
     loggerService.error(failMessage, err as Error, 'ApplicationService');

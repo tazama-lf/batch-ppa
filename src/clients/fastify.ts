@@ -1,12 +1,12 @@
 // SPDX-License-Identifier: Apache-2.0
 import { fastifyCors } from '@fastify/cors';
-import Fastify, { type FastifyInstance } from 'fastify';
-import FastifyFormidable from 'fastify-formidable';
-import { fastifySwaggerUi } from '@fastify/swagger-ui';
+import { fastifyMultipart } from '@fastify/multipart';
 import { fastifySwagger } from '@fastify/swagger';
-import { configuration } from '..';
+import { fastifySwaggerUi } from '@fastify/swagger-ui';
+import Fastify, { type FastifyInstance } from 'fastify';
 import Routes from '../router';
 import executeBatchSchema from '../schemas/execute.batch.json';
+import { configuration } from '../index';
 
 const fastify = Fastify();
 const schemaExecuteBatch = { ...executeBatchSchema, $id: 'executeBatchSchema' };
@@ -39,17 +39,16 @@ export default async function initializeFastifyClient(): Promise<FastifyInstance
     },
     staticCSP: true,
     transformStaticCSP: (header) => header,
-    transformSpecification: (swaggerObject, request, reply) => {
-      return swaggerObject;
-    },
+    transformSpecification: (swaggerObject, request, reply) => swaggerObject,
     transformSpecificationClone: true,
   });
-  await fastify.register(FastifyFormidable, {
-    formidable: {
-      maxFileSize: (configuration.MAX_FILE_SIZE ?? 100) * 1024 * 1024,
-      uploadDir: './uploads/',
-      keepExtensions: true,
+  await fastify.register(fastifyMultipart, {
+    limits: {
+      fileSize: (configuration.MAX_FILE_SIZE || 100) * 1024 * 1024, // Convert MB to bytes
+      files: 1, // Limit to 1 file
+      parts: 1, // File only, no other form fields
     },
+    throwFileSizeLimit: true, // Enable proper error throwing (v9 default)
   });
   await fastify.register(fastifyCors, {
     origin: '*',
@@ -59,8 +58,4 @@ export default async function initializeFastifyClient(): Promise<FastifyInstance
   fastify.register(Routes);
   await fastify.ready();
   return await fastify;
-}
-
-export async function destroyFasityClient(): Promise<void> {
-  await fastify.close();
 }

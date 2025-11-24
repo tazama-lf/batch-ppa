@@ -1,25 +1,17 @@
 // SPDX-License-Identifier: Apache-2.0
-import { aql, type GeneratedAqlQuery } from '@tazama-lf/frms-coe-lib';
+import { createMessageBuffer } from '@tazama-lf/frms-coe-lib/lib/helpers/protobuf';
+import type { Pacs002, Pacs008, Pain001, Pain013, TransactionDetails } from '@tazama-lf/frms-coe-lib/lib/interfaces';
+import { CreateStorageManager, type DatabaseManagerInstance, type ManagerConfig } from '@tazama-lf/frms-coe-lib/lib/services/dbManager';
 import { Database } from '@tazama-lf/frms-coe-lib/lib/config/database.config';
 import { Cache } from '@tazama-lf/frms-coe-lib/lib/config/redis.config';
-import { createMessageBuffer } from '@tazama-lf/frms-coe-lib/lib/helpers/protobuf';
-import {
-  type Pacs002,
-  type Pacs008,
-  type Pain001,
-  type Pain013,
-  type TransactionRelationship,
-} from '@tazama-lf/frms-coe-lib/lib/interfaces';
-import { CreateStorageManager, type DatabaseManagerInstance, type ManagerConfig } from '@tazama-lf/frms-coe-lib/lib/services/dbManager';
-import { type Configuration } from '../config';
-import { dbTransactionsHistory } from '@tazama-lf/frms-coe-lib/lib/interfaces/ArangoCollections';
+import type { Configuration } from '../config';
 
-export class CacheDatabaseService<T extends ManagerConfig> {
-  private readonly dbManager: DatabaseManagerInstance<T>;
+export class CacheDatabaseService {
+  private readonly dbManager: DatabaseManagerInstance<Configuration>;
 
   cacheExpireTime: number;
 
-  private constructor(dbInstance: DatabaseManagerInstance<T>, expire: number) {
+  private constructor(dbInstance: DatabaseManagerInstance<Configuration>, expire: number) {
     this.dbManager = dbInstance;
     this.cacheExpireTime = expire;
   }
@@ -34,13 +26,13 @@ export class CacheDatabaseService<T extends ManagerConfig> {
    * @return {*}  {Promise<CacheDatabaseService>}
    * @memberof CacheDatabaseService
    */
-  public static async create<T extends ManagerConfig>(
-    configuration: Configuration,
-  ): Promise<{ db: CacheDatabaseService<T>; config: ManagerConfig }> {
+  public static async create(configuration: Configuration): Promise<{ db: CacheDatabaseService; config: ManagerConfig }> {
     const auth = configuration.nodeEnv === 'production';
-    const { db, config } = await CreateStorageManager([Database.TRANSACTION_HISTORY, Database.PSEUDONYMS, Cache.DISTRIBUTED], auth);
-    const databaseManager = db as DatabaseManagerInstance<T>;
-    return { db: new CacheDatabaseService<T>(databaseManager, config.redisConfig?.distributedCacheTTL ?? 0), config };
+    const { db, config } = await CreateStorageManager<typeof configuration>(
+      [Database.RAW_HISTORY, Database.EVENT_HISTORY, Cache.DISTRIBUTED],
+      auth,
+    );
+    return { config, db: new CacheDatabaseService(db, config.redisConfig?.distributedCacheTTL ?? 0) };
   }
 
   /**
@@ -49,7 +41,7 @@ export class CacheDatabaseService<T extends ManagerConfig> {
    * @memberof CacheDatabaseService
    */
   quit = (): void => {
-    this.dbManager.quit?.();
+    this.dbManager.quit();
   };
 
   /**
@@ -59,25 +51,31 @@ export class CacheDatabaseService<T extends ManagerConfig> {
    * @return {*}  {Promise<unknown>}
    * @memberof CacheDatabaseService
    */
-  async getTransactionPacs008(EndToEndId: string): Promise<unknown> {
-    const pacs008 = await this.dbManager.getTransactionPacs008(EndToEndId);
+  async getTransactionPacs008(EndToEndId: string, tenantId: string): Promise<unknown> {
+    const pacs008 = await this.dbManager.getTransactionPacs008(EndToEndId, tenantId);
     return pacs008;
   }
 
   async getOldestTimestampPacs008(): Promise<Date> {
-    const collectionName = this.dbManager._transactionHistory?.collection(dbTransactionsHistory.pacs008) as GeneratedAqlQuery;
-    const query = aql`FOR pacs008 IN ${collectionName}
-        SORT pacs008.FIToFICstmrCdtTrf.GrpHdr.CreDtTm ASC
-        LIMIT 1
-        RETURN pacs008.FIToFICstmrCdtTrf.GrpHdr.CreDtTm`;
+    const query = `
+      SELECT 
+        document->'FIToFICstmrCdtTrf'->'GrpHdr'->>'CreDtTm' 
+      AS 
+        CreditDateTime
+      FROM 
+        pacs008 
+      ORDER BY 
+        document->'FIToFICstmrCdtTrf'->'GrpHdr'->>'CreDtTm' 
+      ASC LIMIT 1
+    `;
+
     try {
-      const date = await (await this.dbManager._transactionHistory.query(query)).batches.all();
-      return date[0][0];
+      const date = await this.dbManager._rawHistory.query<{ creditdatetime: string }>(query);
+      return date.rows.length > 0 ? date.rows.map((value) => new Date(value.creditdatetime))[0] : new Date();
     } catch (err) {
       throw new Error(JSON.stringify(err));
     }
   }
-
   /**
    * Wrapper method for dbManager.saveAccount
    *
@@ -85,8 +83,8 @@ export class CacheDatabaseService<T extends ManagerConfig> {
    * @return {*}  {Promise<void>}
    * @memberof CacheDatabaseService
    */
-  async addAccount(hash: string): Promise<void> {
-    await this.dbManager.saveAccount(hash);
+  async addAccount(tenantId: string, hash: string): Promise<void> {
+    await this.dbManager.saveAccount(hash, tenantId);
   }
 
   /**
@@ -97,8 +95,8 @@ export class CacheDatabaseService<T extends ManagerConfig> {
    * @return {*}  {Promise<void>}
    * @memberof CacheDatabaseService
    */
-  async addEntity(entityId: string, CreDtTm: string): Promise<void> {
-    await this.dbManager.saveEntity(entityId, CreDtTm);
+  async addEntity(tenantId: string, entityId: string, CreDtTm: string): Promise<void> {
+    await this.dbManager.saveEntity(entityId, tenantId, CreDtTm);
   }
 
   /**
@@ -110,8 +108,8 @@ export class CacheDatabaseService<T extends ManagerConfig> {
    * @return {*}  {Promise<void>}
    * @memberof CacheDatabaseService
    */
-  async addAccountHolder(entityId: string, accountId: string, CreDtTm: string): Promise<void> {
-    await this.dbManager.saveAccountHolder(entityId, accountId, CreDtTm);
+  async addAccountHolder(tenantId: string, entityId: string, accountId: string, CreDtTm: string): Promise<void> {
+    await this.dbManager.saveAccountHolder(entityId, accountId, CreDtTm, tenantId);
   }
 
   /**
@@ -121,8 +119,8 @@ export class CacheDatabaseService<T extends ManagerConfig> {
    * @return {*}  {Promise<void>}
    * @memberof CacheDatabaseService
    */
-  async saveTransactionRelationship(tR: TransactionRelationship): Promise<void> {
-    await this.dbManager.saveTransactionRelationship(tR);
+  async saveTransactionDetails(tR: TransactionDetails): Promise<void> {
+    await this.dbManager.saveTransactionDetails(tR);
   }
 
   /**
@@ -146,6 +144,10 @@ export class CacheDatabaseService<T extends ManagerConfig> {
       }
       case 'pacs.008.001.10': {
         await this.dbManager.saveTransactionHistoryPacs008(transaction as Pacs008);
+        break;
+      }
+      case 'pacs.002.001.12': {
+        await this.dbManager.saveTransactionHistoryPacs002(transaction as Pacs002);
         break;
       }
       default:
@@ -186,8 +188,10 @@ export class CacheDatabaseService<T extends ManagerConfig> {
    * @return {*}  {Promise<Record<string, unknown>>}
    * @memberof CacheDatabaseService
    */
-  async isReadyCheck(): Promise<Record<string, unknown>> {
-    const ready = await this.dbManager.isReadyCheck();
-    return ready;
+  async isReadyCheck(): Promise<Record<string, unknown> | undefined> {
+    const ready = (await this.dbManager.isReadyCheck()) as Record<string, unknown>;
+    if (typeof ready === 'object') {
+      return ready;
+    }
   }
 }
