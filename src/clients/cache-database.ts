@@ -80,11 +80,12 @@ export class CacheDatabaseService {
    * Wrapper method for dbManager.saveAccount
    *
    * @param {string} hash
+   * @param {string} CreDtTm
    * @return {*}  {Promise<void>}
    * @memberof CacheDatabaseService
    */
-  async addAccount(tenantId: string, hash: string): Promise<void> {
-    await this.dbManager.saveAccount(hash, tenantId);
+  async addAccount(tenantId: string, hash: string, CreDtTm: string): Promise<void> {
+    await this.dbManager.saveAccount(hash, tenantId, CreDtTm);
   }
 
   /**
