@@ -15,6 +15,7 @@ export const sendPacs002Transaction = async (columns: string[], delta: number): 
 
 export const sendPrepareTransaction = async (
   columns: string[],
+  batchMetadata?: { timestamp?: string; fileName?: string; fileSize?: number },
 ): Promise<{
   pain001Result: Pain001 | boolean;
   pain013Result: Pain013 | boolean;
@@ -31,13 +32,13 @@ export const sendPrepareTransaction = async (
 
     // Reduced logging for high-volume processing - use trace level for per-transaction logs
     loggerService.trace('Sending Pain001 message...');
-    pain001Result = (await handleTransaction(currentPain001)) as Pain001 | boolean;
+    pain001Result = (await handleTransaction(currentPain001, batchMetadata)) as Pain001 | boolean;
 
     loggerService.trace('Sending Pain013 message...');
-    pain013Result = (await handleTransaction(currentPain013)) as Pain013 | boolean;
+    pain013Result = (await handleTransaction(currentPain013, batchMetadata)) as Pain013 | boolean;
   }
 
   loggerService.trace('Sending Pacs008 message...');
-  const pacs008Result = (await handleTransaction(currentPacs008)) as Pacs008;
+  const pacs008Result = (await handleTransaction(currentPacs008, batchMetadata)) as Pacs008;
   return { pain001Result, pain013Result, pacs008Result };
 };

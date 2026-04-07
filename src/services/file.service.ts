@@ -7,9 +7,33 @@ import { sendPacs002Transaction, sendPrepareTransaction } from '../utils/helper.
 import type { ExecuteReqBody } from '../utils/interface.request';
 import { Fields } from '../utils/transaction.enum';
 
+// Constants to avoid magic numbers
+const FIRST_LINE_INDEX = 1;
+const PROGRESS_LOG_INTERVAL = 1000;
+const MILLISECONDS_PER_SECOND = 1000;
+const DECIMAL_PRECISION_2 = 2;
+
 export const SendLineMessages = async (requestBody: ExecuteReqBody): Promise<string> => {
   let oldestTimestamp: Date;
   let delta = 0;
+
+  // Create batch metadata from file information
+  const batchFilePath = './build/uploads/batch.txt';
+  let batchMetadata: { timestamp?: string; fileName?: string; fileSize?: number } | undefined;
+
+  try {
+    const fileStats = fs.statSync(batchFilePath);
+    batchMetadata = {
+      fileName: 'batch.txt',
+      timestamp: fileStats.mtime.toISOString(), // File modification time
+      fileSize: fileStats.size,
+    };
+
+    loggerService.trace(`Batch metadata: ${JSON.stringify(batchMetadata)}`);
+  } catch (err) {
+    loggerService.warn(`Unable to extract batch metadata: ${util.inspect(err)}`);
+    // batchMetadata remains undefined, timestamp utility will use current time as fallback
+  }
 
   if (requestBody.evaluate) {
     try {
@@ -33,16 +57,16 @@ export const SendLineMessages = async (requestBody: ExecuteReqBody): Promise<str
     index++;
 
     // Log progress every 1000 transactions for visibility without overwhelming logs
-    if (index > 1 && index % 1000 === 0) {
-      const elapsed = (Date.now() - startTime) / 1000;
+    if (index > FIRST_LINE_INDEX && index % PROGRESS_LOG_INTERVAL === 0) {
+      const elapsed = (Date.now() - startTime) / MILLISECONDS_PER_SECOND;
       const rate = processedCount / elapsed;
-      loggerService.log(`Processed ${processedCount} transactions (line ${index}) - ${rate.toFixed(2)} tx/sec`);
+      loggerService.log(`Processed ${processedCount} transactions (line ${index}) - ${rate.toFixed(DECIMAL_PRECISION_2)} tx/sec`);
     }
 
     // Each line in input.txt will be successively available here as `line`.
-    const columns = line.split(configuration.DELIMITER ?? '|');
+    const columns = line.split(configuration.DELIMITER || '|');
     if (!new Date(columns[Fields.PROCESSING_DATE_TIME]).getTime()) {
-      if (index === 1) {
+      if (index === FIRST_LINE_INDEX) {
         continue;
       } else {
         loggerService.error(`Error occurred while parsing line '${line}':${index}`);
@@ -54,7 +78,7 @@ export const SendLineMessages = async (requestBody: ExecuteReqBody): Promise<str
       await sendPacs002Transaction(columns, delta);
       processedCount++;
     } else {
-      const { pacs008Result, pain001Result, pain013Result } = await sendPrepareTransaction(columns);
+      const { pacs008Result, pain001Result, pain013Result } = await sendPrepareTransaction(columns, batchMetadata);
 
       if ((!requestBody.evaluate && configuration.QUOTING && !pacs008Result) || !pain001Result || !pain013Result) {
         loggerService.error(
