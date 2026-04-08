@@ -46,20 +46,20 @@ export const handlePain001 = async (
   const { Amt } = transaction.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt;
   const { Ccy } = transaction.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt;
 
-  const [othrCreditorAcct] = transaction.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAcct.Id.Othr;
+  const othrCreditorAcct = transaction.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAcct.Id.Othr[0];
   const creditorMmbId = transaction.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.CdtrAgt.FinInstnId.ClrSysMmbId.MmbId;
   const creditorAcctId = `${othrCreditorAcct.Id}${othrCreditorAcct.SchmeNm.Prtry}${creditorMmbId}`;
 
-  const [othrCreditor] = transaction.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Cdtr.Id.PrvtId.Othr;
+  const othrCreditor = transaction.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Cdtr.Id.PrvtId.Othr[0];
   const creditorId = `${othrCreditor.Id}${othrCreditor.SchmeNm.Prtry}`;
 
-  const [othrDebtor] = transaction.CstmrCdtTrfInitn.PmtInf.Dbtr.Id.PrvtId.Othr;
+  const othrDebtor = transaction.CstmrCdtTrfInitn.PmtInf.Dbtr.Id.PrvtId.Othr[0];
   const debtorId = `${othrDebtor.Id}${othrDebtor.SchmeNm.Prtry}`;
 
   // Use timestamp utility to determine CreDtTm with fallback logic
   const CreDtTm = determineAccountCreationTimestamp(transaction.CstmrCdtTrfInitn.GrpHdr, batchMetadata);
 
-  const [othrDebtorAcct] = transaction.CstmrCdtTrfInitn.PmtInf.DbtrAcct.Id.Othr;
+  const othrDebtorAcct = transaction.CstmrCdtTrfInitn.PmtInf.DbtrAcct.Id.Othr[0];
   const debtorMmbId = transaction.CstmrCdtTrfInitn.PmtInf.DbtrAgt.FinInstnId.ClrSysMmbId.MmbId;
   const debtorAcctId = `${othrDebtorAcct.Id}${othrDebtorAcct.SchmeNm.Prtry}${debtorMmbId}`;
 
@@ -131,7 +131,7 @@ export const handlePain013 = async (
 
   const TxTp = transactionType;
   transaction.TxTp = TxTp;
-  const TenantId = transaction.TenantId || 'DEFAULT';
+  const TenantId = transaction.TenantId ?? 'DEFAULT';
   const { Amt } = transaction.CdtrPmtActvtnReq.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt;
   const { Ccy } = transaction.CdtrPmtActvtnReq.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt;
   // Use timestamp utility to determine CreDtTm with fallback logic
@@ -139,18 +139,18 @@ export const handlePain013 = async (
   const { EndToEndId } = transaction.CdtrPmtActvtnReq.PmtInf.CdtTrfTxInf.PmtId;
   const { MsgId } = transaction.CdtrPmtActvtnReq.GrpHdr;
 
-  const [creditorAcctOthr] = transaction.CdtrPmtActvtnReq.PmtInf.CdtTrfTxInf.CdtrAcct.Id.Othr;
+  const creditorAcctOthr = transaction.CdtrPmtActvtnReq.PmtInf.CdtTrfTxInf.CdtrAcct.Id.Othr[0];
   const creditorMmbId = transaction.CdtrPmtActvtnReq.PmtInf.CdtTrfTxInf.CdtrAgt.FinInstnId.ClrSysMmbId.MmbId;
   const creditorAcctId = `${creditorAcctOthr.Id}${creditorAcctOthr.SchmeNm.Prtry}${creditorMmbId}`;
 
-  const [debtorAcctOthr] = transaction.CdtrPmtActvtnReq.PmtInf.DbtrAcct.Id.Othr;
+  const debtorAcctOthr = transaction.CdtrPmtActvtnReq.PmtInf.DbtrAcct.Id.Othr[0];
   const debtorMmbId = transaction.CdtrPmtActvtnReq.PmtInf.DbtrAgt.FinInstnId.ClrSysMmbId.MmbId;
   const debtorAcctId = `${debtorAcctOthr.Id}${debtorAcctOthr.SchmeNm.Prtry}${debtorMmbId}`;
 
-  const [dbtrOthr] = transaction.CdtrPmtActvtnReq.PmtInf.Dbtr.Id.PrvtId.Othr;
+  const dbtrOthr = transaction.CdtrPmtActvtnReq.PmtInf.Dbtr.Id.PrvtId.Othr[0];
   const debtorId = `${dbtrOthr.Id}${dbtrOthr.SchmeNm.Prtry}`;
 
-  const [cdtrOthr] = transaction.CdtrPmtActvtnReq.PmtInf.CdtTrfTxInf.Cdtr.Id.PrvtId.Othr;
+  const cdtrOthr = transaction.CdtrPmtActvtnReq.PmtInf.CdtTrfTxInf.Cdtr.Id.PrvtId.Othr[0];
   const creditorId = `${cdtrOthr.Id}${cdtrOthr.SchmeNm.Prtry}`;
 
   const transactionRelationship: TransactionDetails = {
@@ -208,7 +208,7 @@ export const handlePacs008 = async (
 
   const TxTp = transactionType;
   transaction.TxTp = TxTp;
-  const TenantId = transaction.TenantId || 'DEFAULT';
+  const TenantId = transaction.TenantId ?? 'DEFAULT';
   const InstdAmt = transaction.FIToFICstmrCdtTrf.CdtTrfTxInf.InstdAmt.Amt.Amt;
   const InstdAmtCcy = transaction.FIToFICstmrCdtTrf.CdtTrfTxInf.InstdAmt.Amt.Ccy;
   const IntrBkSttlmAmt = transaction.FIToFICstmrCdtTrf.CdtTrfTxInf.IntrBkSttlmAmt.Amt.Amt;
@@ -219,17 +219,17 @@ export const handlePacs008 = async (
   const creDtTm = determineAccountCreationTimestamp(transaction.FIToFICstmrCdtTrf.GrpHdr, batchMetadata);
   const { EndToEndId } = transaction.FIToFICstmrCdtTrf.CdtTrfTxInf.PmtId;
   const { MsgId } = transaction.FIToFICstmrCdtTrf.GrpHdr;
-  const [debtorOthr] = transaction.FIToFICstmrCdtTrf.CdtTrfTxInf.Dbtr.Id.PrvtId.Othr;
+  const debtorOthr = transaction.FIToFICstmrCdtTrf.CdtTrfTxInf.Dbtr.Id.PrvtId.Othr[0];
   const debtorId = `${debtorOthr.Id}${debtorOthr.SchmeNm.Prtry}`;
 
-  const [creditorOthr] = transaction.FIToFICstmrCdtTrf.CdtTrfTxInf.Cdtr.Id.PrvtId.Othr;
+  const creditorOthr = transaction.FIToFICstmrCdtTrf.CdtTrfTxInf.Cdtr.Id.PrvtId.Othr[0];
   const creditorId = `${creditorOthr.Id}${creditorOthr.SchmeNm.Prtry}`;
 
-  const [debtorAcctOthr] = transaction.FIToFICstmrCdtTrf.CdtTrfTxInf.DbtrAcct.Id.Othr;
+  const debtorAcctOthr = transaction.FIToFICstmrCdtTrf.CdtTrfTxInf.DbtrAcct.Id.Othr[0];
   const debtorMmbId = transaction.FIToFICstmrCdtTrf.CdtTrfTxInf.DbtrAgt.FinInstnId.ClrSysMmbId.MmbId;
   const debtorAcctId = `${debtorAcctOthr.Id}${debtorAcctOthr.SchmeNm.Prtry}${debtorMmbId}`;
 
-  const [creditorAcctOthr] = transaction.FIToFICstmrCdtTrf.CdtTrfTxInf.CdtrAcct.Id.Othr;
+  const creditorAcctOthr = transaction.FIToFICstmrCdtTrf.CdtTrfTxInf.CdtrAcct.Id.Othr[0];
   const creditorMmbId = transaction.FIToFICstmrCdtTrf.CdtTrfTxInf.CdtrAgt.FinInstnId.ClrSysMmbId.MmbId;
   const creditorAcctId = `${creditorAcctOthr.Id}${creditorAcctOthr.SchmeNm.Prtry}${creditorMmbId}`;
 
