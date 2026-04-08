@@ -7,12 +7,6 @@ import { sendPacs002Transaction, sendPrepareTransaction } from '../utils/helper.
 import type { ExecuteReqBody } from '../utils/interface.request';
 import { Fields } from '../utils/transaction.enum';
 
-// Constants to avoid magic numbers
-const FIRST_LINE_INDEX = 1;
-const PROGRESS_LOG_INTERVAL = 1000;
-const MILLISECONDS_PER_SECOND = 1000;
-const DECIMAL_PRECISION_2 = 2;
-
 export const SendLineMessages = async (requestBody: ExecuteReqBody): Promise<string> => {
   let oldestTimestamp: Date;
   let delta = 0;
@@ -57,16 +51,16 @@ export const SendLineMessages = async (requestBody: ExecuteReqBody): Promise<str
     index++;
 
     // Log progress every 1000 transactions for visibility without overwhelming logs
-    if (index > FIRST_LINE_INDEX && index % PROGRESS_LOG_INTERVAL === 0) {
-      const elapsed = (Date.now() - startTime) / MILLISECONDS_PER_SECOND;
+    if (index > 1 && index % 1000 === 0) {
+      const elapsed = (Date.now() - startTime) / 1000;
       const rate = processedCount / elapsed;
-      loggerService.log(`Processed ${processedCount} transactions (line ${index}) - ${rate.toFixed(DECIMAL_PRECISION_2)} tx/sec`);
+      loggerService.log(`Processed ${processedCount} transactions (line ${index}) - ${rate.toFixed(2)} tx/sec`);
     }
 
     // Each line in input.txt will be successively available here as `line`.
-    const columns = line.split(configuration.DELIMITER || '|');
+    const columns = line.split(configuration.DELIMITER ?? '|');
     if (!new Date(columns[Fields.PROCESSING_DATE_TIME]).getTime()) {
-      if (index === FIRST_LINE_INDEX) {
+      if (index === 1) {
         continue;
       } else {
         loggerService.error(`Error occurred while parsing line '${line}':${index}`);
