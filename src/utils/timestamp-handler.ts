@@ -1,7 +1,6 @@
-// Interface for batch record with optional CreDtTm field
-interface BatchRecord {
+// Interface for objects that may contain a CreDtTm field (like GrpHdr)
+interface CreationTimeSource {
   CreDtTm?: string;
-  [key: string]: unknown; // Allow other properties
 }
 
 /**
@@ -12,7 +11,7 @@ interface BatchRecord {
  * 2. Batch file timestamp
  * 3. Current processing time (fallback)
  */
-export function determineAccountCreationTimestamp(batchRecord: BatchRecord, batchMetadata?: { timestamp?: string }): string {
+export function determineAccountCreationTimestamp(batchRecord: CreationTimeSource, batchMetadata?: { timestamp?: string }): string {
   // Option 1: Extract from batch record if available
   if (batchRecord.CreDtTm) {
     try {
