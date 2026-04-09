@@ -42,7 +42,7 @@ export const handlePain001 = async (
   const span = apm.startSpan('transaction.pain001');
   const TxTp = transactionType;
   transaction.TxTp = TxTp;
-  const TenantId = transaction.TenantId || 'DEFAULT';
+  const TenantId = transaction.TenantId ?? 'DEFAULT';
   const { Amt } = transaction.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt;
   const { Ccy } = transaction.CstmrCdtTrfInitn.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt;
 
