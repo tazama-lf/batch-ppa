@@ -34,7 +34,7 @@
     "@fastify/multipart": "^9.2.1",
     "@fastify/swagger": "^9.5.1",
     "@fastify/swagger-ui": "^5.2.3",
-    "@tazama-lf/frms-coe-lib": "7.0.0-rc.0",
+    "@tazama-lf/frms-coe-lib": "8.0.0-rc.1",
     "axios": "^1.10.0",
     "fastify": "^5.4.0",
     "path": "^0.12.7",
