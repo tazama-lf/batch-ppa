@@ -2,15 +2,12 @@
 import * as fs from 'node:fs';
 import * as readline from 'node:readline';
 import * as util from 'node:util';
-import { cacheDatabaseManager, configuration, loggerService } from '..';
+import { configuration, loggerService } from '..';
 import { sendPacs002Transaction, sendPrepareTransaction } from '../utils/helper.functions';
 import type { ExecuteReqBody } from '../utils/interface.request';
 import { Fields } from '../utils/transaction.enum';
 
 export const SendLineMessages = async (requestBody: ExecuteReqBody): Promise<string> => {
-  let oldestTimestamp: Date;
-  let delta = 0;
-
   // Create batch metadata from file information
   const batchFilePath = './build/uploads/batch.txt';
   let batchMetadata: { timestamp?: string; fileName?: string; fileSize?: number } | undefined;
@@ -27,15 +24,6 @@ export const SendLineMessages = async (requestBody: ExecuteReqBody): Promise<str
   } catch (err) {
     loggerService.warn(`Unable to extract batch metadata: ${util.inspect(err)}`);
     // batchMetadata remains undefined, timestamp utility will use current time as fallback
-  }
-
-  if (requestBody.evaluate) {
-    try {
-      oldestTimestamp = await cacheDatabaseManager.getOldestTimestampPacs008();
-      delta = Date.now() - new Date(oldestTimestamp).getTime();
-    } catch (err) {
-      throw Error(`Error occurred while trying to get oldest pacs008 timestamp. ${util.inspect(err)}`);
-    }
   }
 
   const rl = readline.createInterface({
@@ -69,7 +57,7 @@ export const SendLineMessages = async (requestBody: ExecuteReqBody): Promise<str
     }
 
     if (requestBody.evaluate) {
-      await sendPacs002Transaction(columns, delta);
+      await sendPacs002Transaction(columns);
       processedCount++;
     } else {
       const { pacs008Result, pain001Result, pain013Result } = await sendPrepareTransaction(columns, batchMetadata);
