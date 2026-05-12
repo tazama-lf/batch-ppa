@@ -553,7 +553,7 @@ export const GetPacs002 = (columns: string[]): Omit<Pacs002, 'TenantId'> => {
     FIToFIPmtSts: {
       GrpHdr: {
         MsgId: uuidv4().replace('-', ''),
-        CreDtTm: columns[Fields.PROCESSING_DATE_TIME], // pacs.002 at the same time as processing date time
+        CreDtTm: columns[Fields.PROCESSING_DATE_TIME],
       },
       TxInfAndSts: {
         OrgnlInstrId: columns[Fields.MESSAGE_ID],
