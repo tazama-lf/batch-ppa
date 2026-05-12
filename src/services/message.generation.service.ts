@@ -4,7 +4,7 @@ import type { Pacs002, Pacs008, Pain001, Pain013 } from '@tazama-lf/frms-coe-lib
 import { v4 as uuidv4 } from 'uuid';
 import { Fields } from '../utils/transaction.enum';
 
-function subtractMilliseconds(isoDateString: string, milliseconds: number): string {
+function adjustInMilliseconds(isoDateString: string, milliseconds: number): string {
   const date = new Date(isoDateString);
   date.setTime(date.getTime() - milliseconds);
   return date.toISOString();
@@ -16,7 +16,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
     CstmrCdtTrfInitn: {
       GrpHdr: {
         MsgId: end2endID,
-        CreDtTm: subtractMilliseconds(columns[Fields.PROCESSING_DATE_TIME], 3000), // pain.001 3 seconds before pacs.002
+        CreDtTm: adjustInMilliseconds(columns[Fields.PROCESSING_DATE_TIME], 3000), // pain.001 3 seconds before pacs.002
         InitgPty: {
           Nm: columns[Fields.SENDER_NAME],
           Id: {
@@ -232,7 +232,7 @@ export const GetPain013 = (pain01: Pain001): Pain013 => {
     CdtrPmtActvtnReq: {
       GrpHdr: {
         MsgId: uuidv4().replace('-', ''),
-        CreDtTm: subtractMilliseconds(pain01.CstmrCdtTrfInitn.GrpHdr.CreDtTm, -1000), // pain.013 1 second after pain.001
+        CreDtTm: adjustInMilliseconds(pain01.CstmrCdtTrfInitn.GrpHdr.CreDtTm, -1000), // pain.013 1 second after pain.001
         NbOfTxs: 1,
         InitgPty: {
           Nm: pain01.CstmrCdtTrfInitn.GrpHdr.InitgPty.Nm,
@@ -423,7 +423,7 @@ export const GetPacs008 = (pain01: Pain001): Pacs008 => {
     FIToFICstmrCdtTrf: {
       GrpHdr: {
         MsgId: uuidv4().replace('-', ''),
-        CreDtTm: subtractMilliseconds(pain01.CstmrCdtTrfInitn.GrpHdr.CreDtTm, -1000), // pacs.008 1 second after pain.013
+        CreDtTm: adjustInMilliseconds(pain01.CstmrCdtTrfInitn.GrpHdr.CreDtTm, -1000), // pacs.008 1 second after pain.013
         NbOfTxs: pain01.CstmrCdtTrfInitn.GrpHdr.NbOfTxs,
         SttlmInf: {
           SttlmMtd: 'CLRG',
