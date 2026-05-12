@@ -11,6 +11,24 @@ export const SendLineMessages = async (requestBody: ExecuteReqBody): Promise<str
   let oldestTimestamp: Date;
   let delta = 0;
 
+  // Create batch metadata from file information
+  const batchFilePath = './build/uploads/batch.txt';
+  let batchMetadata: { timestamp?: string; fileName?: string; fileSize?: number } | undefined;
+
+  try {
+    const fileStats = fs.statSync(batchFilePath);
+    batchMetadata = {
+      fileName: 'batch.txt',
+      timestamp: fileStats.mtime.toISOString(), // File modification time
+      fileSize: fileStats.size,
+    };
+
+    loggerService.trace(`Batch metadata: ${JSON.stringify(batchMetadata)}`);
+  } catch (err) {
+    loggerService.warn(`Unable to extract batch metadata: ${util.inspect(err)}`);
+    // batchMetadata remains undefined, timestamp utility will use current time as fallback
+  }
+
   if (requestBody.evaluate) {
     try {
       oldestTimestamp = await cacheDatabaseManager.getOldestTimestampPacs008();
@@ -54,7 +72,7 @@ export const SendLineMessages = async (requestBody: ExecuteReqBody): Promise<str
       await sendPacs002Transaction(columns, delta);
       processedCount++;
     } else {
-      const { pacs008Result, pain001Result, pain013Result } = await sendPrepareTransaction(columns);
+      const { pacs008Result, pain001Result, pain013Result } = await sendPrepareTransaction(columns, batchMetadata);
 
       if ((!requestBody.evaluate && configuration.QUOTING && !pacs008Result) || !pain001Result || !pain013Result) {
         loggerService.error(

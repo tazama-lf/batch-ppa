@@ -1,6 +1,6 @@
 {
   "name": "batch-ppa",
-  "version": "3.0.0-rc.1",
+  "version": "4.0.0-rc.0",
   "description": "batch payment platform adapter",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -34,13 +34,15 @@
     "@fastify/multipart": "^9.2.1",
     "@fastify/swagger": "^9.5.1",
     "@fastify/swagger-ui": "^5.2.3",
-    "@tazama-lf/frms-coe-lib": "7.0.0-rc.0",
+    "@tazama-lf/frms-coe-lib": "8.0.0-rc.5",
     "axios": "^1.10.0",
     "fastify": "^5.4.0",
     "path": "^0.12.7",
     "tslib": "^2.8.1"
   },
   "devDependencies": {
+    "@commitlint/cli": "21.0.0",
+    "@commitlint/config-conventional": "21.0.0",
     "@eslint-community/eslint-plugin-eslint-comments": "4.5.0",
     "@stylistic/eslint-plugin": "^5.2.0",
     "@types/jest": "^30.0.0",

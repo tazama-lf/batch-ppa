@@ -4,24 +4,39 @@ import type { DataCache, Pacs008, Pain001, Pain013, TransactionDetails } from '@
 import * as util from 'node:util';
 import { cacheDatabaseManager, configuration, loggerService } from '..';
 import apm from '../apm';
+import { determineAccountCreationTimestamp } from '../utils/timestamp-handler';
 
-export const handleTransaction = async (transaction: Pain001 | Pain013 | Pacs008): Promise<Pain001 | Pain013 | Pacs008 | boolean> => {
+// Interface for batch metadata
+interface BatchMetadata {
+  timestamp?: string;
+  fileName?: string;
+  fileSize?: number;
+}
+
+export const handleTransaction = async (
+  transaction: Pain001 | Pain013 | Pacs008,
+  batchMetadata?: BatchMetadata,
+): Promise<Pain001 | Pain013 | Pacs008 | boolean> => {
   switch (transaction.TxTp) {
     case 'pain.001.001.11':
-      return await handlePain001(transaction as Pain001, transaction.TxTp);
+      return await handlePain001(transaction as Pain001, transaction.TxTp, batchMetadata);
 
     case 'pain.013.001.09':
-      return await handlePain013(transaction as Pain013, transaction.TxTp);
+      return await handlePain013(transaction as Pain013, transaction.TxTp, batchMetadata);
 
     case 'pacs.008.001.10':
-      return await handlePacs008(transaction as Pacs008, transaction.TxTp);
+      return await handlePacs008(transaction as Pacs008, transaction.TxTp, batchMetadata);
 
     default:
       throw Error('Error while selecting transaction type.');
   }
 };
 
-export const handlePain001 = async (transaction: Pain001, transactionType: string): Promise<Pain001 | boolean> => {
+export const handlePain001 = async (
+  transaction: Pain001,
+  transactionType: string,
+  batchMetadata?: BatchMetadata,
+): Promise<Pain001 | boolean> => {
   const id = transaction.CstmrCdtTrfInitn.GrpHdr.MsgId;
   loggerService.trace('Start - Handle transaction data', 'handlePain001()', id);
   const span = apm.startSpan('transaction.pain001');
@@ -41,7 +56,8 @@ export const handlePain001 = async (transaction: Pain001, transactionType: strin
   const othrDebtor = transaction.CstmrCdtTrfInitn.PmtInf.Dbtr.Id.PrvtId.Othr[0];
   const debtorId = `${othrDebtor.Id}${othrDebtor.SchmeNm.Prtry}`;
 
-  const { CreDtTm } = transaction.CstmrCdtTrfInitn.GrpHdr;
+  // Use timestamp utility to determine CreDtTm with fallback logic
+  const CreDtTm = determineAccountCreationTimestamp(transaction.CstmrCdtTrfInitn.GrpHdr, batchMetadata);
 
   const othrDebtorAcct = transaction.CstmrCdtTrfInitn.PmtInf.DbtrAcct.Id.Othr[0];
   const debtorMmbId = transaction.CstmrCdtTrfInitn.PmtInf.DbtrAgt.FinInstnId.ClrSysMmbId.MmbId;
@@ -79,8 +95,8 @@ export const handlePain001 = async (transaction: Pain001, transactionType: strin
   try {
     await Promise.all([
       cacheDatabaseManager.saveTransactionHistory(transaction, `${TenantId}:pain001_${EndToEndId}`),
-      cacheDatabaseManager.addAccount(TenantId, debtorAcctId.replaceAll(' ', '_')),
-      cacheDatabaseManager.addAccount(TenantId, creditorAcctId.replaceAll(' ', '_')),
+      cacheDatabaseManager.addAccount(TenantId, debtorAcctId.replaceAll(' ', '_'), CreDtTm),
+      cacheDatabaseManager.addAccount(TenantId, creditorAcctId.replaceAll(' ', '_'), CreDtTm),
       cacheDatabaseManager.addEntity(TenantId, creditorId.replaceAll(' ', '_'), CreDtTm),
       cacheDatabaseManager.addEntity(TenantId, debtorId.replaceAll(' ', '_'), CreDtTm),
     ]);
@@ -103,7 +119,11 @@ export const handlePain001 = async (transaction: Pain001, transactionType: strin
   }
 };
 
-export const handlePain013 = async (transaction: Pain013, transactionType: string): Promise<Pain013 | boolean> => {
+export const handlePain013 = async (
+  transaction: Pain013,
+  transactionType: string,
+  batchMetadata?: BatchMetadata,
+): Promise<Pain013 | boolean> => {
   const logContext = 'handlePain013()';
   const id = transaction.CdtrPmtActvtnReq.GrpHdr.MsgId;
   loggerService.trace('Start - Handle transaction data', logContext, id);
@@ -114,7 +134,8 @@ export const handlePain013 = async (transaction: Pain013, transactionType: strin
   const TenantId = transaction.TenantId ?? 'DEFAULT';
   const { Amt } = transaction.CdtrPmtActvtnReq.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt;
   const { Ccy } = transaction.CdtrPmtActvtnReq.PmtInf.CdtTrfTxInf.Amt.InstdAmt.Amt;
-  const { CreDtTm } = transaction.CdtrPmtActvtnReq.GrpHdr;
+  // Use timestamp utility to determine CreDtTm with fallback logic
+  const CreDtTm = determineAccountCreationTimestamp(transaction.CdtrPmtActvtnReq.GrpHdr, batchMetadata);
   const { EndToEndId } = transaction.CdtrPmtActvtnReq.PmtInf.CdtTrfTxInf.PmtId;
   const { MsgId } = transaction.CdtrPmtActvtnReq.GrpHdr;
 
@@ -157,8 +178,8 @@ export const handlePain013 = async (transaction: Pain013, transactionType: strin
   try {
     await Promise.all([
       cacheDatabaseManager.saveTransactionHistory(transaction, `${TenantId}:pain013_${EndToEndId}`),
-      cacheDatabaseManager.addAccount(TenantId, debtorAcctId),
-      cacheDatabaseManager.addAccount(TenantId, creditorAcctId),
+      cacheDatabaseManager.addAccount(TenantId, debtorAcctId, CreDtTm),
+      cacheDatabaseManager.addAccount(TenantId, creditorAcctId, CreDtTm),
     ]);
 
     await cacheDatabaseManager.saveTransactionDetails(transactionRelationship);
@@ -175,7 +196,11 @@ export const handlePain013 = async (transaction: Pain013, transactionType: strin
   }
 };
 
-export const handlePacs008 = async (transaction: Pacs008, transactionType: string): Promise<Pacs008 | boolean> => {
+export const handlePacs008 = async (
+  transaction: Pacs008,
+  transactionType: string,
+  batchMetadata?: BatchMetadata,
+): Promise<Pacs008 | boolean> => {
   const logContext = 'handlePacs008()';
   const id = transaction.FIToFICstmrCdtTrf.GrpHdr.MsgId;
   loggerService.trace('Start - Handle transaction data', logContext, id);
@@ -190,7 +215,8 @@ export const handlePacs008 = async (transaction: Pacs008, transactionType: strin
   const IntrBkSttlmAmtCcy = transaction.FIToFICstmrCdtTrf.CdtTrfTxInf.IntrBkSttlmAmt.Amt.Ccy;
   const { XchgRate } = transaction.FIToFICstmrCdtTrf.CdtTrfTxInf;
   const { Ccy } = transaction.FIToFICstmrCdtTrf.CdtTrfTxInf.InstdAmt.Amt;
-  const creDtTm = transaction.FIToFICstmrCdtTrf.GrpHdr.CreDtTm;
+  // Use timestamp utility to determine CreDtTm with fallback logic
+  const creDtTm = determineAccountCreationTimestamp(transaction.FIToFICstmrCdtTrf.GrpHdr, batchMetadata);
   const { EndToEndId } = transaction.FIToFICstmrCdtTrf.CdtTrfTxInf.PmtId;
   const { MsgId } = transaction.FIToFICstmrCdtTrf.GrpHdr;
   const debtorOthr = transaction.FIToFICstmrCdtTrf.CdtTrfTxInf.Dbtr.Id.PrvtId.Othr[0];
@@ -220,8 +246,8 @@ export const handlePacs008 = async (transaction: Pacs008, transactionType: strin
   };
 
   const pendingPromises = [
-    cacheDatabaseManager.addAccount(TenantId, debtorAcctId),
-    cacheDatabaseManager.addAccount(TenantId, creditorAcctId),
+    cacheDatabaseManager.addAccount(TenantId, debtorAcctId, creDtTm),
+    cacheDatabaseManager.addAccount(TenantId, creditorAcctId, creDtTm),
   ];
 
   const dataCache: DataCache = {
