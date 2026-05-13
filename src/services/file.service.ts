@@ -46,7 +46,7 @@ export const SendLineMessages = async (requestBody: ExecuteReqBody, tenantId: st
     }
 
     // Each line in input.txt will be successively available here as `line`.
-    const columns = line.split(configuration.DELIMITER ?? '|');
+    const columns = line.split(configuration.DELIMITER);
     if (!new Date(columns[Fields.PROCESSING_DATE_TIME]).getTime()) {
       if (index === 1) {
         continue;

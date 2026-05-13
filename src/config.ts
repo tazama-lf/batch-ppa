@@ -16,7 +16,6 @@ export const additionalEnvironmentVariables: AdditionalConfig[] = [
   {
     name: 'DELIMITER',
     type: 'string',
-    optional: true,
   },
   {
     name: 'TMS_ENDPOINT',
@@ -38,7 +37,7 @@ export interface ExtendedConfig {
   QUOTING: boolean;
   TMS_ENDPOINT: string;
   MAX_FILE_SIZE?: number;
-  DELIMITER?: string;
+  DELIMITER: string;
   AUTHENTICATED: boolean;
 }
 
