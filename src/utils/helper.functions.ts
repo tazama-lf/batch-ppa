@@ -6,22 +6,23 @@ import { GetPacs002, GetPacs008, GetPain001FromLine, GetPain013 } from '../servi
 import { handleTransaction } from '../services/save.transactions.service';
 import { executePost } from '../utils/execute.https';
 
-export const sendPacs002Transaction = async (columns: string[]): Promise<boolean> => {
+export const sendPacs002Transaction = async (columns: string[], authHeader?: string): Promise<boolean> => {
   loggerService.trace('Sending Pacs002 message...');
   const currentPacs002 = GetPacs002(columns);
   loggerService.trace(`${util.inspect(currentPacs002.FIToFIPmtSts.GrpHdr.MsgId)} - Submitted`);
-  return await executePost(`${configuration.TMS_ENDPOINT}/v1/evaluate/iso20022/pacs.002.001.12`, currentPacs002);
+  return await executePost(`${configuration.TMS_ENDPOINT}/v1/evaluate/iso20022/pacs.002.001.12`, currentPacs002, authHeader);
 };
 
 export const sendPrepareTransaction = async (
   columns: string[],
+  tenantId: string,
   batchMetadata?: { timestamp?: string; fileName?: string; fileSize?: number },
 ): Promise<{
   pain001Result: Pain001 | boolean;
   pain013Result: Pain013 | boolean;
   pacs008Result: Pacs008 | boolean;
 }> => {
-  const currentPain001 = GetPain001FromLine(columns);
+  const currentPain001 = GetPain001FromLine(columns, tenantId);
   const currentPacs008 = GetPacs008(currentPain001);
 
   let pain001Result: Pain001 | boolean = true;

@@ -27,6 +27,11 @@ export const additionalEnvironmentVariables: AdditionalConfig[] = [
     type: 'number',
     optional: true,
   },
+  {
+    name: 'AUTHENTICATED',
+    type: 'boolean',
+    optional: true,
+  },
 ];
 
 export interface ExtendedConfig {
@@ -35,6 +40,7 @@ export interface ExtendedConfig {
   TMS_ENDPOINT: string;
   MAX_FILE_SIZE: number;
   DELIMITER: string;
+  AUTHENTICATED: boolean;
 }
 
 type Databases = Required<Pick<ManagerConfig, 'eventHistory' | 'redisConfig' | 'rawHistory'>>;
