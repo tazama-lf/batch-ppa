@@ -14,7 +14,7 @@ COPY ./tsconfig.json ./
 COPY .npmrc ./
 
 RUN --mount=type=secret,id=GH_TOKEN,env=GH_TOKEN npm ci --ignore-scripts
-RUN npm run build
+RUN npm run build && mkdir -p build/uploads
 
 FROM ${BUILD_IMAGE} AS dep-resolver
 LABEL stage=pre-prod
@@ -23,22 +23,16 @@ LABEL stage=pre-prod
 COPY package*.json ./
 COPY .npmrc ./
 RUN --mount=type=secret,id=GH_TOKEN,env=GH_TOKEN npm ci --omit=dev --ignore-scripts
-RUN mkdir uploads
 
 FROM ${RUN_IMAGE} AS run-env
 USER nonroot
 
 WORKDIR /home/app
 COPY --from=dep-resolver /node_modules ./node_modules
-COPY --from=builder /home/app/build ./build
+COPY --chown=nonroot:nonroot --from=builder /home/app/build ./build
 COPY package.json ./
 COPY deployment.yaml ./
 COPY service.yaml ./
-COPY --chown=nonroot:nonroot --from=dep-resolver /uploads ./uploads
-
-#USER root
-#RUN chmod 777 uploads
-#USER nonroot
 
 
 # Turn down the verbosity to default level.
