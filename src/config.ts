@@ -37,8 +37,8 @@ export interface ExtendedConfig {
   PORT: number;
   QUOTING: boolean;
   TMS_ENDPOINT: string;
-  MAX_FILE_SIZE: number;
-  DELIMITER: string;
+  MAX_FILE_SIZE?: number;
+  DELIMITER?: string;
   AUTHENTICATED: boolean;
 }
 
