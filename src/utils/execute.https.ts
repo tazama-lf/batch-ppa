@@ -4,10 +4,11 @@ import apm from 'elastic-apm-node';
 import * as util from 'node:util';
 import { loggerService } from '..';
 
-export const executePost = async (endpoint: string, request: unknown): Promise<boolean> => {
+export const executePost = async (endpoint: string, request: unknown, authHeader?: string): Promise<boolean> => {
   const span = apm.startSpan(`POST ${endpoint}`);
   try {
-    const eventDirectorRes = await axios.post(endpoint, request);
+    const headers = authHeader ? { Authorization: authHeader } : undefined;
+    const eventDirectorRes = await axios.post(endpoint, request, { headers });
 
     if (eventDirectorRes.status !== 200) {
       loggerService.error(`Transaction-Monitoring-Service Response StatusCode != 200, request:\r\n${util.inspect(request)}`);

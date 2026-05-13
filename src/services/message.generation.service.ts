@@ -10,7 +10,7 @@ function adjustInMilliseconds(isoDateString: string, milliseconds: number): stri
   return date.toISOString();
 }
 
-export const GetPain001FromLine = (columns: string[]): Pain001 => {
+export const GetPain001FromLine = (columns: string[], tenantId: string): Pain001 => {
   const end2endID = columns[Fields.MESSAGE_ID];
   const pain001: Pain001 = {
     CstmrCdtTrfInitn: {
@@ -219,7 +219,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
       },
     },
     TxTp: 'pain.001.001.11',
-    TenantId: 'DEFAULT',
+    TenantId: tenantId,
   };
 
   return pain001;

@@ -7,7 +7,7 @@ import { sendPacs002Transaction, sendPrepareTransaction } from '../utils/helper.
 import type { ExecuteReqBody } from '../utils/interface.request';
 import { Fields } from '../utils/transaction.enum';
 
-export const SendLineMessages = async (requestBody: ExecuteReqBody): Promise<string> => {
+export const SendLineMessages = async (requestBody: ExecuteReqBody, tenantId: string, authHeader?: string): Promise<string> => {
   // Create batch metadata from file information
   const batchFilePath = './build/uploads/batch.txt';
   let batchMetadata: { timestamp?: string; fileName?: string; fileSize?: number } | undefined;
@@ -46,7 +46,7 @@ export const SendLineMessages = async (requestBody: ExecuteReqBody): Promise<str
     }
 
     // Each line in input.txt will be successively available here as `line`.
-    const columns = line.split(configuration.DELIMITER ?? '|');
+    const columns = line.split(configuration.DELIMITER);
     if (!new Date(columns[Fields.PROCESSING_DATE_TIME]).getTime()) {
       if (index === 1) {
         continue;
@@ -57,10 +57,10 @@ export const SendLineMessages = async (requestBody: ExecuteReqBody): Promise<str
     }
 
     if (requestBody.evaluate) {
-      await sendPacs002Transaction(columns);
+      await sendPacs002Transaction(columns, authHeader);
       processedCount++;
     } else {
-      const { pacs008Result, pain001Result, pain013Result } = await sendPrepareTransaction(columns, batchMetadata);
+      const { pacs008Result, pain001Result, pain013Result } = await sendPrepareTransaction(columns, tenantId, batchMetadata);
 
       if ((!requestBody.evaluate && configuration.QUOTING && !pacs008Result) || !pain001Result || !pain013Result) {
         loggerService.error(
