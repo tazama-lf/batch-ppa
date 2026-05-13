@@ -30,7 +30,6 @@ export const additionalEnvironmentVariables: AdditionalConfig[] = [
   {
     name: 'AUTHENTICATED',
     type: 'boolean',
-    optional: true,
   },
 ];
 
