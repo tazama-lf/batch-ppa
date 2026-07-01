@@ -1,6 +1,6 @@
 {
   "name": "batch-ppa",
-  "version": "4.0.0-rc.0",
+  "version": "4.0.0-rc.1",
   "description": "batch payment platform adapter",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -34,8 +34,8 @@
     "@fastify/multipart": "^9.2.1",
     "@fastify/swagger": "^9.5.1",
     "@fastify/swagger-ui": "^5.2.3",
-    "@tazama-lf/auth-lib": "4.0.0-rc.4",
-    "@tazama-lf/frms-coe-lib": "8.0.0-rc.5",
+    "@tazama-lf/auth-lib": "4.0.0-rc.5",
+    "@tazama-lf/frms-coe-lib": "8.2.0-rc.6",
     "axios": "^1.10.0",
     "fastify": "^5.4.0",
     "path": "^0.12.7",
@@ -67,5 +67,9 @@
       "eslint --fix",
       "prettier --write"
     ]
+  },
+  "overrides": {
+    "uuid": "^11.1.1",
+    "@opentelemetry/core": "^2.8.0"
   }
 }
