@@ -36,7 +36,7 @@
     "@fastify/swagger-ui": "^5.2.3",
     "@tazama-lf/auth-lib": "4.0.0-rc.5",
     "@tazama-lf/frms-coe-lib": "8.2.0-rc.6",
-    "axios": "^1.10.0",
+    "axios": "^1.18.1",
     "fastify": "^5.4.0",
     "path": "^0.12.7",
     "tslib": "^2.8.1"
