@@ -2,22 +2,28 @@
 import * as fs from 'node:fs';
 import * as readline from 'node:readline';
 import * as util from 'node:util';
-import { cacheDatabaseManager, configuration, loggerService } from '..';
+import { configuration, loggerService } from '..';
 import { sendPacs002Transaction, sendPrepareTransaction } from '../utils/helper.functions';
 import type { ExecuteReqBody } from '../utils/interface.request';
 import { Fields } from '../utils/transaction.enum';
 
-export const SendLineMessages = async (requestBody: ExecuteReqBody): Promise<string> => {
-  let oldestTimestamp: Date;
-  let delta = 0;
+export const SendLineMessages = async (requestBody: ExecuteReqBody, tenantId: string, authHeader?: string): Promise<string> => {
+  // Create batch metadata from file information
+  const batchFilePath = './build/uploads/batch.txt';
+  let batchMetadata: { timestamp?: string; fileName?: string; fileSize?: number } | undefined;
 
-  if (requestBody.evaluate) {
-    try {
-      oldestTimestamp = await cacheDatabaseManager.getOldestTimestampPacs008();
-      delta = Date.now() - new Date(oldestTimestamp).getTime();
-    } catch (err) {
-      throw Error(`Error occurred while trying to get oldest pacs008 timestamp. ${util.inspect(err)}`);
-    }
+  try {
+    const fileStats = fs.statSync(batchFilePath);
+    batchMetadata = {
+      fileName: 'batch.txt',
+      timestamp: fileStats.mtime.toISOString(), // File modification time
+      fileSize: fileStats.size,
+    };
+
+    loggerService.trace(`Batch metadata: ${JSON.stringify(batchMetadata)}`);
+  } catch (err) {
+    loggerService.warn(`Unable to extract batch metadata: ${util.inspect(err)}`);
+    // batchMetadata remains undefined, timestamp utility will use current time as fallback
   }
 
   const rl = readline.createInterface({
@@ -40,7 +46,7 @@ export const SendLineMessages = async (requestBody: ExecuteReqBody): Promise<str
     }
 
     // Each line in input.txt will be successively available here as `line`.
-    const columns = line.split(configuration.DELIMITER ?? '|');
+    const columns = line.split(configuration.DELIMITER);
     if (!new Date(columns[Fields.PROCESSING_DATE_TIME]).getTime()) {
       if (index === 1) {
         continue;
@@ -51,10 +57,10 @@ export const SendLineMessages = async (requestBody: ExecuteReqBody): Promise<str
     }
 
     if (requestBody.evaluate) {
-      await sendPacs002Transaction(columns, delta);
+      await sendPacs002Transaction(columns, authHeader);
       processedCount++;
     } else {
-      const { pacs008Result, pain001Result, pain013Result } = await sendPrepareTransaction(columns);
+      const { pacs008Result, pain001Result, pain013Result } = await sendPrepareTransaction(columns, tenantId, batchMetadata);
 
       if ((!requestBody.evaluate && configuration.QUOTING && !pacs008Result) || !pain001Result || !pain013Result) {
         loggerService.error(

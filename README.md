@@ -5,12 +5,14 @@
   - [1. Installation](#1-installation)
   - [2. Configuration](#2-configuration)
   - [3. Sending Batch Messages](#3-sending-batch-messages)
-    - [Step 1: /v1/uploadfile](#step-1-uploadfile)
-    - [Step 2: /v1/executebatch](#step-2-executebatch)
+    - [Step 1: /v1/uploadfile](#step-1-v1uploadfile)
+    - [Step 2: /v1/executebatch `POST`](#step-2-v1executebatch-post)
   - [3.1 Sending Preparation Messages](#31-sending-preparation-messages)
   - [3.2 Sending PACS002 Messages](#32-sending-pacs002-messages)
   - [4. Error Handling](#4-error-handling)
-  - [5. Batch Input file](#5-batch-input-file)
+  - [5 Batch Input File](#5-batch-input-file)
+    - [5.1 File format](#51-file-format)
+    - [5.2 Expected File Fields](#52-expected-file-fields)
 
 ## Introduction
 
@@ -70,7 +72,7 @@ The application includes error-handling mechanisms to capture and report errors 
 
 ## 5 Batch Input File
 
-### 5.1 File formate
+### 5.1 File format
 
 The supported input batch file should contain a list of transactions, with each field structured as outlined in Section 5.2 and separated by `|`. The first line will be included only if the `PROCESSING_DATE` is valid.
 
@@ -83,15 +85,17 @@ PROCESSING_DATE_TIME|MESSAGE_ID|TRANSACTION_TYPE|PAYMENT_CURRENCY_CODE|TOTAL_PAY
 
 | Source field |	Target Field |	Description |
 | ------------ | ------------ | ------------ |
-| PROCESSING_DATE_TIME |	CreDtTm	| Date and time at which the message was created.
-| MESSAGE_ID |	EndToEndId | The end-to-end identification can be used for reconciliation or to link tasks relating to the transaction. It can be included in several messages related to the transaction.
-| TRANSACTION_TYPE |	PmtTpInf.CtgyPurp.Prtry | Underlying reason for the payment transaction.
-| PAYMENT_CURRENCY_CODE |	InstdAmt.Amt.Ccy | The currency of the instructed amount as ordered by the initiating party.
-| TOTAL_PAYMENT_AMOUNT |	InstdAmt.Amt.Amt | Amount of money to be moved between the debtor and creditor, before deduction of charges, expressed in the currency as ordered by the initiating party.
-| SENDER_NAME |	Dbtr.Nm | Name by which the debtor is known and which is usually used to identify that party.
-| RECEIVER_NAME |	Cdtr.Nm |	Name by which the creditor is known and which is usually used to identify that party.
-| SENDER_AGENT_SPID |	DbtrAgt.FinInstnId.ClrSysMmbId.MmbId | Unique and unambiguous identification of the financial institution servicing an account for the debtor, as assigned under an internationally recognised or proprietary identification scheme.
-| RECEIVER_AGENT_SPID |	DbtrAgt.FinInstnId.ClrSysMmbId.MmbId |	Unique and unambiguous identification of the financial institution servicing an account for the creditor, as assigned under an internationally recognised or proprietary identification scheme.
-| SENDER_ACCOUNT |	DbtrAcct.Id.Othr.Id| Unambiguous identification of the account of the debtor to which a debit entry will be made as a result of the transaction.
-| RECEIVER_ACCOUNT |	CdtrAcct.Id.Othr.Id | Unambiguous identification of the account of the creditor to which a credit entry will be made as a result of the transaction.
-| REPORTING_CODE |	RgltryRptg.Dtls.Cd |Specifies the nature, purpose, and reason for the transaction to be reported for regulatory and statutory requirements in a coded form.
+| PROCESSING_DATE_TIME |	CreDtTm	| Date and time at which the message was created. |
+| MESSAGE_ID |	EndToEndId | The end-to-end identification can be used for reconciliation or to link tasks relating to the transaction. It can be included in several messages related to the transaction. |
+| TRANSACTION_TYPE |	PmtTpInf.CtgyPurp.Prtry | Underlying reason for the payment transaction. |
+| PAYMENT_CURRENCY_CODE |	InstdAmt.Amt.Ccy | The currency of the instructed amount as ordered by the initiating party. |
+| TOTAL_PAYMENT_AMOUNT |	InstdAmt.Amt.Amt | Amount of money to be moved between the debtor and creditor, before deduction of charges, expressed in the currency as ordered by the initiating party. |
+| SENDER_ID |	Dbtr.Id | Unique identifier by which the debtor is known and which is usually used to identify that party. |
+| SENDER_NAME |	Dbtr.Nm | Name by which the debtor is known and which is usually used to identify that party. |
+| RECEIVER_ID |	Cdtr.Id |	Unique identifier by which the creditor is known and which is usually used to identify that party. |
+| RECEIVER_NAME |	Cdtr.Nm |	Name by which the creditor is known and which is usually used to identify that party. |
+| SENDER_AGENT_SPID |	DbtrAgt.FinInstnId.ClrSysMmbId.MmbId | Unique and unambiguous identification of the financial institution servicing an account for the debtor, as assigned under an internationally recognised or proprietary identification scheme. |
+| RECEIVER_AGENT_SPID |	DbtrAgt.FinInstnId.ClrSysMmbId.MmbId |	Unique and unambiguous identification of the financial institution servicing an account for the creditor, as assigned under an internationally recognised or proprietary identification scheme. |
+| SENDER_ACCOUNT |	DbtrAcct.Id.Othr.Id| Unambiguous identification of the account of the debtor to which a debit entry will be made as a result of the transaction. |
+| RECEIVER_ACCOUNT |	CdtrAcct.Id.Othr.Id | Unambiguous identification of the account of the creditor to which a credit entry will be made as a result of the transaction. |
+| REPORTING_CODE |	RgltryRptg.Dtls.Cd |Specifies the nature, purpose, and reason for the transaction to be reported for regulatory and statutory requirements in a coded form. |

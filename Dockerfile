@@ -1,3 +1,4 @@
+# syntax=docker/dockerfile:1
 # SPDX-License-Identifier: Apache-2.0
 ARG BUILD_IMAGE=node:20-bullseye
 ARG RUN_IMAGE=gcr.io/distroless/nodejs20-debian11:nonroot
@@ -11,10 +12,9 @@ COPY ./src ./src
 COPY ./package*.json ./
 COPY ./tsconfig.json ./
 COPY .npmrc ./
-ARG GH_TOKEN
 
-RUN npm ci --ignore-scripts
-RUN npm run build
+RUN --mount=type=secret,id=GH_TOKEN,env=GH_TOKEN npm ci --ignore-scripts
+RUN npm run build && mkdir -p build/uploads
 
 FROM ${BUILD_IMAGE} AS dep-resolver
 LABEL stage=pre-prod
@@ -22,24 +22,17 @@ LABEL stage=pre-prod
 
 COPY package*.json ./
 COPY .npmrc ./
-ARG GH_TOKEN
-RUN npm ci --omit=dev --ignore-scripts
-RUN mkdir uploads
+RUN --mount=type=secret,id=GH_TOKEN,env=GH_TOKEN npm ci --omit=dev --ignore-scripts
 
 FROM ${RUN_IMAGE} AS run-env
 USER nonroot
 
 WORKDIR /home/app
 COPY --from=dep-resolver /node_modules ./node_modules
-COPY --from=builder /home/app/build ./build
+COPY --chown=nonroot:nonroot --from=builder /home/app/build ./build
 COPY package.json ./
 COPY deployment.yaml ./
 COPY service.yaml ./
-COPY --chown=nonroot:nonroot --from=dep-resolver /uploads ./uploads
-
-#USER root
-#RUN chmod 777 uploads
-#USER nonroot
 
 
 # Turn down the verbosity to default level.
@@ -60,7 +53,11 @@ ENV MAX_CPU=1
 # Batch-PPA
 ENV TMS_ENDPOINT=
 ENV QUOTING=true
-ENV PORT=3000
+ENV PORT=4100
+
+# Auth
+ENV AUTHENTICATED=false
+ENV CERT_PATH_PUBLIC=
 
 
 # REDIS

@@ -4,13 +4,19 @@ import type { Pacs002, Pacs008, Pain001, Pain013 } from '@tazama-lf/frms-coe-lib
 import { v4 as uuidv4 } from 'uuid';
 import { Fields } from '../utils/transaction.enum';
 
-export const GetPain001FromLine = (columns: string[]): Pain001 => {
+function adjustInMilliseconds(isoDateString: string, milliseconds: number): string {
+  const date = new Date(isoDateString);
+  date.setTime(date.getTime() - milliseconds);
+  return date.toISOString();
+}
+
+export const GetPain001FromLine = (columns: string[], tenantId: string): Pain001 => {
   const end2endID = columns[Fields.MESSAGE_ID];
   const pain001: Pain001 = {
     CstmrCdtTrfInitn: {
       GrpHdr: {
         MsgId: end2endID,
-        CreDtTm: new Date().toISOString(),
+        CreDtTm: adjustInMilliseconds(columns[Fields.PROCESSING_DATE_TIME], 3000), // pain.001 3 seconds before pacs.002
         InitgPty: {
           Nm: columns[Fields.SENDER_NAME],
           Id: {
@@ -22,9 +28,9 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
               },
               Othr: [
                 {
-                  Id: columns[Fields.SENDER_ACCOUNT],
+                  Id: columns[Fields.SENDER_ID],
                   SchmeNm: {
-                    Prtry: 'ACCOUNT_NUMBER',
+                    Prtry: 'ID_NUMBER',
                   },
                 },
               ],
@@ -63,9 +69,9 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
               },
               Othr: [
                 {
-                  Id: columns[Fields.SENDER_ACCOUNT],
+                  Id: columns[Fields.SENDER_ID],
                   SchmeNm: {
-                    Prtry: 'ACCOUNT_NUMBER',
+                    Prtry: 'ID_NUMBER',
                   },
                 },
               ],
@@ -77,12 +83,9 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
           Id: {
             Othr: [
               {
-                Id:
-                  columns[Fields.RECEIVER_NAME] === 'Y'
-                    ? `${columns[Fields.SENDER_ACCOUNT]}${columns[Fields.SENDER_NAME]}`
-                    : columns[Fields.SENDER_ACCOUNT],
+                Id: columns[Fields.SENDER_ACCOUNT],
                 SchmeNm: {
-                  Prtry: columns[Fields.RECEIVER_NAME] === 'Y' ? 'SUSPENSE_ACCOUNT' : 'USER_ACCOUNT',
+                  Prtry: 'ACCOUNT_NUMBER',
                 },
               },
             ],
@@ -139,9 +142,9 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
                 },
                 Othr: [
                   {
-                    Id: columns[Fields.RECEIVER_ACCOUNT],
+                    Id: columns[Fields.RECEIVER_ID],
                     SchmeNm: {
-                      Prtry: 'ACCOUNT_NUMBER',
+                      Prtry: 'ID_NUMBER',
                     },
                   },
                 ],
@@ -155,12 +158,9 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
             Id: {
               Othr: [
                 {
-                  Id:
-                    columns[Fields.RECEIVER_NAME] === 'Y'
-                      ? `${columns[Fields.RECEIVER_ACCOUNT]}${columns[Fields.RECEIVER_NAME]}`
-                      : columns[Fields.RECEIVER_ACCOUNT],
+                  Id: columns[Fields.RECEIVER_ACCOUNT],
                   SchmeNm: {
-                    Prtry: columns[Fields.RECEIVER_NAME] === 'Y' ? 'SUSPENSE_ACCOUNT' : 'USER_ACCOUNT',
+                    Prtry: 'ACCOUNT_NUMBER',
                   },
                 },
               ],
@@ -219,7 +219,7 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
       },
     },
     TxTp: 'pain.001.001.11',
-    TenantId: 'DEFAULT',
+    TenantId: tenantId,
   };
 
   return pain001;
@@ -228,11 +228,11 @@ export const GetPain001FromLine = (columns: string[]): Pain001 => {
 export const GetPain013 = (pain01: Pain001): Pain013 => {
   const pain013: Pain013 = {
     TxTp: 'pain.013.001.09',
-    TenantId: 'DEFAULT',
+    TenantId: pain01.TenantId,
     CdtrPmtActvtnReq: {
       GrpHdr: {
         MsgId: uuidv4().replace('-', ''),
-        CreDtTm: new Date(new Date(pain01.CstmrCdtTrfInitn.GrpHdr.CreDtTm).getTime() + 10).toISOString(),
+        CreDtTm: adjustInMilliseconds(pain01.CstmrCdtTrfInitn.GrpHdr.CreDtTm, -1000), // pain.013 1 second after pain.001
         NbOfTxs: 1,
         InitgPty: {
           Nm: pain01.CstmrCdtTrfInitn.GrpHdr.InitgPty.Nm,
@@ -419,11 +419,11 @@ export const GetPain013 = (pain01: Pain001): Pain013 => {
 export const GetPacs008 = (pain01: Pain001): Pacs008 => {
   const pacs008: Pacs008 = {
     TxTp: 'pacs.008.001.10',
-    TenantId: 'DEFAULT',
+    TenantId: pain01.TenantId,
     FIToFICstmrCdtTrf: {
       GrpHdr: {
         MsgId: uuidv4().replace('-', ''),
-        CreDtTm: new Date(new Date(pain01.CstmrCdtTrfInitn.GrpHdr.CreDtTm).getTime() + 20).toISOString(),
+        CreDtTm: adjustInMilliseconds(pain01.CstmrCdtTrfInitn.GrpHdr.CreDtTm, -1000), // pacs.008 1 second after pain.013
         NbOfTxs: pain01.CstmrCdtTrfInitn.GrpHdr.NbOfTxs,
         SttlmInf: {
           SttlmMtd: 'CLRG',
@@ -547,13 +547,13 @@ export const GetPacs008 = (pain01: Pain001): Pacs008 => {
   return pacs008;
 };
 
-export const GetPacs002 = (columns: string[], date: Date): Omit<Pacs002, 'TenantId'> => {
+export const GetPacs002 = (columns: string[]): Omit<Pacs002, 'TenantId'> => {
   const pacs002: Omit<Pacs002, 'TenantId'> = {
     TxTp: 'pacs.002.001.12',
     FIToFIPmtSts: {
       GrpHdr: {
         MsgId: uuidv4().replace('-', ''),
-        CreDtTm: new Date(new Date(date).getTime() + 1000).toISOString(),
+        CreDtTm: columns[Fields.PROCESSING_DATE_TIME],
       },
       TxInfAndSts: {
         OrgnlInstrId: columns[Fields.MESSAGE_ID],
